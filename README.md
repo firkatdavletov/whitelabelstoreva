@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# White Label Food Ordering Storefront
 
-## Getting Started
+Production-style starter for a multi-tenant food-ordering storefront on `Next.js App Router + TypeScript`.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js App Router
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui-compatible component layer
+- TanStack Query
+- Zustand
+- React Hook Form + Zod
+- react-i18next
+- ESLint + Prettier
+- Vitest + React Testing Library
+- Playwright
+- pnpm
+
+## Run
+
+1. Install `pnpm` locally if it is not available yet.
+2. Copy `.env.example` into `.env.local`.
+3. Install dependencies: `pnpm install`
+4. Start dev server: `pnpm dev`
+
+Useful scripts:
+
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm format`
+- `pnpm test:unit`
+- `pnpm test:e2e`
+
+## Architecture
+
+The project follows a feature-first / sliced-style structure with explicit layer boundaries.
+
+```text
+src/
+  app/        -> routing, layouts, providers, page composition
+  processes/  -> orchestration for tenant/locale bootstrap
+  widgets/    -> large UI blocks composed from features/entities/shared
+  features/   -> user scenarios and use cases
+  entities/   -> domain models, DTOs, mappers, entity-local state
+  shared/     -> reusable ui, api, config, hooks, lib, i18n, types
+  store/      -> cross-cutting UI state
+tests/        -> Vitest and Playwright setup
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Dependency rules encoded in ESLint:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `app` can depend on all lower layers.
+- `widgets` can depend on `features`, `entities`, `shared`, `store`.
+- `features` can depend on `entities`, `shared`, `store`.
+- `entities` can depend only on `shared`.
+- `shared` cannot import higher layers.
+- `processes` orchestrate tenant/locale bootstrap and do not depend on `widgets` or `app`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Multi-tenant / White Label
 
-## Learn More
+Tenant and locale are resolved from route params:
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app/[tenant]/[locale]/...`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+White-label setup is prepared through:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/entities/tenant/config/tenant-config.ts`
+- `src/features/tenant-theme/ui/tenant-theme-provider.tsx`
+- CSS variables in `src/app/styles/globals.css`
 
-## Deploy on Vercel
+Per-tenant config controls:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `title`
+- `description`
+- `logoText`
+- theme colors
+- radius
+- restaurant metadata
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## API Integration Boundary
+
+Frontend does not embed backend business rules.
+
+Spring Boot integration is prepared via:
+
+- `src/shared/api/http-client.ts` -> typed fetch wrapper
+- `src/shared/api/server-auth.ts` -> auth headers / cookie forwarding for server requests
+- `src/shared/config/env.ts` -> env-safe API config
+- `src/features/menu-catalog/api/get-menu-catalog.ts`
+- `src/features/order-tracking/api/get-order-tracking.ts`
+
+Current default mode is mocked:
+
+- `NEXT_PUBLIC_API_MOCKING=enabled`
+
+To switch to real backend calls:
+
+1. Set `NEXT_PUBLIC_API_MOCKING=disabled`
+2. Point `NEXT_PUBLIC_API_BASE_URL` to Spring Boot API
+3. Replace placeholder request paths with final backend endpoints if needed
+
+## What Is Ready For Spring Boot
+
+- Central API base URL via env
+- Typed request wrapper with JSON/error handling
+- Support for `Authorization` and forwarded cookies
+- DTO -> domain mappers for entity boundaries
+- Menu catalog use case prepared for tenant-aware API calls
+- Order tracking use case prepared for client-side polling
+- Checkout form prepared to send a typed payload later
+
+## Notes
+
+- `components.json` and `src/shared/ui/*` provide a shadcn/ui-compatible setup adapted to the project structure.
+- `store/ui-store.ts` is reserved for cross-cutting UI state only.
+- `entities/cart` owns cart state and selectors, while `features/*` own user interactions around it.
