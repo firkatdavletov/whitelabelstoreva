@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { cartSelectors, useCartStore } from "@/entities/cart";
+import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
+import { useRemoveStorefrontCartItemMutation } from "@/features/cart-summary/hooks/use-storefront-cart-mutations";
+import { useTenantTheme } from "@/features/tenant-theme";
 import { formatCurrency } from "@/shared/lib/currency";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { Badge } from "@/shared/ui/badge";
@@ -16,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 type CartSummaryCardProps = {
   showCheckoutCta?: boolean;
@@ -24,12 +27,30 @@ type CartSummaryCardProps = {
 export function CartSummaryCard({
   showCheckoutCta = true,
 }: CartSummaryCardProps) {
-  const items = useCartStore((state) => state.items);
-  const removeItem = useCartStore((state) => state.removeItem);
-  const { href, locale } = useStorefrontRoute();
+  const { href, locale, tenantSlug } = useStorefrontRoute();
+  const tenantConfig = useTenantTheme();
+  const { data: storefrontCart, isLoading } =
+    useStorefrontCartQuery(tenantSlug);
+  const removeCartItemMutation =
+    useRemoveStorefrontCartItemMutation(tenantSlug);
   const { t } = useTranslation();
 
-  if (!items.length) {
+  if (isLoading && !storefrontCart) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("cart.title")}</CardTitle>
+          <CardDescription>{t("cart.loading")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-16 rounded-xl" />
+          <Skeleton className="h-16 rounded-xl" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!storefrontCart || !storefrontCart.items.length) {
     return (
       <Card>
         <CardHeader>
@@ -37,7 +58,7 @@ export function CartSummaryCard({
           <CardDescription>{t("cart.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">{t("cart.empty")}</p>
+          <p className="text-muted-foreground text-sm">{t("cart.empty")}</p>
           <Button asChild className="w-full">
             <Link href={href("/menu")}>{t("cart.continue")}</Link>
           </Button>
@@ -45,9 +66,6 @@ export function CartSummaryCard({
       </Card>
     );
   }
-
-  const currency = items[0]?.currency ?? "USD";
-  const total = cartSelectors.total(items);
 
   return (
     <Card>
@@ -57,29 +75,34 @@ export function CartSummaryCard({
             <CardTitle>{t("cart.summary")}</CardTitle>
             <CardDescription>{t("cart.subtitle")}</CardDescription>
           </div>
-          <Badge>{cartSelectors.itemsCount(items)}</Badge>
+          <Badge>{storefrontCart.itemsCount}</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          {items.map((item) => (
+          {storefrontCart.items.map((item) => (
             <div
-              className="flex items-start justify-between gap-4 rounded-xl border border-border/70 bg-background/80 p-3"
-              key={item.productId}
+              className="border-border/70 bg-background/80 flex items-start justify-between gap-4 rounded-xl border p-3"
+              key={item.id}
             >
               <div className="min-w-0">
-                <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-medium">{item.title}</p>
+                <p className="text-muted-foreground text-sm">
                   {t("shared.quantity")}: {item.quantity}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold">
-                  {formatCurrency(item.price * item.quantity, item.currency, locale)}
+                  {formatCurrency(
+                    item.lineTotal,
+                    tenantConfig.currency,
+                    locale,
+                  )}
                 </p>
                 <Button
-                  aria-label={`Remove ${item.name}`}
-                  onClick={() => removeItem(item.productId)}
+                  aria-label={`Remove ${item.title}`}
+                  disabled={removeCartItemMutation.isPending}
+                  onClick={() => removeCartItemMutation.mutate(item.id)}
                   size="icon"
                   variant="ghost"
                 >
@@ -89,10 +112,16 @@ export function CartSummaryCard({
             </div>
           ))}
         </div>
-        <div className="flex items-center justify-between border-t border-dashed border-border pt-4">
-          <span className="text-sm text-muted-foreground">{t("shared.total")}</span>
+        <div className="border-border flex items-center justify-between border-t border-dashed pt-4">
+          <span className="text-muted-foreground text-sm">
+            {t("shared.total")}
+          </span>
           <span className="text-xl font-semibold">
-            {formatCurrency(total, currency, locale)}
+            {formatCurrency(
+              storefrontCart.totalPrice,
+              tenantConfig.currency,
+              locale,
+            )}
           </span>
         </div>
         {showCheckoutCta ? (

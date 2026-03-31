@@ -1,77 +1,203 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
-import { usePathname } from "next/navigation";
+import {
+  ChevronDown,
+  Clock3,
+  MapPin,
+  Search,
+  ShoppingBag,
+  UserRound,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { cartSelectors, useCartStore } from "@/entities/cart";
+import type {
+  StorefrontCartDelivery,
+  StorefrontCartDeliveryMethod,
+} from "@/entities/cart";
+import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
 import { useTenantTheme } from "@/features/tenant-theme";
+import { formatCurrency } from "@/shared/lib/currency";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
-import { cn } from "@/shared/lib/styles";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { SegmentedControl } from "@/shared/ui/segmented-control";
 import { useUiStore } from "@/store/ui-store";
 
-const navigationItems = [
-  { key: "home", pathname: "" },
-  { key: "menu", pathname: "/menu" },
-  { key: "cart", pathname: "/cart" },
-  { key: "checkout", pathname: "/checkout" },
-];
+type FulfillmentMode = "delivery" | "pickup";
+
+function resolveFulfillmentMode(
+  deliveryMethod: StorefrontCartDeliveryMethod | null | undefined,
+): FulfillmentMode {
+  return deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
+    ? "pickup"
+    : "delivery";
+}
+
+function formatDeliveryAddress(
+  delivery: StorefrontCartDelivery | null | undefined,
+) {
+  if (!delivery) {
+    return null;
+  }
+
+  if (
+    delivery.deliveryMethod === "PICKUP" ||
+    delivery.deliveryMethod === "YANDEX_PICKUP_POINT"
+  ) {
+    return (
+      delivery.pickupPointName ??
+      delivery.pickupPointAddress ??
+      delivery.quote?.pickupPointName ??
+      delivery.quote?.pickupPointAddress ??
+      null
+    );
+  }
+
+  const addressParts = [
+    delivery.address?.city,
+    delivery.address?.street,
+    delivery.address?.house,
+    delivery.address?.apartment ? `кв. ${delivery.address.apartment}` : null,
+  ].filter(Boolean);
+
+  const addressLine = addressParts.join(", ");
+
+  if (addressLine && delivery.quote?.zoneName) {
+    return `${addressLine} · ${delivery.quote.zoneName}`;
+  }
+
+  return addressLine || delivery.quote?.zoneName || null;
+}
 
 export function Header() {
-  const pathname = usePathname();
-  const { href, locale } = useStorefrontRoute();
-  const cartCount = useCartStore((state) => cartSelectors.itemsCount(state.items));
+  const { href, locale, tenantSlug } = useStorefrontRoute();
   const openCartSidebar = useUiStore((state) => state.openCartSidebar);
   const tenantConfig = useTenantTheme();
+  const { data: storefrontCart } = useStorefrontCartQuery(tenantSlug);
   const { t } = useTranslation();
+  const fulfillmentMode = resolveFulfillmentMode(
+    storefrontCart?.delivery?.deliveryMethod,
+  );
+  const deliveryAddress = formatDeliveryAddress(storefrontCart?.delivery);
+  const cartCount = storefrontCart?.itemsCount ?? 0;
+  const cartTotal = storefrontCart?.totalPrice ?? 0;
+
+  const addressLabel = t(
+    fulfillmentMode === "delivery"
+      ? "header.deliveryAddressLabel"
+      : "header.pickupAddressLabel",
+    {
+      address: deliveryAddress ?? t("header.addressPending"),
+    },
+  );
+
+  const etaLabel =
+    storefrontCart?.delivery?.quote && !storefrontCart.delivery.quoteExpired
+      ? (storefrontCart.delivery.quote.message ??
+        (typeof storefrontCart.delivery.quote.estimatedDays === "number"
+          ? storefrontCart.delivery.quote.estimatedDays === 0
+            ? t("header.etaToday")
+            : t("header.etaDays", {
+                days: storefrontCart.delivery.quote.estimatedDays,
+              })
+          : t("header.etaPending")))
+      : t("header.etaPending");
+
+  const cartTotalLabel =
+    cartTotal > 0
+      ? formatCurrency(cartTotal, tenantConfig.currency, locale, {
+          maximumFractionDigits: 0,
+          minimumFractionDigits: 0,
+        })
+      : null;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link className="flex min-w-0 items-center gap-3" href={href()}>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-sm font-bold text-primary-foreground">
-            {tenantConfig.logoText.slice(0, 2)}
+    <header className="border-border/60 bg-background/95 md:bg-background/85 border-b md:sticky md:top-0 md:z-40 md:backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <Link className="flex min-w-0 items-center gap-3" href={href()}>
+            <div className="bg-primary text-primary-foreground flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-bold">
+              {tenantConfig.logoText.slice(0, 2)}
+            </div>
+            <div className="min-w-0">
+              <p className="font-heading truncate text-lg font-semibold tracking-[0.18em]">
+                {tenantConfig.logoText}
+              </p>
+            </div>
+          </Link>
+
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+            <Button
+              className="border-border/80 bg-card/90 h-11 justify-between rounded-full px-4 text-left shadow-sm lg:min-w-80"
+              type="button"
+              variant="outline"
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <MapPin className="text-muted-foreground h-4 w-4 shrink-0" />
+                <span className="truncate">{addressLabel}</span>
+              </span>
+              <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+            </Button>
+
+            <SegmentedControl
+              className="self-start lg:self-auto"
+              disabled
+              options={[
+                {
+                  label: t("header.delivery"),
+                  value: "delivery",
+                },
+                {
+                  label: t("header.pickup"),
+                  value: "pickup",
+                },
+              ]}
+              value={fulfillmentMode}
+            />
+
+            <div className="bg-secondary text-secondary-foreground inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium shadow-sm">
+              <Clock3 className="h-4 w-4 shrink-0" />
+              <span>{etaLabel}</span>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="truncate font-heading text-lg font-semibold">{tenantConfig.logoText}</p>
-            <p className="truncate text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              {tenantConfig.tagline}
-            </p>
+        </div>
+
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
+            <Input
+              aria-label={t("header.searchPlaceholder")}
+              className="border-border/80 bg-card/95 h-12 rounded-full pr-4 pl-11 text-base shadow-sm"
+              placeholder={t("header.searchPlaceholder")}
+              type="search"
+            />
           </div>
-        </Link>
 
-        <nav className="hidden items-center gap-2 md:flex">
-          {navigationItems.map((item) => {
-            const itemHref = href(item.pathname);
-            const isActive = pathname === itemHref;
-
-            return (
-              <Link
-                className={cn(
-                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                  isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
-                href={itemHref}
-                key={item.key}
-              >
-                {t(`navigation.${item.key}`)}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <Badge variant="outline">
-            {t("header.localeLabel")}: {locale.toUpperCase()}
-          </Badge>
-          <Button onClick={openCartSidebar} variant="outline">
-            <ShoppingBag className="h-4 w-4" />
-            {t("navigation.cart")}
-            <Badge className="ml-1">{cartCount}</Badge>
-          </Button>
+          <div className="flex items-center justify-end gap-2 sm:gap-3 lg:ml-4">
+            <Button className="rounded-full px-5" type="button" variant="ghost">
+              <UserRound className="h-4 w-4" />
+              {t("header.login")}
+            </Button>
+            <Button
+              className="rounded-full px-5"
+              onClick={openCartSidebar}
+              size="lg"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {cartTotalLabel
+                ? t("header.cartWithTotal", {
+                    total: cartTotalLabel,
+                  })
+                : t("navigation.cart")}
+              {cartCount ? (
+                <Badge className="bg-primary-foreground/15 text-primary-foreground border-transparent">
+                  {cartCount}
+                </Badge>
+              ) : null}
+            </Button>
+          </div>
         </div>
       </div>
     </header>

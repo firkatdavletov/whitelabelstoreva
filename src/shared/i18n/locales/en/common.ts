@@ -3,8 +3,9 @@ export const enMessages = {
     checkout: "Proceed to checkout",
     continue: "Browse menu",
     empty: "Your cart is empty. Add a few dishes to start an order.",
+    loading: "Refreshing cart...",
     open: "Open cart",
-    subtitle: "Local cart state stays in the frontend until checkout is wired to the backend.",
+    subtitle: "Cart state is synced with the backend via /api/v1/cart.",
     summary: "Cart summary",
     title: "Cart",
   },
@@ -19,11 +20,22 @@ export const enMessages = {
     title: "Checkout",
   },
   footer: {
-    caption: "Feature-first storefront shell ready for Spring Boot integration.",
+    caption:
+      "Feature-first storefront shell ready for Spring Boot integration.",
     subtitle: "Shared frontend, branded by tenant config.",
   },
   header: {
-    localeLabel: "Locale",
+    addressPending: "add address",
+    cartWithTotal: "Cart {{total}}",
+    delivery: "Delivery",
+    deliveryAddressLabel: "Delivery: {{address}}",
+    etaDays: "{{days}} day",
+    etaPending: "estimate pending",
+    etaToday: "today",
+    login: "Sign in",
+    pickup: "Pickup",
+    pickupAddressLabel: "Pickup: {{address}}",
+    searchPlaceholder: "Search menu",
   },
   home: {
     browseMenu: "Browse full menu",
@@ -35,7 +47,8 @@ export const enMessages = {
   },
   menu: {
     empty: "Menu is empty for this tenant.",
-    subtitle: "Catalog data flows through a typed API layer and tenant-specific mapping.",
+    subtitle:
+      "Catalog data flows through a typed API layer and tenant-specific mapping.",
     title: "Menu",
   },
   navigation: {
@@ -49,7 +62,8 @@ export const enMessages = {
     currentStatus: "Current status",
     eta: "ETA",
     loading: "Refreshing live order status...",
-    subtitle: "TanStack Query handles client-side status polling and cache lifecycle.",
+    subtitle:
+      "TanStack Query handles client-side status polling and cache lifecycle.",
     timeline: "Progress timeline",
     title: "Order tracking",
   },

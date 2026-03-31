@@ -27,7 +27,7 @@ export function CartSidebar() {
         <SheetHeader>
           <SheetTitle>Basket</SheetTitle>
           <SheetDescription>
-            Client-side cart shell ready to hand over a payload to checkout.
+            Backend-synced cart ready for checkout.
           </SheetDescription>
         </SheetHeader>
         <CartSummaryCard />

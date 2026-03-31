@@ -1,2 +1,8 @@
-export { cartSelectors, useCartStore } from "@/entities/cart/model/cart.store";
-export type { CartItem, CartItemInput } from "@/entities/cart/model/cart.types";
+export type { CartResponseDto } from "@/entities/cart/api/cart.dto";
+export { mapCartDtoToStorefrontCart } from "@/entities/cart/lib/cart.mapper";
+export type {
+  StorefrontCart,
+  StorefrontCartDelivery,
+  StorefrontCartDeliveryMethod,
+  StorefrontCartItem,
+} from "@/entities/cart/model/cart.types";

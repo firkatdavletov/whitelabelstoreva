@@ -5,7 +5,9 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import type { Product } from "@/entities/product";
-import { cartSelectors, useCartStore } from "@/entities/cart";
+import { useAddStorefrontCartItemMutation } from "@/features/cart-summary/hooks/use-storefront-cart-mutations";
+import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
+import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { useUiStore } from "@/store/ui-store";
 import { Button } from "@/shared/ui/button";
 
@@ -14,33 +16,32 @@ type AddToCartButtonProps = {
 };
 
 export function AddToCartButton({ product }: AddToCartButtonProps) {
-  const addItem = useCartStore((state) => state.addItem);
-  const cartItemsCount = useCartStore((state) => cartSelectors.itemsCount(state.items));
+  const { tenantSlug } = useStorefrontRoute();
+  const { data: storefrontCart } = useStorefrontCartQuery(tenantSlug);
+  const addCartItemMutation = useAddStorefrontCartItemMutation(tenantSlug);
   const openCartSidebar = useUiStore((state) => state.openCartSidebar);
   const { t } = useTranslation();
 
   return (
     <Button
       className="w-full"
-      disabled={!product.isAvailable}
+      disabled={!product.isAvailable || addCartItemMutation.isPending}
       onClick={() => {
-        addItem({
-          currency: product.currency,
-          name: product.name,
-          price: product.price,
-          productId: product.id,
-          visual: product.visual,
-        });
+        const hadItems = (storefrontCart?.itemsCount ?? 0) > 0;
 
-        toast.success(t("toast.itemAddedTitle"), {
-          description: t("toast.itemAddedDescription", {
-            name: product.name,
-          }),
-        });
+        addCartItemMutation.mutate(product, {
+          onSuccess: () => {
+            toast.success(t("toast.itemAddedTitle"), {
+              description: t("toast.itemAddedDescription", {
+                name: product.name,
+              }),
+            });
 
-        if (cartItemsCount === 0) {
-          openCartSidebar();
-        }
+            if (!hadItems) {
+              openCartSidebar();
+            }
+          },
+        });
       }}
       size="sm"
     >
