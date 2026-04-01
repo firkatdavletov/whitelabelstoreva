@@ -74,8 +74,11 @@ export function DeliveryAddressScreen() {
     useUpdateStorefrontCartDeliveryMutation(tenantSlug);
 
   const deliveryMethodsQuery = useQuery({
+    gcTime: 0,
     queryFn: getDeliveryMethods,
     queryKey: ["delivery-methods", tenantSlug],
+    refetchOnMount: "always",
+    staleTime: 0,
   });
 
   useEffect(() => {
