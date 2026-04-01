@@ -104,6 +104,7 @@ export function Header() {
     t("header.addressPending");
   const cartCount = storefrontCart?.itemsCount ?? 0;
   const cartTotal = storefrontCart?.totalPrice ?? 0;
+  const hasCartItems = cartCount > 0;
   const etaLabel = formatDeliveryEtaLabel(
     storefrontCart?.delivery?.quote && !storefrontCart.delivery.quoteExpired
       ? resolveDeliveryQuoteEta(storefrontCart.delivery.quote)
@@ -113,7 +114,7 @@ export function Header() {
   const deliveryModeLabel = t(isPickup ? "header.pickup" : "header.delivery");
 
   const cartTotalLabel =
-    cartTotal > 0
+    hasCartItems && cartTotal > 0
       ? formatCurrency(cartTotal, tenantConfig.currency, locale, {
           maximumFractionDigits: 0,
           minimumFractionDigits: 0,
@@ -157,26 +158,26 @@ export function Header() {
               label={t("header.login")}
               labelClassName="lg:inline"
             />
-            <Button
-              aria-label={cartButtonLabel}
-              className="relative h-10 w-10 rounded-full px-0 shadow-sm sm:w-auto sm:px-4"
-              onClick={openCartSidebar}
-              size="lg"
-            >
-              <ShoppingBag className="h-4 w-4 shrink-0" />
-              <span className="sr-only">{cartButtonLabel}</span>
-              <span className="hidden text-sm font-medium sm:inline xl:hidden">
-                {t("navigation.cart")}
-              </span>
-              <span className="hidden text-sm font-medium xl:inline">
-                {cartButtonLabel}
-              </span>
-              {cartCount ? (
+            {hasCartItems ? (
+              <Button
+                aria-label={cartButtonLabel}
+                className="relative h-10 w-10 rounded-full px-0 shadow-sm sm:w-auto sm:px-4"
+                onClick={openCartSidebar}
+                size="lg"
+              >
+                <ShoppingBag className="h-4 w-4 shrink-0" />
+                <span className="sr-only">{cartButtonLabel}</span>
+                <span className="hidden text-sm font-medium sm:inline xl:hidden">
+                  {t("navigation.cart")}
+                </span>
+                <span className="hidden text-sm font-medium xl:inline">
+                  {cartButtonLabel}
+                </span>
                 <Badge className="absolute -top-1 -right-1 min-w-5 justify-center px-1.5 py-0.5 sm:static sm:ml-1">
                   {cartCount}
                 </Badge>
-              ) : null}
-            </Button>
+              </Button>
+            ) : null}
           </div>
         </div>
 
