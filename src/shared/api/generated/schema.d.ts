@@ -928,6 +928,8 @@ export interface components {
             zoneName?: string | null;
             /** Format: int32 */
             estimatedDays?: number | null;
+            /** Format: int32 */
+            estimatesMinutes?: number | null;
             message?: string | null;
             /** Format: uuid */
             pickupPointId?: string | null;
@@ -1155,6 +1157,8 @@ export interface components {
             zoneName?: string | null;
             /** Format: int32 */
             estimatedDays?: number | null;
+            /** Format: int32 */
+            estimatesMinutes?: number | null;
             /** Format: uuid */
             pickupPointId?: string | null;
             pickupPointExternalId?: string | null;

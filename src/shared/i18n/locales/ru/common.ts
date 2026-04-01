@@ -31,8 +31,12 @@ export const ruMessages = {
     confirm: "Выбрать адрес",
     detecting: "Обновляем условия доставки по центру карты...",
     detectError: "Не удалось получить условия доставки для выбранной точки.",
+    etaDays: "{{days}} дн.",
+    etaMinutes: "{{minutes}} мин",
+    etaToday: "сегодня",
     free: "Бесплатно",
-    dragMapHint: "Переместите карту так, чтобы маркер оказался на нужном адресе.",
+    dragMapHint:
+      "Переместите карту так, чтобы маркер оказался на нужном адресе.",
     mapKeyMissing:
       "Для отображения карты добавьте NEXT_PUBLIC_YANDEX_MAPS_API_KEY в окружение.",
     mapLoadError: "Карта не загрузилась. Попробуйте обновить страницу.",
@@ -84,6 +88,7 @@ export const ruMessages = {
     delivery: "Доставка",
     deliveryAddressLabel: "Доставка: {{address}}",
     etaDays: "{{days}} дн.",
+    etaMinutes: "{{minutes}} мин",
     etaPending: "время уточняется",
     etaToday: "сегодня",
     login: "Войти",

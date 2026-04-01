@@ -21,6 +21,7 @@ export type StorefrontCartDeliveryAddress = {
 export type StorefrontCartDeliveryQuote = {
   available: boolean;
   estimatedDays: number | null;
+  estimatedMinutes: number | null;
   message: string | null;
   pickupPointAddress: string | null;
   pickupPointName: string | null;

@@ -38,6 +38,7 @@ function mapDeliveryQuoteDto(
   return {
     available: dto.available,
     estimatedDays: dto.estimatedDays ?? null,
+    estimatedMinutes: dto.estimatesMinutes ?? null,
     message: dto.message ?? null,
     pickupPointAddress: dto.pickupPointAddress ?? null,
     pickupPointName: dto.pickupPointName ?? null,

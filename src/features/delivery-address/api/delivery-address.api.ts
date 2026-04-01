@@ -30,7 +30,9 @@ function createMockDeliveryMethodsResponse(): DeliveryMethodsResponseDto {
   };
 }
 
-function createMockPickupPointsResponse(tenantSlug: string): PickupPointsResponseDto {
+function createMockPickupPointsResponse(
+  tenantSlug: string,
+): PickupPointsResponseDto {
   const commonCity = resolveMockCity(tenantSlug);
 
   return {
@@ -111,6 +113,7 @@ function createMockCourierDraft(
       currency: "RUB",
       deliveryMethod: "COURIER",
       estimatedDays: 0,
+      estimatesMinutes: estimatedMinutes,
       message: `от ${estimatedMinutes} минут`,
       pickupPointAddress: null,
       pickupPointExternalId: null,

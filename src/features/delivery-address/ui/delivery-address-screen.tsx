@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { resolveDeliveryQuoteEta } from "@/entities/cart";
 import type { PutCartDeliveryRequestDto } from "@/entities/cart/api/cart.dto";
 import { useUpdateStorefrontCartDeliveryMutation } from "@/features/cart-summary/hooks/use-storefront-cart-mutations";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
@@ -63,6 +64,31 @@ function formatQuotePrice(
   return `${priceMinor / 100} ${currency}`;
 }
 
+function formatDeliveryEtaLabel(
+  eta: ReturnType<typeof resolveDeliveryQuoteEta>,
+  t: ReturnType<typeof useTranslation>["t"],
+) {
+  if (!eta) {
+    return null;
+  }
+
+  if (eta.kind === "minutes") {
+    return t("deliveryAddress.etaMinutes", {
+      minutes: eta.value,
+    });
+  }
+
+  if (eta.kind === "days") {
+    return eta.value === 0
+      ? t("deliveryAddress.etaToday")
+      : t("deliveryAddress.etaDays", {
+          days: eta.value,
+        });
+  }
+
+  return eta.value;
+}
+
 export function DeliveryAddressScreen() {
   const router = useRouter();
   const { href, locale, tenantSlug } = useStorefrontRoute();
@@ -72,14 +98,15 @@ export function DeliveryAddressScreen() {
     getDefaultDeliveryMapCenter(tenantSlug),
   );
   const [debouncedMapCenter, setDebouncedMapCenter] = useState(mapCenter);
-  const [selectedMethodCode, setSelectedMethodCode] =
-    useState<PutCartDeliveryRequestDto["deliveryMethod"] | null>(null);
-  const [selectedPickupPointId, setSelectedPickupPointId] = useState<
-    string | null
+  const [selectedMethodCodeOverride, setSelectedMethodCodeOverride] = useState<
+    PutCartDeliveryRequestDto["deliveryMethod"] | null
   >(null);
+  const [selectedPickupPointIdOverride, setSelectedPickupPointIdOverride] =
+    useState<string | null>(null);
+  const [pickupMapHasManualCenter, setPickupMapHasManualCenter] =
+    useState(false);
   const updateCartDeliveryMutation =
     useUpdateStorefrontCartDeliveryMutation(tenantSlug);
-  const isPickup = isPickupDeliveryMethod(selectedMethodCode);
 
   const deliveryMethodsQuery = useQuery({
     gcTime: 0,
@@ -88,6 +115,19 @@ export function DeliveryAddressScreen() {
     refetchOnMount: "always",
     staleTime: 0,
   });
+
+  const deliveryMethods = deliveryMethodsQuery.data?.methods ?? [];
+  const currentMethodCode = storefrontCart?.delivery?.deliveryMethod;
+  const defaultSelectedMethodCode =
+    deliveryMethods.find((method) => method.code === currentMethodCode)?.code ??
+    deliveryMethods[0]?.code ??
+    null;
+  const selectedMethodCode =
+    (selectedMethodCodeOverride &&
+    deliveryMethods.some((method) => method.code === selectedMethodCodeOverride)
+      ? selectedMethodCodeOverride
+      : null) ?? defaultSelectedMethodCode;
+  const isPickup = isPickupDeliveryMethod(selectedMethodCode);
 
   const pickupPointsQuery = useQuery({
     enabled: isPickup,
@@ -108,26 +148,6 @@ export function DeliveryAddressScreen() {
     };
   }, [mapCenter]);
 
-  useEffect(() => {
-    if (!deliveryMethodsQuery.data?.methods.length || selectedMethodCode) {
-      return;
-    }
-
-    const currentMethod = storefrontCart?.delivery?.deliveryMethod;
-    const matchingMethod = deliveryMethodsQuery.data.methods.find(
-      (method) => method.code === currentMethod,
-    );
-
-    setSelectedMethodCode(
-      (matchingMethod?.code ??
-        deliveryMethodsQuery.data.methods[0]?.code) as PutCartDeliveryRequestDto["deliveryMethod"],
-    );
-  }, [
-    deliveryMethodsQuery.data?.methods,
-    selectedMethodCode,
-    storefrontCart?.delivery?.deliveryMethod,
-  ]);
-
   const courierDraftQuery = useQuery({
     enabled: selectedMethodCode === "COURIER",
     queryFn: () =>
@@ -145,78 +165,48 @@ export function DeliveryAddressScreen() {
       debouncedMapCenter.longitude,
     ],
   });
+  const pickupPoints = pickupPointsQuery.data?.pickupPoints ?? [];
+  const currentPickupAddress = storefrontCart?.delivery?.pickupPointAddress;
+  const currentPickupName = storefrontCart?.delivery?.pickupPointName;
+  const defaultSelectedPickupPointId =
+    isPickup && pickupPoints.length
+      ? (pickupPoints.find((pickupPoint) => {
+          const formattedAddress = formatPickupPointAddress(pickupPoint);
 
-  useEffect(() => {
-    if (!isPickup) {
-      return;
-    }
-
-    const pickupPoints = pickupPointsQuery.data?.pickupPoints ?? [];
-
-    if (!pickupPoints.length) {
-      setSelectedPickupPointId(null);
-      return;
-    }
-
-    setSelectedPickupPointId((currentPickupPointId) => {
-      if (
-        currentPickupPointId &&
-        pickupPoints.some((pickupPoint) => pickupPoint.id === currentPickupPointId)
-      ) {
-        return currentPickupPointId;
-      }
-
-      const currentPickupAddress = storefrontCart?.delivery?.pickupPointAddress;
-      const currentPickupName = storefrontCart?.delivery?.pickupPointName;
-      const matchedPickupPoint = pickupPoints.find((pickupPoint) => {
-        const formattedAddress = formatPickupPointAddress(pickupPoint);
-
-        return (
-          pickupPoint.name === currentPickupName ||
-          formattedAddress === currentPickupAddress
-        );
-      });
-
-      return matchedPickupPoint?.id ?? pickupPoints[0].id;
-    });
-  }, [
-    isPickup,
-    pickupPointsQuery.data?.pickupPoints,
-    storefrontCart?.delivery?.pickupPointAddress,
-    storefrontCart?.delivery?.pickupPointName,
-  ]);
-
+          return (
+            pickupPoint.name === currentPickupName ||
+            formattedAddress === currentPickupAddress
+          );
+        })?.id ?? pickupPoints[0].id)
+      : null;
+  const selectedPickupPointId =
+    (selectedPickupPointIdOverride &&
+    pickupPoints.some(
+      (pickupPoint) => pickupPoint.id === selectedPickupPointIdOverride,
+    )
+      ? selectedPickupPointIdOverride
+      : null) ?? defaultSelectedPickupPointId;
   const selectedPickupPoint = findPickupPointById(
-    pickupPointsQuery.data?.pickupPoints,
+    pickupPoints,
     selectedPickupPointId,
   );
+  const pickupMapCenter =
+    !pickupMapHasManualCenter && selectedPickupPoint
+      ? (pickupPointToMapCenter(selectedPickupPoint) ?? mapCenter)
+      : mapCenter;
 
-  useEffect(() => {
-    if (!selectedPickupPoint) {
-      return;
-    }
-
-    const nextCenter = pickupPointToMapCenter(selectedPickupPoint);
-
-    if (!nextCenter) {
-      return;
-    }
-
-    setMapCenter((currentCenter) =>
-      currentCenter.latitude === nextCenter.latitude &&
-      currentCenter.longitude === nextCenter.longitude
-        ? currentCenter
-        : nextCenter,
-    );
-  }, [selectedPickupPoint]);
-
-  const selectedMethod = deliveryMethodsQuery.data?.methods.find(
+  const selectedMethod = deliveryMethods.find(
     (method) => method.code === selectedMethodCode,
   );
   const selectedCourierDraft =
     selectedMethodCode === "COURIER" ? courierDraftQuery.data : null;
   const selectedAddressLabel = formatDeliveryDraftAddress(selectedCourierDraft);
-  const selectedPickupAddressLabel = formatPickupPointAddress(selectedPickupPoint);
+  const selectedPickupAddressLabel =
+    formatPickupPointAddress(selectedPickupPoint);
+  const selectedCourierQuoteEtaLabel = formatDeliveryEtaLabel(
+    resolveDeliveryQuoteEta(selectedCourierDraft?.quote),
+    t,
+  );
   const quotePriceLabel = selectedCourierDraft?.quote
     ? formatQuotePrice(
         selectedCourierDraft.quote.currency,
@@ -261,7 +251,7 @@ export function DeliveryAddressScreen() {
             <h1 className="font-heading text-4xl font-semibold">
               {t("deliveryAddress.title")}
             </h1>
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className="text-muted-foreground max-w-2xl text-sm">
               {t("deliveryAddress.subtitle")}
             </p>
           </div>
@@ -281,8 +271,8 @@ export function DeliveryAddressScreen() {
           {deliveryMethodsQuery.isLoading ? (
             <Skeleton className="h-12 w-full max-w-md rounded-full" />
           ) : deliveryMethodsQuery.isError ? (
-            <div className="flex flex-col gap-3 rounded-[calc(var(--radius)+0.15rem)] border border-border/70 bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
+            <div className="border-border/70 bg-muted/40 flex flex-col gap-3 rounded-[calc(var(--radius)+0.15rem)] border p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-muted-foreground text-sm">
                 {deliveryMethodsQuery.error instanceof Error
                   ? deliveryMethodsQuery.error.message
                   : t("deliveryAddress.methodsError")}
@@ -298,19 +288,26 @@ export function DeliveryAddressScreen() {
             </div>
           ) : deliveryMethodsQuery.data?.methods.length ? (
             <SegmentedControl
-              onValueChange={(value) =>
-                setSelectedMethodCode(
-                  value as PutCartDeliveryRequestDto["deliveryMethod"],
-                )
-              }
+              onValueChange={(value) => {
+                const nextMethodCode =
+                  value as PutCartDeliveryRequestDto["deliveryMethod"];
+
+                setSelectedMethodCodeOverride(nextMethodCode);
+
+                if (isPickupDeliveryMethod(nextMethodCode)) {
+                  setPickupMapHasManualCenter(false);
+                }
+              }}
               options={deliveryMethodsQuery.data.methods.map((method) => ({
                 label: method.name,
                 value: method.code,
               }))}
-              value={selectedMethodCode ?? deliveryMethodsQuery.data.methods[0].code}
+              value={
+                selectedMethodCode ?? deliveryMethodsQuery.data.methods[0].code
+              }
             />
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {t("deliveryAddress.methodsEmpty")}
             </p>
           )}
@@ -343,20 +340,20 @@ export function DeliveryAddressScreen() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 bg-muted/35 p-4">
+              <div className="border-border/70 bg-muted/35 rounded-[calc(var(--radius)+0.1rem)] border p-4">
                 <div className="flex items-start gap-3">
-                  <div className="bg-background text-primary rounded-full border border-border/70 p-2">
+                  <div className="bg-background text-primary border-border/70 rounded-full border p-2">
                     <MapPin className="h-4 w-4" />
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-medium">
                       {t("deliveryAddress.selectedAddressTitle")}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {courierDraftQuery.isLoading
                         ? t("deliveryAddress.detecting")
-                        : selectedAddressLabel ??
-                          t("deliveryAddress.selectedAddressPending")}
+                        : (selectedAddressLabel ??
+                          t("deliveryAddress.selectedAddressPending"))}
                     </p>
                   </div>
                 </div>
@@ -364,25 +361,25 @@ export function DeliveryAddressScreen() {
 
               {selectedCourierDraft?.quote ? (
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                  <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
+                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
                       {t("deliveryAddress.conditionsEta")}
                     </p>
                     <p className="mt-2 text-sm font-medium">
-                      {selectedCourierDraft.quote.message ??
+                      {selectedCourierQuoteEtaLabel ??
                         t("deliveryAddress.conditionNotAvailable")}
                     </p>
                   </div>
-                  <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
+                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
                       {t("deliveryAddress.conditionsPrice")}
                     </p>
                     <p className="mt-2 text-sm font-medium">
                       {quotePriceLabel ?? t("deliveryAddress.free")}
                     </p>
                   </div>
-                  <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
+                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
                       {t("deliveryAddress.conditionsZone")}
                     </p>
                     <p className="mt-2 text-sm font-medium">
@@ -390,8 +387,8 @@ export function DeliveryAddressScreen() {
                         t("deliveryAddress.conditionNotAvailable")}
                     </p>
                   </div>
-                  <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 p-4">
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
+                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
                       {t("deliveryAddress.conditionsStatus")}
                     </p>
                     <p className="mt-2 text-sm font-medium">
@@ -402,7 +399,7 @@ export function DeliveryAddressScreen() {
                   </div>
                 </div>
               ) : courierDraftQuery.isError ? (
-                <div className="rounded-[calc(var(--radius)+0.1rem)] border border-destructive/20 bg-destructive/5 p-4 text-sm text-muted-foreground">
+                <div className="border-destructive/20 bg-destructive/5 text-muted-foreground rounded-[calc(var(--radius)+0.1rem)] border p-4 text-sm">
                   {courierDraftQuery.error instanceof Error
                     ? courierDraftQuery.error.message
                     : t("deliveryAddress.detectError")}
@@ -410,7 +407,7 @@ export function DeliveryAddressScreen() {
               ) : null}
 
               {!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? (
-                <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 bg-muted/35 p-4 text-sm text-muted-foreground">
+                <div className="border-border/70 bg-muted/35 text-muted-foreground rounded-[calc(var(--radius)+0.1rem)] border p-4 text-sm">
                   {t("deliveryAddress.mapKeyMissing")}
                 </div>
               ) : null}
@@ -470,17 +467,15 @@ export function DeliveryAddressScreen() {
             </CardHeader>
             <CardContent className="space-y-4">
               <YandexMapPicker
-                center={mapCenter}
+                center={pickupMapCenter}
                 locale={locale}
-                onCenterChange={setMapCenter}
+                onCenterChange={(nextCenter) => {
+                  setPickupMapHasManualCenter(true);
+                  setMapCenter(nextCenter);
+                }}
                 onPickupPointSelect={(pickupPoint) => {
-                  setSelectedPickupPointId(pickupPoint.id);
-
-                  const nextCenter = pickupPointToMapCenter(pickupPoint);
-
-                  if (nextCenter) {
-                    setMapCenter(nextCenter);
-                  }
+                  setPickupMapHasManualCenter(false);
+                  setSelectedPickupPointIdOverride(pickupPoint.id);
                 }}
                 pickupPoints={pickupPointsQuery.data?.pickupPoints ?? []}
                 selectedPickupPointId={selectedPickupPointId}
@@ -492,8 +487,8 @@ export function DeliveryAddressScreen() {
                   <Skeleton className="h-24 rounded-[calc(var(--radius)+0.1rem)]" />
                 </div>
               ) : pickupPointsQuery.isError ? (
-                <div className="flex flex-col gap-3 rounded-[calc(var(--radius)+0.15rem)] border border-border/70 bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm text-muted-foreground">
+                <div className="border-border/70 bg-muted/40 flex flex-col gap-3 rounded-[calc(var(--radius)+0.15rem)] border p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-muted-foreground text-sm">
                     {pickupPointsQuery.error instanceof Error
                       ? pickupPointsQuery.error.message
                       : t("deliveryAddress.pickupPointsError")}
@@ -521,20 +516,20 @@ export function DeliveryAddressScreen() {
             <CardContent className="space-y-4">
               {pickupPointsQuery.data?.pickupPoints.length ? (
                 <>
-                  <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 bg-muted/35 p-4">
+                  <div className="border-border/70 bg-muted/35 rounded-[calc(var(--radius)+0.1rem)] border p-4">
                     <div className="flex items-start gap-3">
-                      <div className="bg-background text-primary rounded-full border border-border/70 p-2">
+                      <div className="bg-background text-primary border-border/70 rounded-full border p-2">
                         <MapPin className="h-4 w-4" />
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium">
                           {t("deliveryAddress.selectedPickupTitle")}
                         </p>
-                        <p className="text-sm text-foreground">
+                        <p className="text-foreground text-sm">
                           {selectedPickupPoint?.name ??
                             t("deliveryAddress.selectedPickupPending")}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {selectedPickupAddressLabel ??
                             t("deliveryAddress.conditionNotAvailable")}
                         </p>
@@ -543,8 +538,8 @@ export function DeliveryAddressScreen() {
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                    <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 p-4">
-                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
+                      <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
                         {t("deliveryAddress.conditionsStatus")}
                       </p>
                       <p className="mt-2 text-sm font-medium">
@@ -553,8 +548,8 @@ export function DeliveryAddressScreen() {
                           : t("deliveryAddress.unavailable")}
                       </p>
                     </div>
-                    <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 p-4">
-                      <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
+                      <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
                         {t("deliveryAddress.pickupPointCode")}
                       </p>
                       <p className="mt-2 text-sm font-medium">
@@ -565,13 +560,13 @@ export function DeliveryAddressScreen() {
                   </div>
                 </>
               ) : pickupPointsQuery.isLoading ? null : (
-                <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 bg-muted/35 p-4 text-sm text-muted-foreground">
+                <div className="border-border/70 bg-muted/35 text-muted-foreground rounded-[calc(var(--radius)+0.1rem)] border p-4 text-sm">
                   {t("deliveryAddress.pickupPointsEmpty")}
                 </div>
               )}
 
               {!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? (
-                <div className="rounded-[calc(var(--radius)+0.1rem)] border border-border/70 bg-muted/35 p-4 text-sm text-muted-foreground">
+                <div className="border-border/70 bg-muted/35 text-muted-foreground rounded-[calc(var(--radius)+0.1rem)] border p-4 text-sm">
                   {t("deliveryAddress.mapKeyMissing")}
                 </div>
               ) : null}

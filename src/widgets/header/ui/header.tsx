@@ -15,6 +15,7 @@ import type {
   StorefrontCartDelivery,
   StorefrontCartDeliveryMethod,
 } from "@/entities/cart";
+import { resolveDeliveryQuoteEta } from "@/entities/cart";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
 import { useTenantTheme } from "@/features/tenant-theme";
 import { formatCurrency } from "@/shared/lib/currency";
@@ -68,6 +69,31 @@ function formatDeliveryAddress(
   return addressLine || delivery.quote?.zoneName || null;
 }
 
+function formatDeliveryEtaLabel(
+  eta: ReturnType<typeof resolveDeliveryQuoteEta>,
+  t: ReturnType<typeof useTranslation>["t"],
+) {
+  if (!eta) {
+    return null;
+  }
+
+  if (eta.kind === "minutes") {
+    return t("header.etaMinutes", {
+      minutes: eta.value,
+    });
+  }
+
+  if (eta.kind === "days") {
+    return eta.value === 0
+      ? t("header.etaToday")
+      : t("header.etaDays", {
+          days: eta.value,
+        });
+  }
+
+  return eta.value;
+}
+
 export function Header() {
   const { href, locale, tenantSlug } = useStorefrontRoute();
   const openCartSidebar = useUiStore((state) => state.openCartSidebar);
@@ -87,18 +113,12 @@ export function Header() {
       address: deliveryAddress ?? t("header.addressPending"),
     },
   );
-
-  const etaLabel =
+  const etaLabel = formatDeliveryEtaLabel(
     storefrontCart?.delivery?.quote && !storefrontCart.delivery.quoteExpired
-      ? (storefrontCart.delivery.quote.message ??
-        (typeof storefrontCart.delivery.quote.estimatedDays === "number"
-          ? storefrontCart.delivery.quote.estimatedDays === 0
-            ? t("header.etaToday")
-            : t("header.etaDays", {
-                days: storefrontCart.delivery.quote.estimatedDays,
-              })
-          : null))
-      : null;
+      ? resolveDeliveryQuoteEta(storefrontCart.delivery.quote)
+      : null,
+    t,
+  );
 
   const cartTotalLabel =
     cartTotal > 0
@@ -112,7 +132,10 @@ export function Header() {
     <header className="border-border/60 bg-background/95 md:bg-background/85 border-b md:sticky md:top-0 md:z-40 md:backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3">
-          <Link className="flex min-w-0 flex-1 items-center gap-3" href={href()}>
+          <Link
+            className="flex min-w-0 flex-1 items-center gap-3"
+            href={href()}
+          >
             <div className="bg-primary text-primary-foreground flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-bold">
               {tenantConfig.logoText.slice(0, 2)}
             </div>
@@ -124,7 +147,11 @@ export function Header() {
           </Link>
 
           <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
-            <Button className="rounded-full px-3 sm:px-5" type="button" variant="ghost">
+            <Button
+              className="rounded-full px-3 sm:px-5"
+              type="button"
+              variant="ghost"
+            >
               <UserRound className="h-4 w-4" />
               {t("header.login")}
             </Button>

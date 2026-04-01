@@ -41,6 +41,7 @@ function createMockCartDto(tenantSlug: string): CartResponseDto {
         deliveryMethod: "COURIER",
         available: true,
         estimatedDays: 0,
+        estimatesMinutes: 25,
         message: "от 25 минут",
         pickupPointAddress: null,
         pickupPointName: null,
@@ -67,6 +68,7 @@ function createMockCartDto(tenantSlug: string): CartResponseDto {
         deliveryMethod: "COURIER",
         available: true,
         estimatedDays: 0,
+        estimatesMinutes: 35,
         message: "от 35 минут",
         pickupPointAddress: null,
         pickupPointName: null,
@@ -93,6 +95,7 @@ function createMockCartDto(tenantSlug: string): CartResponseDto {
         deliveryMethod: "COURIER",
         available: true,
         estimatedDays: 0,
+        estimatesMinutes: 25,
         message: "от 25 минут",
         pickupPointAddress: null,
         pickupPointName: null,
@@ -125,10 +128,7 @@ function syncMockCartTotal(cart: CartResponseDto) {
 }
 
 function resolveMockPickupPointMeta(pickupPointId: string | null | undefined) {
-  const pickupPointById: Record<
-    string,
-    { address: string; name: string }
-  > = {
+  const pickupPointById: Record<string, { address: string; name: string }> = {
     "7ef13ed2-4c3f-4f8d-94c7-e28ea7d5e5d2": {
       address: "Екатеринбург, ул. 8 Марта, 7",
       name: "Storeva Центр",
@@ -154,10 +154,12 @@ function resolveMockPickupPointMeta(pickupPointId: string | null | undefined) {
     };
   }
 
-  return pickupPointById[pickupPointId] ?? {
-    address: null,
-    name: null,
-  };
+  return (
+    pickupPointById[pickupPointId] ?? {
+      address: null,
+      name: null,
+    }
+  );
 }
 
 function getMockCart(tenantSlug: string) {
@@ -362,6 +364,7 @@ export async function updateStorefrontCartDelivery(
                 currency: "RUB",
                 deliveryMethod: "COURIER",
                 estimatedDays: 0,
+                estimatesMinutes: 25,
                 message: "от 25 минут",
                 pickupPointAddress: null,
                 pickupPointName: null,
