@@ -1,0 +1,5 @@
+apis:
+  public@v1:
+    root: /Users/firkatdavletov/IdeaProjects/delivery/build/openapi/public-openapi.yaml
+    x-openapi-ts:
+      output: ./src/shared/api/generated/schema.d.ts

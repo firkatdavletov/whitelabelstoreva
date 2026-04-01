@@ -1,3 +1,9 @@
+import type { RestaurantDto } from "@/entities/restaurant";
+
+import type {
+  CatalogCategoryDto,
+  CatalogProductDto,
+} from "@/features/menu-catalog/api/catalog.types";
 import type { MenuCatalogDto } from "@/features/menu-catalog/api/menu-catalog.types";
 
 const menuCatalogMocks: Record<string, MenuCatalogDto> = {
@@ -240,15 +246,53 @@ const menuCatalogMocks: Record<string, MenuCatalogDto> = {
       city: "Екатеринбург",
       currency: "RUB",
       delivery_eta_minutes: 25,
-      id: "rest-urban-bites",
+      id: "rest-storeva-street",
       kitchen_note: "Быстрая и удобная доставка.",
       min_order_amount_minor: 1500,
       name: "Storeva",
-      tenant_slug: "urban-bites",
+      tenant_slug: "storeva-street",
     },
   },
 };
 
 export function createMockMenuCatalogDto(tenantSlug: string): MenuCatalogDto {
   return menuCatalogMocks[tenantSlug] ?? menuCatalogMocks["urban-bites"];
+}
+
+export function createMockCatalogCategoriesDto(
+  tenantSlug: string,
+): CatalogCategoryDto[] {
+  return createMockMenuCatalogDto(tenantSlug).categories.map((category) => ({
+    id: category.id,
+    imageUrls: [],
+    isActive: true,
+    name: category.name,
+    slug: category.slug,
+  }));
+}
+
+export function createMockCatalogProductsDto(
+  tenantSlug: string,
+): CatalogProductDto[] {
+  return createMockMenuCatalogDto(tenantSlug).products.map((product) => ({
+    brand: product.tags[0] ?? null,
+    categoryId: product.category_id,
+    countStep: 1,
+    description: product.description,
+    id: product.id,
+    imageUrls: [],
+    isActive: product.is_available,
+    oldPriceMinor: null,
+    priceMinor: product.price_minor,
+    sku: null,
+    slug: product.slug,
+    title: product.name,
+    unit: "PIECE",
+  }));
+}
+
+export function createMockCatalogRestaurantDto(
+  tenantSlug: string,
+): RestaurantDto {
+  return createMockMenuCatalogDto(tenantSlug).restaurant;
 }

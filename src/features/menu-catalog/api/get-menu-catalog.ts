@@ -1,42 +1,70 @@
-import { mapCategoryDtoToCategory } from "@/entities/category";
-import { mapProductDtoToProduct } from "@/entities/product";
+import type { Category } from "@/entities/category";
+import { getTenantConfig } from "@/entities/tenant";
+import type { Product } from "@/entities/product";
 import { mapRestaurantDtoToRestaurant } from "@/entities/restaurant";
+import type { Restaurant } from "@/entities/restaurant/model/restaurant.types";
 import { apiRequest } from "@/shared/api";
-import { buildServerRequestContext } from "@/shared/api/server-auth";
 import { env } from "@/shared/config/env";
 
-import { createMockMenuCatalogDto } from "@/features/menu-catalog/api/menu-catalog.mock";
-import type { MenuCatalogDto } from "@/features/menu-catalog/api/menu-catalog.types";
+import type {
+  CatalogCategoryDto,
+  CatalogProductDto,
+} from "@/features/menu-catalog/api/catalog.types";
+import {
+  createMockCatalogCategoriesDto,
+  createMockCatalogProductsDto,
+  createMockCatalogRestaurantDto,
+} from "@/features/menu-catalog/api/menu-catalog.mock";
+import {
+  mapCatalogCategoryDtoToCategory,
+  mapCatalogProductDtoToProduct,
+} from "@/features/menu-catalog/lib/catalog.mapper";
 
 export type MenuCatalog = {
-  categories: ReturnType<typeof mapCategoryDtoToCategory>[];
-  products: ReturnType<typeof mapProductDtoToProduct>[];
-  restaurant: ReturnType<typeof mapRestaurantDtoToRestaurant>;
+  categories: Category[];
+  products: Product[];
+  restaurant: Restaurant;
 };
 
-function mapMenuCatalogDto(dto: MenuCatalogDto): MenuCatalog {
-  return {
-    categories: dto.categories.map(mapCategoryDtoToCategory),
-    products: dto.products.map(mapProductDtoToProduct),
-    restaurant: mapRestaurantDtoToRestaurant(dto.restaurant),
-  };
-}
-
-// The feature owns this use case because it combines multiple entity DTOs into one storefront-ready view model.
-export async function getMenuCatalog(tenantSlug: string) {
+async function getCatalogCategories(tenantSlug: string) {
   if (env.apiMocksEnabled) {
-    return mapMenuCatalogDto(createMockMenuCatalogDto(tenantSlug));
+    return createMockCatalogCategoriesDto(tenantSlug);
   }
 
-  const authContext = await buildServerRequestContext();
-
-  const dto = await apiRequest<MenuCatalogDto>(`/storefront/tenants/${tenantSlug}/menu`, {
+  return apiRequest<CatalogCategoryDto[]>("/v1/catalog/categories", {
     cache: "no-store",
-    headers: {
-      "x-tenant-id": tenantSlug,
+    query: {
+      activeOnly: true,
     },
-    ...authContext,
   });
+}
 
-  return mapMenuCatalogDto(dto);
+async function getCatalogProducts(tenantSlug: string) {
+  if (env.apiMocksEnabled) {
+    return createMockCatalogProductsDto(tenantSlug);
+  }
+
+  return apiRequest<CatalogProductDto[]>("/v1/catalog/products", {
+    cache: "no-store",
+  });
+}
+
+// Catalog flow now composes the storefront from /api/v1/catalog collections.
+// Restaurant meta is still mock-backed until a dedicated storefront/restaurant endpoint exists.
+export async function getMenuCatalog(tenantSlug: string): Promise<MenuCatalog> {
+  const tenantConfig = getTenantConfig(tenantSlug);
+  const [categoryDtos, productDtos] = await Promise.all([
+    getCatalogCategories(tenantSlug),
+    getCatalogProducts(tenantSlug),
+  ]);
+
+  return {
+    categories: categoryDtos.map(mapCatalogCategoryDtoToCategory),
+    products: productDtos.map((product) =>
+      mapCatalogProductDtoToProduct(product, tenantConfig?.currency ?? "RUB"),
+    ),
+    restaurant: mapRestaurantDtoToRestaurant(
+      createMockCatalogRestaurantDto(tenantSlug),
+    ),
+  };
 }
