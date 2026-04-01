@@ -2,6 +2,7 @@ import type {
   CartDeliveryDraftResponseDto,
   PutCartDeliveryRequestDto,
 } from "@/entities/cart/api/cart.dto";
+import type { PickupPointDto } from "@/features/delivery-address/api/delivery-address.types";
 
 export type DeliveryMapCenter = {
   latitude: number;
@@ -81,9 +82,42 @@ export function formatDeliveryDraftAddress(
   return addressLine || draft.quote?.zoneName || null;
 }
 
+export function pickupPointToMapCenter(
+  pickupPoint: PickupPointDto,
+): DeliveryMapCenter | null {
+  if (
+    pickupPoint.address.latitude == null ||
+    pickupPoint.address.longitude == null
+  ) {
+    return null;
+  }
+
+  return {
+    latitude: pickupPoint.address.latitude,
+    longitude: pickupPoint.address.longitude,
+  };
+}
+
+export function formatPickupPointAddress(
+  pickupPoint: PickupPointDto | null | undefined,
+) {
+  if (!pickupPoint) {
+    return null;
+  }
+
+  const parts = [
+    pickupPoint.address.city ?? null,
+    pickupPoint.address.street ?? null,
+    pickupPoint.address.house ?? null,
+  ].filter(Boolean);
+
+  return parts.join(", ") || null;
+}
+
 export function buildPutCartDeliveryRequest(
   deliveryMethod: PutCartDeliveryRequestDto["deliveryMethod"],
   draft: CartDeliveryDraftResponseDto | null | undefined,
+  pickupPoint?: PickupPointDto | null,
 ): PutCartDeliveryRequestDto | null {
   if (deliveryMethod === "COURIER") {
     if (!draft?.address) {
@@ -113,13 +147,22 @@ export function buildPutCartDeliveryRequest(
   }
 
   if (!draft) {
-    return null;
+    if (!pickupPoint) {
+      return null;
+    }
+
+    return {
+      address: null,
+      deliveryMethod,
+      pickupPointExternalId: null,
+      pickupPointId: pickupPoint.id,
+    };
   }
 
   return {
     address: null,
     deliveryMethod,
     pickupPointExternalId: draft.pickupPointExternalId ?? null,
-    pickupPointId: draft.pickupPointId ?? null,
+    pickupPointId: draft.pickupPointId ?? pickupPoint?.id ?? null,
   };
 }

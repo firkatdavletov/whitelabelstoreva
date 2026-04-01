@@ -40,6 +40,16 @@ export const ruMessages = {
     mapSubtitle:
       "Маркер фиксирован по центру. Двигайте карту, чтобы выбрать точный адрес доставки.",
     mapTitle: "Карта доставки",
+    pickupMapHint: "Нажмите на точку самовывоза, чтобы выбрать её.",
+    pickupMapSubtitle:
+      "Показываем активные точки самовывоза на карте. По умолчанию выбрана первая доступная точка.",
+    pickupMapTitle: "Карта самовывоза",
+    pickupPointCode: "Код точки",
+    pickupPointsEmpty: "Список точек самовывоза пока пуст.",
+    pickupPointsError: "Не удалось загрузить точки самовывоза.",
+    pickupSummarySubtitle:
+      "После выбора точки обновим корзину и сохраним способ получения заказа.",
+    pickupSummaryTitle: "Точка самовывоза",
     methodSubtitle:
       "Выберите способ получения заказа. Для доставки адрес подтверждается по карте.",
     methodTitle: "Способ получения",
@@ -53,6 +63,8 @@ export const ruMessages = {
     saveSuccessTitle: "Адрес сохранён",
     selectedAddressPending: "Подвиньте карту, чтобы получить адрес и условия.",
     selectedAddressTitle: "Выбранный адрес",
+    selectedPickupPending: "Выберите точку самовывоза на карте.",
+    selectedPickupTitle: "Выбранная точка",
     subtitle:
       "Выберите способ доставки и подтвердите точку на карте. После сохранения адрес обновит текущую корзину.",
     summarySubtitle:

@@ -39,6 +39,16 @@ export const enMessages = {
     mapSubtitle:
       "The marker stays fixed in the center. Move the map to choose the delivery address precisely.",
     mapTitle: "Delivery map",
+    pickupMapHint: "Click a pickup point on the map to select it.",
+    pickupMapSubtitle:
+      "Active pickup locations are shown on the map. The first available point is selected by default.",
+    pickupMapTitle: "Pickup map",
+    pickupPointCode: "Point code",
+    pickupPointsEmpty: "No pickup points are available yet.",
+    pickupPointsError: "Failed to load pickup points.",
+    pickupSummarySubtitle:
+      "After choosing a point, the cart will be updated with the selected fulfillment method.",
+    pickupSummaryTitle: "Pickup point",
     methodSubtitle:
       "Choose how the order should be fulfilled. Courier delivery is confirmed via the map.",
     methodTitle: "Fulfillment method",
@@ -53,6 +63,8 @@ export const enMessages = {
     selectedAddressPending:
       "Move the map to fetch the address and delivery conditions.",
     selectedAddressTitle: "Selected address",
+    selectedPickupPending: "Choose a pickup point on the map.",
+    selectedPickupTitle: "Selected pickup point",
     subtitle:
       "Choose the fulfillment method and confirm the point on the map. Saving updates the active cart delivery settings.",
     summarySubtitle:

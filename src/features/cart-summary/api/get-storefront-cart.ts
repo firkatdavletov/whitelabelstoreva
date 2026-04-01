@@ -124,6 +124,42 @@ function syncMockCartTotal(cart: CartResponseDto) {
   };
 }
 
+function resolveMockPickupPointMeta(pickupPointId: string | null | undefined) {
+  const pickupPointById: Record<
+    string,
+    { address: string; name: string }
+  > = {
+    "7ef13ed2-4c3f-4f8d-94c7-e28ea7d5e5d2": {
+      address: "Екатеринбург, ул. 8 Марта, 7",
+      name: "Storeva Центр",
+    },
+    "8c7dd8ff-4aeb-4fc2-bf8f-34f3e1c6dcb5": {
+      address: "Екатеринбург, ул. Ленина, 14",
+      name: "Storeva Парк",
+    },
+    "pickup-center": {
+      address: "Екатеринбург, ул. 8 Марта, 7",
+      name: "Storeva Центр",
+    },
+    "pickup-park": {
+      address: "Екатеринбург, ул. Ленина, 14",
+      name: "Storeva Парк",
+    },
+  };
+
+  if (!pickupPointId) {
+    return {
+      address: null,
+      name: null,
+    };
+  }
+
+  return pickupPointById[pickupPointId] ?? {
+    address: null,
+    name: null,
+  };
+}
+
 function getMockCart(tenantSlug: string) {
   const existingCart = mockCartState.get(tenantSlug);
 
@@ -308,6 +344,7 @@ export async function updateStorefrontCartDelivery(
 ) {
   if (env.apiMocksEnabled) {
     const cart = getMockCart(tenantSlug);
+    const pickupPointMeta = resolveMockPickupPointMeta(input.pickupPointId);
 
     return setMockCart(tenantSlug, {
       ...cart,
@@ -337,10 +374,10 @@ export async function updateStorefrontCartDelivery(
           : {
               address: null,
               deliveryMethod: input.deliveryMethod,
-              pickupPointAddress: null,
+              pickupPointAddress: pickupPointMeta.address,
               pickupPointExternalId: input.pickupPointExternalId ?? null,
               pickupPointId: input.pickupPointId ?? null,
-              pickupPointName: null,
+              pickupPointName: pickupPointMeta.name,
               quote: null,
               quoteExpired: false,
               updatedAt: new Date().toISOString(),

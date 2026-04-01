@@ -20,7 +20,15 @@ declare global {
   interface YandexMapInstance {
     addChild(child: unknown): void;
     destroy?: () => void;
+    removeChild?(child: unknown): void;
     update(update: YandexMapUpdate): void;
+  }
+
+  interface YandexMapMarkerProps {
+    coordinates: [number, number];
+    id?: string;
+    source?: string;
+    zIndex?: number;
   }
 
   interface YandexMapsNamespace {
@@ -37,6 +45,10 @@ declare global {
     YMapListener: new (options: {
       onActionEnd?: (event: YandexMapListenerEvent) => void;
     }) => unknown;
+    YMapMarker: new (
+      props: YandexMapMarkerProps,
+      element?: HTMLElement,
+    ) => unknown;
   }
 
   interface Window {

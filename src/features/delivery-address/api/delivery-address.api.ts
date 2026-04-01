@@ -6,6 +6,8 @@ import type {
   DeliveryMethodsResponseDto,
   DetectCourierCartDeliveryDraftRequestDto,
   DetectCourierCartDeliveryDraftResponseDto,
+  PickupPointDto,
+  PickupPointsResponseDto,
 } from "@/features/delivery-address/api/delivery-address.types";
 
 function createMockDeliveryMethodsResponse(): DeliveryMethodsResponseDto {
@@ -25,6 +27,45 @@ function createMockDeliveryMethodsResponse(): DeliveryMethodsResponseDto {
       },
     ],
     pickupPoints: [],
+  };
+}
+
+function createMockPickupPointsResponse(tenantSlug: string): PickupPointsResponseDto {
+  const commonCity = resolveMockCity(tenantSlug);
+
+  return {
+    pickupPoints: [
+      {
+        address: {
+          city: commonCity,
+          country: "Россия",
+          house: "7",
+          latitude: 56.851972,
+          longitude: 60.612427,
+          region: "Свердловская область",
+          street: "ул. 8 Марта",
+        },
+        code: "pickup-center",
+        id: "pickup-center",
+        isActive: true,
+        name: "Storeva Центр",
+      },
+      {
+        address: {
+          city: commonCity,
+          country: "Россия",
+          house: "14",
+          latitude: 56.858129,
+          longitude: 60.632941,
+          region: "Свердловская область",
+          street: "ул. Ленина",
+        },
+        code: "pickup-park",
+        id: "pickup-park",
+        isActive: true,
+        name: "Storeva Парк",
+      },
+    ],
   };
 }
 
@@ -94,6 +135,16 @@ export async function getDeliveryMethods() {
   });
 }
 
+export async function getDeliveryPickupPoints(tenantSlug: string) {
+  if (env.apiMocksEnabled) {
+    return createMockPickupPointsResponse(tenantSlug);
+  }
+
+  return apiRequest<PickupPointsResponseDto>("/v1/delivery/pickup-points", {
+    cache: "no-store",
+  });
+}
+
 export async function detectCourierCartDeliveryDraft(
   input: DetectCourierCartDeliveryDraftRequestDto,
   tenantSlug: string,
@@ -110,4 +161,15 @@ export async function detectCourierCartDeliveryDraft(
     cache: "no-store",
     method: "POST",
   });
+}
+
+export function findPickupPointById(
+  pickupPoints: PickupPointDto[] | undefined,
+  pickupPointId: string | null | undefined,
+) {
+  if (!pickupPoints?.length || !pickupPointId) {
+    return null;
+  }
+
+  return pickupPoints.find((point) => point.id === pickupPointId) ?? null;
 }

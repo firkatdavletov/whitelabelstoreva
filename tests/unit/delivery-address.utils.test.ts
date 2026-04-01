@@ -90,4 +90,29 @@ describe("delivery address utils", () => {
       pickupPointId: null,
     });
   });
+
+  it("builds cart delivery payload for pickup point", () => {
+    const payload = buildPutCartDeliveryRequest("PICKUP", null, {
+      address: {
+        city: "Екатеринбург",
+        country: "Россия",
+        house: "7",
+        latitude: 56.851972,
+        longitude: 60.612427,
+        region: "Свердловская область",
+        street: "ул. 8 Марта",
+      },
+      code: "pickup-center",
+      id: "7ef13ed2-4c3f-4f8d-94c7-e28ea7d5e5d2",
+      isActive: true,
+      name: "Storeva Центр",
+    });
+
+    expect(payload).toEqual({
+      address: null,
+      deliveryMethod: "PICKUP",
+      pickupPointExternalId: null,
+      pickupPointId: "7ef13ed2-4c3f-4f8d-94c7-e28ea7d5e5d2",
+    });
+  });
 });

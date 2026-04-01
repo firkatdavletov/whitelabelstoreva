@@ -12,6 +12,7 @@ import {
   fromYandexMapCenter,
   toYandexMapCenter,
 } from "@/features/delivery-address/lib/delivery-address.utils";
+import type { PickupPointDto } from "@/features/delivery-address/api/delivery-address.types";
 
 const MAP_ZOOM = 16;
 const SCRIPT_ID = "yandex-maps-v3-script";
@@ -97,18 +98,26 @@ type YandexMapPickerProps = {
   center: DeliveryMapCenter;
   locale: Locale;
   onCenterChange: (center: DeliveryMapCenter) => void;
+  pickupPoints?: PickupPointDto[];
+  selectedPickupPointId?: string | null;
+  onPickupPointSelect?: (pickupPoint: PickupPointDto) => void;
 };
 
 export function YandexMapPicker({
   center,
   locale,
   onCenterChange,
+  pickupPoints = [],
+  selectedPickupPointId = null,
+  onPickupPointSelect,
 }: YandexMapPickerProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<YandexMapInstance | null>(null);
   const latestCenterRef = useRef(center);
+  const markersRef = useRef<unknown[]>([]);
   const onCenterChangeRef = useRef(onCenterChange);
+  const onPickupPointSelectRef = useRef(onPickupPointSelect);
   const [status, setStatus] = useState<MapStatus>(
     env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? "loading" : "missing-key",
   );
@@ -116,6 +125,10 @@ export function YandexMapPicker({
   useEffect(() => {
     onCenterChangeRef.current = onCenterChange;
   }, [onCenterChange]);
+
+  useEffect(() => {
+    onPickupPointSelectRef.current = onPickupPointSelect;
+  }, [onPickupPointSelect]);
 
   useEffect(() => {
     if (!mapRef.current || status !== "ready") {
@@ -135,6 +148,65 @@ export function YandexMapPicker({
       },
     });
   }, [center, status]);
+
+  useEffect(() => {
+    if (!mapRef.current || status !== "ready" || !window.ymaps3) {
+      return;
+    }
+
+    const ymaps3 = window.ymaps3;
+
+    markersRef.current.forEach((marker) => {
+      mapRef.current?.removeChild?.(marker);
+    });
+    markersRef.current = [];
+
+    pickupPoints.forEach((pickupPoint) => {
+      if (
+        pickupPoint.address.latitude == null ||
+        pickupPoint.address.longitude == null
+      ) {
+        return;
+      }
+
+      const markerElement = document.createElement("button");
+      const isActive = pickupPoint.id === selectedPickupPointId;
+
+      markerElement.className =
+        "group flex h-11 w-11 items-center justify-center rounded-full border shadow-lg transition-all " +
+        (isActive
+          ? "border-[color:var(--primary)] bg-[color:var(--primary)] text-[color:var(--primary-foreground)]"
+          : "border-[color:var(--border)] bg-[color:var(--background)] text-[color:var(--primary)]");
+      markerElement.type = "button";
+      markerElement.setAttribute("aria-label", pickupPoint.name);
+      markerElement.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M16 4h2a2 2 0 0 1 2 2v11a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2h2"/><path d="M9 2h6v4H9z"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>';
+      markerElement.addEventListener("click", () => {
+        onPickupPointSelectRef.current?.(pickupPoint);
+      });
+
+      try {
+        const marker = new ymaps3.YMapMarker(
+          {
+            coordinates: [
+              pickupPoint.address.longitude,
+              pickupPoint.address.latitude,
+            ],
+            id: pickupPoint.id,
+            zIndex: isActive ? 2000 : 1000,
+          },
+          markerElement,
+        );
+
+        mapRef.current?.addChild(marker);
+        markersRef.current.push(marker);
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") {
+          console.error("Failed to attach pickup marker", error);
+        }
+      }
+    });
+  }, [pickupPoints, selectedPickupPointId, status]);
 
   useEffect(() => {
     if (!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY) {
@@ -201,6 +273,7 @@ export function YandexMapPicker({
 
     return () => {
       cancelled = true;
+      markersRef.current = [];
       mapRef.current?.destroy?.();
       mapRef.current = null;
     };
@@ -235,11 +308,13 @@ export function YandexMapPicker({
 
       <div className="pointer-events-none absolute inset-x-0 top-4 flex justify-center px-4">
         <div className="rounded-full border border-border/70 bg-background/90 px-4 py-2 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
-          {t("deliveryAddress.dragMapHint")}
+          {pickupPoints.length
+            ? t("deliveryAddress.pickupMapHint")
+            : t("deliveryAddress.dragMapHint")}
         </div>
       </div>
 
-      {status === "ready" ? (
+      {status === "ready" && pickupPoints.length === 0 ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="relative flex h-14 w-14 items-center justify-center">
             <div className="bg-primary/12 absolute bottom-1 h-3 w-3 rounded-full blur-[2px]" />
