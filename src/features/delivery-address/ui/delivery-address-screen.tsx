@@ -360,7 +360,7 @@ export function DeliveryAddressScreen() {
               </div>
 
               {selectedCourierDraft?.quote ? (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
                     <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
                       {t("deliveryAddress.conditionsEta")}
@@ -376,25 +376,6 @@ export function DeliveryAddressScreen() {
                     </p>
                     <p className="mt-2 text-sm font-medium">
                       {quotePriceLabel ?? t("deliveryAddress.free")}
-                    </p>
-                  </div>
-                  <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
-                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
-                      {t("deliveryAddress.conditionsZone")}
-                    </p>
-                    <p className="mt-2 text-sm font-medium">
-                      {selectedCourierDraft.quote.zoneName ??
-                        t("deliveryAddress.conditionNotAvailable")}
-                    </p>
-                  </div>
-                  <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
-                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
-                      {t("deliveryAddress.conditionsStatus")}
-                    </p>
-                    <p className="mt-2 text-sm font-medium">
-                      {selectedCourierDraft.quote.available
-                        ? t("deliveryAddress.available")
-                        : t("deliveryAddress.unavailable")}
                     </p>
                   </div>
                 </div>
@@ -534,28 +515,6 @@ export function DeliveryAddressScreen() {
                             t("deliveryAddress.conditionNotAvailable")}
                         </p>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                    <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
-                      <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
-                        {t("deliveryAddress.conditionsStatus")}
-                      </p>
-                      <p className="mt-2 text-sm font-medium">
-                        {selectedPickupPoint?.isActive
-                          ? t("deliveryAddress.available")
-                          : t("deliveryAddress.unavailable")}
-                      </p>
-                    </div>
-                    <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
-                      <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
-                        {t("deliveryAddress.pickupPointCode")}
-                      </p>
-                      <p className="mt-2 text-sm font-medium">
-                        {selectedPickupPoint?.code ??
-                          t("deliveryAddress.conditionNotAvailable")}
-                      </p>
                     </div>
                   </div>
                 </>

@@ -44,6 +44,9 @@ export const enMessages = {
     etaToday: "today",
     free: "Free",
     dragMapHint: "Move the map so the center marker sits on the exact address.",
+    locateMe: "My location",
+    locationError:
+      "We could not determine the current location. Check browser geolocation access.",
     mapKeyMissing:
       "Add NEXT_PUBLIC_YANDEX_MAPS_API_KEY to render the Yandex map.",
     mapLoadError: "The map could not be loaded. Try refreshing the page.",
@@ -84,6 +87,8 @@ export const enMessages = {
     summaryTitle: "Delivery conditions",
     title: "Address and fulfillment",
     unavailable: "Unavailable",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
   },
   footer: {
     caption:

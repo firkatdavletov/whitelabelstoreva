@@ -8,6 +8,7 @@ declare global {
   type YandexMapListenerEvent = {
     location?: {
       center?: [number, number];
+      zoom?: number;
     };
   };
 

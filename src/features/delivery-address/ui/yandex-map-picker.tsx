@@ -1,8 +1,9 @@
 "use client";
 
-import { LoaderCircle, MapPin } from "lucide-react";
+import { LoaderCircle, LocateFixed, MapPin, Minus, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { env } from "@/shared/config/env";
 import type { Locale } from "@/shared/types/common";
@@ -14,7 +15,9 @@ import {
 } from "@/features/delivery-address/lib/delivery-address.utils";
 import type { PickupPointDto } from "@/features/delivery-address/api/delivery-address.types";
 
-const MAP_ZOOM = 16;
+const DEFAULT_MAP_ZOOM = 16;
+const MIN_MAP_ZOOM = 10;
+const MAX_MAP_ZOOM = 19;
 const SCRIPT_ID = "yandex-maps-v3-script";
 
 type MapStatus = "error" | "loading" | "missing-key" | "ready";
@@ -28,6 +31,20 @@ function hasSameCenter(a: DeliveryMapCenter, b: DeliveryMapCenter) {
     Math.abs(a.latitude - b.latitude) < 0.000001 &&
     Math.abs(a.longitude - b.longitude) < 0.000001
   );
+}
+
+function clampMapZoom(zoom: number) {
+  return Math.min(MAX_MAP_ZOOM, Math.max(MIN_MAP_ZOOM, Math.round(zoom)));
+}
+
+function normalizeMapCenter(
+  latitude: number,
+  longitude: number,
+): DeliveryMapCenter {
+  return {
+    latitude: Number(latitude.toFixed(6)),
+    longitude: Number(longitude.toFixed(6)),
+  };
 }
 
 async function loadYandexMapsApi(apiKey: string, locale: Locale) {
@@ -115,12 +132,15 @@ export function YandexMapPicker({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<YandexMapInstance | null>(null);
   const latestCenterRef = useRef(center);
+  const latestZoomRef = useRef(DEFAULT_MAP_ZOOM);
   const markersRef = useRef<unknown[]>([]);
   const onCenterChangeRef = useRef(onCenterChange);
   const onPickupPointSelectRef = useRef(onPickupPointSelect);
   const [status, setStatus] = useState<MapStatus>(
-    env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? "loading" : "missing-key",
+    () => (env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? "loading" : "missing-key"),
   );
+  const [zoom, setZoom] = useState(DEFAULT_MAP_ZOOM);
+  const [isLocating, setIsLocating] = useState(false);
 
   useEffect(() => {
     onCenterChangeRef.current = onCenterChange;
@@ -144,10 +164,26 @@ export function YandexMapPicker({
       location: {
         center: toYandexMapCenter(center),
         duration: 180,
-        zoom: MAP_ZOOM,
+        zoom: latestZoomRef.current,
       },
     });
   }, [center, status]);
+
+  useEffect(() => {
+    latestZoomRef.current = zoom;
+
+    if (!mapRef.current || status !== "ready") {
+      return;
+    }
+
+    mapRef.current.update({
+      location: {
+        center: toYandexMapCenter(latestCenterRef.current),
+        duration: 180,
+        zoom,
+      },
+    });
+  }, [status, zoom]);
 
   useEffect(() => {
     if (!mapRef.current || status !== "ready" || !window.ymaps3) {
@@ -210,7 +246,6 @@ export function YandexMapPicker({
 
   useEffect(() => {
     if (!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY) {
-      setStatus("missing-key");
       return;
     }
 
@@ -234,8 +269,8 @@ export function YandexMapPicker({
         const map = new ymaps3.YMap(containerRef.current, {
           behaviors: ["drag", "pinchZoom", "mouseZoom"],
           location: {
-            center: toYandexMapCenter(center),
-            zoom: MAP_ZOOM,
+            center: toYandexMapCenter(latestCenterRef.current),
+            zoom: latestZoomRef.current,
           },
         });
 
@@ -253,14 +288,24 @@ export function YandexMapPicker({
               }
 
               const nextCenter = fromYandexMapCenter(event.location.center);
+              const nextZoom =
+                typeof event.location.zoom === "number"
+                  ? clampMapZoom(event.location.zoom)
+                  : latestZoomRef.current;
+
               latestCenterRef.current = nextCenter;
+
+              if (nextZoom !== latestZoomRef.current) {
+                latestZoomRef.current = nextZoom;
+                setZoom(nextZoom);
+              }
+
               onCenterChangeRef.current(nextCenter);
             },
           }),
         );
 
         mapRef.current = map;
-        latestCenterRef.current = center;
         setStatus("ready");
       } catch {
         if (!cancelled) {
@@ -278,6 +323,56 @@ export function YandexMapPicker({
       mapRef.current = null;
     };
   }, [locale]);
+
+  const canZoomIn = zoom < MAX_MAP_ZOOM;
+  const canZoomOut = zoom > MIN_MAP_ZOOM;
+
+  const handleZoomChange = (delta: number) => {
+    setZoom((currentZoom) => clampMapZoom(currentZoom + delta));
+  };
+
+  const handleLocateMe = () => {
+    if (typeof window === "undefined" || !window.navigator.geolocation) {
+      toast.error(t("deliveryAddress.locationError"));
+      return;
+    }
+
+    setIsLocating(true);
+
+    window.navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextCenter = normalizeMapCenter(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+        const nextZoom = Math.max(latestZoomRef.current, DEFAULT_MAP_ZOOM);
+
+        latestCenterRef.current = nextCenter;
+        latestZoomRef.current = nextZoom;
+
+        mapRef.current?.update({
+          location: {
+            center: toYandexMapCenter(nextCenter),
+            duration: 240,
+            zoom: nextZoom,
+          },
+        });
+
+        onCenterChangeRef.current(nextCenter);
+        setZoom(nextZoom);
+        setIsLocating(false);
+      },
+      () => {
+        setIsLocating(false);
+        toast.error(t("deliveryAddress.locationError"));
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 30_000,
+        timeout: 10_000,
+      },
+    );
+  };
 
   return (
     <div className="relative overflow-hidden rounded-[calc(var(--radius)+0.2rem)] border border-border/70 bg-muted/30">
@@ -313,6 +408,49 @@ export function YandexMapPicker({
             : t("deliveryAddress.dragMapHint")}
         </div>
       </div>
+
+      {status === "ready" ? (
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+          <button
+            aria-label={t("deliveryAddress.locateMe")}
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-background/90 text-foreground shadow-lg backdrop-blur-sm transition hover:bg-background disabled:cursor-wait disabled:opacity-70"
+            disabled={isLocating}
+            onClick={handleLocateMe}
+            title={t("deliveryAddress.locateMe")}
+            type="button"
+          >
+            {isLocating ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              <LocateFixed className="h-4 w-4" />
+            )}
+          </button>
+
+          <div className="overflow-hidden rounded-2xl border border-border/70 bg-background/90 shadow-lg backdrop-blur-sm">
+            <button
+              aria-label={t("deliveryAddress.zoomIn")}
+              className="flex h-11 w-11 items-center justify-center text-foreground transition hover:bg-background disabled:opacity-40"
+              disabled={!canZoomIn}
+              onClick={() => handleZoomChange(1)}
+              title={t("deliveryAddress.zoomIn")}
+              type="button"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+            <div className="h-px w-full bg-border/70" />
+            <button
+              aria-label={t("deliveryAddress.zoomOut")}
+              className="flex h-11 w-11 items-center justify-center text-foreground transition hover:bg-background disabled:opacity-40"
+              disabled={!canZoomOut}
+              onClick={() => handleZoomChange(-1)}
+              title={t("deliveryAddress.zoomOut")}
+              type="button"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {status === "ready" && pickupPoints.length === 0 ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">

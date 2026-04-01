@@ -46,6 +46,9 @@ export const ruMessages = {
     free: "Бесплатно",
     dragMapHint:
       "Переместите карту так, чтобы маркер оказался на нужном адресе.",
+    locateMe: "Моё местоположение",
+    locationError:
+      "Не удалось определить текущее местоположение. Проверьте доступ к геолокации.",
     mapKeyMissing:
       "Для отображения карты добавьте NEXT_PUBLIC_YANDEX_MAPS_API_KEY в окружение.",
     mapLoadError: "Карта не загрузилась. Попробуйте обновить страницу.",
@@ -85,6 +88,8 @@ export const ruMessages = {
     summaryTitle: "Условия доставки",
     title: "Адрес и способ получения",
     unavailable: "Недоступно",
+    zoomIn: "Увеличить карту",
+    zoomOut: "Уменьшить карту",
   },
   footer: {
     caption:
