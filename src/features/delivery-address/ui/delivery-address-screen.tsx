@@ -266,10 +266,10 @@ export function DeliveryAddressScreen() {
   };
 
   return (
-    <section className="relative min-h-[calc(100dvh-6.5rem)] overflow-hidden bg-[radial-gradient(circle_at_top,_color-mix(in_srgb,var(--primary)_12%,transparent),transparent_48%),linear-gradient(180deg,color-mix(in_srgb,var(--background)_94%,transparent),color-mix(in_srgb,var(--background)_78%,transparent))]">
+    <section className="relative min-h-dvh overflow-hidden bg-[radial-gradient(circle_at_top,_color-mix(in_srgb,var(--primary)_12%,transparent),transparent_48%),linear-gradient(180deg,color-mix(in_srgb,var(--background)_94%,transparent),color-mix(in_srgb,var(--background)_78%,transparent))]">
       <YandexMapPicker
         center={selectedMethodCode === "COURIER" ? mapCenter : pickupMapCenter}
-        className="min-h-[calc(100dvh-6.5rem)] rounded-none border-0 bg-muted/20"
+        className="h-dvh rounded-none border-0 bg-muted/20"
         locale={locale}
         onCenterChange={(nextCenter) => {
           if (selectedMethodCode === "COURIER") {

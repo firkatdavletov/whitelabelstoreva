@@ -382,11 +382,11 @@ export function YandexMapPicker({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[calc(var(--radius)+0.2rem)] border border-border/70 bg-muted/30",
+        "relative h-[420px] touch-none overflow-hidden rounded-[calc(var(--radius)+0.2rem)] border border-border/70 bg-muted/30",
         className,
       )}
     >
-      <div className="h-full w-full" ref={containerRef} />
+      <div className="h-full w-full touch-none" ref={containerRef} />
 
       {status !== "ready" ? (
         <div className="absolute inset-0 flex items-center justify-center bg-card/95">
