@@ -6,7 +6,7 @@ import {
 } from "@/features/delivery-address/lib/delivery-address.utils";
 
 describe("delivery address utils", () => {
-  it("formats courier address with zone name", () => {
+  it("formats courier address without zone name", () => {
     const formattedAddress = formatDeliveryDraftAddress({
       address: {
         apartment: "12",
@@ -37,9 +37,7 @@ describe("delivery address utils", () => {
       updatedAt: null,
     });
 
-    expect(formattedAddress).toBe(
-      "Екатеринбург, ул. Ленина, 15, кв. 12 · Центр",
-    );
+    expect(formattedAddress).toBe("Екатеринбург, ул. Ленина, 15, кв. 12");
   });
 
   it("builds cart delivery payload for courier draft", () => {

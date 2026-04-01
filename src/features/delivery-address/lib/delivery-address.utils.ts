@@ -73,13 +73,7 @@ export function formatDeliveryDraftAddress(
     draft.address?.apartment ? `кв. ${draft.address.apartment}` : null,
   ].filter(Boolean);
 
-  const addressLine = addressParts.join(", ");
-
-  if (addressLine && draft.quote?.zoneName) {
-    return `${addressLine} · ${draft.quote.zoneName}`;
-  }
-
-  return addressLine || draft.quote?.zoneName || null;
+  return addressParts.join(", ") || null;
 }
 
 export function pickupPointToMapCenter(
