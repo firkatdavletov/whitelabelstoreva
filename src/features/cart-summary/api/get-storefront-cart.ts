@@ -2,6 +2,7 @@ import type {
   AddCartItemRequestDto,
   CartResponseDto,
   ChangeCartItemQuantityRequestDto,
+  PutCartDeliveryRequestDto,
 } from "@/entities/cart/api/cart.dto";
 import { mapCartDtoToStorefrontCart } from "@/entities/cart";
 import { apiRequest } from "@/shared/api";
@@ -32,16 +33,22 @@ function createMockCartDto(tenantSlug: string): CartResponseDto {
       },
       deliveryMethod: "COURIER",
       pickupPointAddress: null,
+      pickupPointExternalId: null,
+      pickupPointId: null,
       pickupPointName: null,
       quote: {
+        currency: "RUB",
+        deliveryMethod: "COURIER",
         available: true,
         estimatedDays: 0,
         message: "от 25 минут",
         pickupPointAddress: null,
         pickupPointName: null,
+        priceMinor: 0,
         zoneName: "Центр",
       },
       quoteExpired: false,
+      updatedAt: null,
     },
     "storeva-premium": {
       address: {
@@ -52,16 +59,22 @@ function createMockCartDto(tenantSlug: string): CartResponseDto {
       },
       deliveryMethod: "COURIER",
       pickupPointAddress: null,
+      pickupPointExternalId: null,
+      pickupPointId: null,
       pickupPointName: null,
       quote: {
+        currency: "RUB",
+        deliveryMethod: "COURIER",
         available: true,
         estimatedDays: 0,
         message: "от 35 минут",
         pickupPointAddress: null,
         pickupPointName: null,
+        priceMinor: 0,
         zoneName: "Центр",
       },
       quoteExpired: false,
+      updatedAt: null,
     },
     "storeva-street": {
       address: {
@@ -72,16 +85,22 @@ function createMockCartDto(tenantSlug: string): CartResponseDto {
       },
       deliveryMethod: "COURIER",
       pickupPointAddress: null,
+      pickupPointExternalId: null,
+      pickupPointId: null,
       pickupPointName: null,
       quote: {
+        currency: "RUB",
+        deliveryMethod: "COURIER",
         available: true,
         estimatedDays: 0,
         message: "от 25 минут",
         pickupPointAddress: null,
         pickupPointName: null,
+        priceMinor: 0,
         zoneName: "Пионерский",
       },
       quoteExpired: false,
+      updatedAt: null,
     },
   };
 
@@ -90,6 +109,7 @@ function createMockCartDto(tenantSlug: string): CartResponseDto {
       deliveryByTenant[tenantSlug] ?? deliveryByTenant["storeva-street"],
     id: `mock-cart-${tenantSlug}`,
     items: [],
+    status: "ACTIVE",
     totalPriceMinor: 0,
   };
 }
@@ -147,14 +167,18 @@ export async function addStorefrontCartItem(
     );
 
     if (existingItem) {
+      const nextQuantity = existingItem.quantity + quantity;
+      const lineTotalMinor = existingItem.unitPriceMinor * nextQuantity;
+
       return setMockCart(tenantSlug, {
         ...cart,
         items: cart.items.map((item) =>
           item.id === existingItem.id
             ? {
                 ...item,
-                lineTotalMinor: unitPriceMinor * (item.quantity + quantity),
-                quantity: item.quantity + quantity,
+                lineTotalMinor,
+                priceMinor: lineTotalMinor,
+                quantity: nextQuantity,
               }
             : item,
         ),
@@ -166,11 +190,18 @@ export async function addStorefrontCartItem(
       items: [
         ...cart.items,
         {
+          countStep: 1,
           id: `mock-item-${input.productId}`,
           lineTotalMinor: unitPriceMinor * quantity,
+          modifiers: [],
+          modifiersTotalMinor: 0,
+          priceMinor: unitPriceMinor * quantity,
           productId: input.productId,
           quantity,
           title: input.title ?? input.productId,
+          unit: "PIECE",
+          unitPriceMinor,
+          variantId: null,
         },
       ],
     });
@@ -214,6 +245,7 @@ export async function changeStorefrontCartItemQuantity(
         return {
           ...item,
           lineTotalMinor: unitPriceMinor * input.quantity,
+          priceMinor: unitPriceMinor * input.quantity,
           quantity: input.quantity,
         };
       }),
@@ -268,4 +300,58 @@ export async function clearStorefrontCart(tenantSlug: string) {
   });
 
   return mapCartDtoToStorefrontCart(dto);
+}
+
+export async function updateStorefrontCartDelivery(
+  input: PutCartDeliveryRequestDto,
+  tenantSlug: string,
+) {
+  if (env.apiMocksEnabled) {
+    const cart = getMockCart(tenantSlug);
+
+    return setMockCart(tenantSlug, {
+      ...cart,
+      delivery:
+        input.deliveryMethod === "COURIER"
+          ? {
+              address: input.address ?? null,
+              deliveryMethod: input.deliveryMethod,
+              pickupPointAddress: null,
+              pickupPointExternalId: null,
+              pickupPointId: null,
+              pickupPointName: null,
+              quote: {
+                available: true,
+                currency: "RUB",
+                deliveryMethod: "COURIER",
+                estimatedDays: 0,
+                message: "от 25 минут",
+                pickupPointAddress: null,
+                pickupPointName: null,
+                priceMinor: 0,
+                zoneName: input.address?.city ?? "Центр",
+              },
+              quoteExpired: false,
+              updatedAt: new Date().toISOString(),
+            }
+          : {
+              address: null,
+              deliveryMethod: input.deliveryMethod,
+              pickupPointAddress: null,
+              pickupPointExternalId: input.pickupPointExternalId ?? null,
+              pickupPointId: input.pickupPointId ?? null,
+              pickupPointName: null,
+              quote: null,
+              quoteExpired: false,
+              updatedAt: new Date().toISOString(),
+            },
+    });
+  }
+
+  await apiRequest("/v1/cart/delivery", {
+    body: input,
+    method: "PUT",
+  });
+
+  return getStorefrontCart(tenantSlug);
 }

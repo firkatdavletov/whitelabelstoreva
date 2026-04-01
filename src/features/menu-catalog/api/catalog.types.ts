@@ -1,23 +1,7 @@
-export type CatalogCategoryDto = {
-  id: string;
-  imageUrls: string[];
-  isActive: boolean;
-  name: string;
-  slug: string;
-};
+import type { paths } from "@/shared/api/generated/schema";
 
-export type CatalogProductDto = {
-  brand: string | null;
-  categoryId: string;
-  countStep: number;
-  description: string | null;
-  id: string;
-  imageUrls: string[];
-  isActive: boolean;
-  oldPriceMinor: number | null;
-  priceMinor: number;
-  sku: string | null;
-  slug: string;
-  title: string;
-  unit: string;
-};
+export type CatalogCategoryDto =
+  paths["/api/v1/catalog/categories"]["get"]["responses"][200]["content"]["application/json"][number];
+
+export type CatalogProductDto =
+  paths["/api/v1/catalog/products"]["get"]["responses"][200]["content"]["application/json"][number];

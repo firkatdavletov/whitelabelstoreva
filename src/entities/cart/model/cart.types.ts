@@ -1,3 +1,5 @@
+import type { components } from "@/shared/api/generated/schema";
+
 export type StorefrontCartItem = {
   id: string;
   lineTotal: number;
@@ -7,9 +9,7 @@ export type StorefrontCartItem = {
 };
 
 export type StorefrontCartDeliveryMethod =
-  | "COURIER"
-  | "PICKUP"
-  | "YANDEX_PICKUP_POINT";
+  components["schemas"]["DeliveryMethodType"];
 
 export type StorefrontCartDeliveryAddress = {
   apartment: string | null;

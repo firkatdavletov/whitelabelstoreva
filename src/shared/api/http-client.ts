@@ -1,5 +1,6 @@
 import { ApiError } from "@/shared/api/api-error";
 import { createApiUrl } from "@/shared/api/create-url";
+import { getClientInstallId } from "@/shared/api/install-id";
 import { safeJson } from "@/shared/lib/safe-json";
 import type { ApiMethod, ApiQueryParams } from "@/shared/types/api";
 
@@ -8,6 +9,7 @@ type ApiRequestOptions<TBody> = Omit<RequestInit, "body" | "headers" | "method">
   body?: TBody;
   cookie?: string;
   headers?: HeadersInit;
+  installId?: string;
   method?: ApiMethod;
   query?: ApiQueryParams;
 };
@@ -16,6 +18,7 @@ function createHeaders(
   body: unknown,
   accessToken?: string,
   cookie?: string,
+  installId?: string,
   headers?: HeadersInit,
 ) {
   const requestHeaders = new Headers(headers);
@@ -30,6 +33,12 @@ function createHeaders(
     requestHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
+  const resolvedInstallId = installId ?? (!accessToken ? getClientInstallId() : undefined);
+
+  if (resolvedInstallId) {
+    requestHeaders.set("X-Install-Id", resolvedInstallId);
+  }
+
   if (cookie) {
     requestHeaders.set("Cookie", cookie);
   }
@@ -42,7 +51,19 @@ export async function apiRequest<TResponse, TBody = undefined>(
   pathname: string,
   options: ApiRequestOptions<TBody> = {},
 ) {
-  const { accessToken, body, cookie, headers, method = "GET", query, ...rest } = options;
+  const {
+    accessToken,
+    body,
+    cookie,
+    credentials,
+    headers,
+    installId,
+    method = "GET",
+    query,
+    ...rest
+  } = options;
+
+  const resolvedCredentials = credentials ?? "same-origin";
 
   let response: Response;
 
@@ -50,8 +71,8 @@ export async function apiRequest<TResponse, TBody = undefined>(
     response = await fetch(createApiUrl(pathname, query), {
       ...rest,
       body: body !== undefined ? JSON.stringify(body) : undefined,
-      credentials: "include",
-      headers: createHeaders(body, accessToken, cookie, headers),
+      credentials: resolvedCredentials,
+      headers: createHeaders(body, accessToken, cookie, installId, headers),
       method,
     });
   } catch (error) {

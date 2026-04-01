@@ -8,8 +8,10 @@ import {
   changeStorefrontCartItemQuantity,
   clearStorefrontCart,
   removeStorefrontCartItem,
+  updateStorefrontCartDelivery,
 } from "@/features/cart-summary/api/get-storefront-cart";
 import { getStorefrontCartQueryKey } from "@/features/cart-summary/hooks/use-storefront-cart-query";
+import type { PutCartDeliveryRequestDto } from "@/entities/cart/api/cart.dto";
 
 export function useAddStorefrontCartItemMutation(tenantSlug: string) {
   const queryClient = useQueryClient();
@@ -67,6 +69,18 @@ export function useClearStorefrontCartMutation(tenantSlug: string) {
 
   return useMutation({
     mutationFn: () => clearStorefrontCart(tenantSlug),
+    onSuccess: (cart) => {
+      queryClient.setQueryData(getStorefrontCartQueryKey(tenantSlug), cart);
+    },
+  });
+}
+
+export function useUpdateStorefrontCartDeliveryMutation(tenantSlug: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: PutCartDeliveryRequestDto) =>
+      updateStorefrontCartDelivery(input, tenantSlug),
     onSuccess: (cart) => {
       queryClient.setQueryData(getStorefrontCartQueryKey(tenantSlug), cart);
     },

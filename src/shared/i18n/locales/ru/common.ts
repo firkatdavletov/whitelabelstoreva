@@ -20,6 +20,47 @@ export const ruMessages = {
       "Форма валидируется на клиенте и готова к POST-запросу в Spring Boot backend.",
     title: "Оформление заказа",
   },
+  deliveryAddress: {
+    available: "Доступно",
+    back: "Назад",
+    conditionNotAvailable: "Нет данных",
+    conditionsEta: "Срок",
+    conditionsPrice: "Стоимость",
+    conditionsStatus: "Статус",
+    conditionsZone: "Зона",
+    confirm: "Выбрать адрес",
+    detecting: "Обновляем условия доставки по центру карты...",
+    detectError: "Не удалось получить условия доставки для выбранной точки.",
+    free: "Бесплатно",
+    dragMapHint: "Переместите карту так, чтобы маркер оказался на нужном адресе.",
+    mapKeyMissing:
+      "Для отображения карты добавьте NEXT_PUBLIC_YANDEX_MAPS_API_KEY в окружение.",
+    mapLoadError: "Карта не загрузилась. Попробуйте обновить страницу.",
+    mapLoading: "Загружаем карту Яндекса...",
+    mapSubtitle:
+      "Маркер фиксирован по центру. Двигайте карту, чтобы выбрать точный адрес доставки.",
+    mapTitle: "Карта доставки",
+    methodSubtitle:
+      "Выберите способ получения заказа. Для доставки адрес подтверждается по карте.",
+    methodTitle: "Способ получения",
+    methodsEmpty: "Backend пока не вернул доступные способы доставки.",
+    methodsError: "Не удалось загрузить способы доставки.",
+    retry: "Повторить",
+    saveErrorDescription:
+      "Проверьте выбранный адрес и попробуйте сохранить его ещё раз.",
+    saveErrorTitle: "Не удалось сохранить адрес",
+    saveSuccessDescription: "Корзина обновлена. Возвращаемся к заказу.",
+    saveSuccessTitle: "Адрес сохранён",
+    selectedAddressPending: "Подвиньте карту, чтобы получить адрес и условия.",
+    selectedAddressTitle: "Выбранный адрес",
+    subtitle:
+      "Выберите способ доставки и подтвердите точку на карте. После сохранения адрес обновит текущую корзину.",
+    summarySubtitle:
+      "Показываем адрес, который backend определил по текущему центру карты, и актуальные условия доставки.",
+    summaryTitle: "Условия доставки",
+    title: "Адрес и способ получения",
+    unavailable: "Недоступно",
+  },
   footer: {
     caption:
       "Feature-first storefront-оболочка, подготовленная к интеграции со Spring Boot.",

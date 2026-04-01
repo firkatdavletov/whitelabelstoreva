@@ -1,0 +1,93 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  buildPutCartDeliveryRequest,
+  formatDeliveryDraftAddress,
+} from "@/features/delivery-address/lib/delivery-address.utils";
+
+describe("delivery address utils", () => {
+  it("formats courier address with zone name", () => {
+    const formattedAddress = formatDeliveryDraftAddress({
+      address: {
+        apartment: "12",
+        city: "Екатеринбург",
+        house: "15",
+        street: "ул. Ленина",
+      },
+      deliveryMethod: "COURIER",
+      pickupPointAddress: null,
+      pickupPointExternalId: null,
+      pickupPointId: null,
+      pickupPointName: null,
+      quote: {
+        available: true,
+        currency: "RUB",
+        deliveryMethod: "COURIER",
+        estimatedDays: 0,
+        message: "от 25 минут",
+        pickupPointAddress: null,
+        pickupPointExternalId: null,
+        pickupPointId: null,
+        pickupPointName: null,
+        priceMinor: 0,
+        zoneCode: null,
+        zoneName: "Центр",
+      },
+      quoteExpired: false,
+      updatedAt: null,
+    });
+
+    expect(formattedAddress).toBe(
+      "Екатеринбург, ул. Ленина, 15, кв. 12 · Центр",
+    );
+  });
+
+  it("builds cart delivery payload for courier draft", () => {
+    const payload = buildPutCartDeliveryRequest("COURIER", {
+      address: {
+        apartment: null,
+        city: "Екатеринбург",
+        comment: null,
+        country: "Россия",
+        entrance: null,
+        floor: null,
+        house: "24",
+        intercom: null,
+        latitude: 56.851038,
+        longitude: 60.649683,
+        postalCode: null,
+        region: "Свердловская область",
+        street: "пр. Мира",
+      },
+      deliveryMethod: "COURIER",
+      pickupPointAddress: null,
+      pickupPointExternalId: null,
+      pickupPointId: null,
+      pickupPointName: null,
+      quote: null,
+      quoteExpired: false,
+      updatedAt: null,
+    });
+
+    expect(payload).toEqual({
+      address: {
+        apartment: null,
+        city: "Екатеринбург",
+        comment: null,
+        country: "Россия",
+        entrance: null,
+        floor: null,
+        house: "24",
+        intercom: null,
+        latitude: 56.851038,
+        longitude: 60.649683,
+        postalCode: null,
+        region: "Свердловская область",
+        street: "пр. Мира",
+      },
+      deliveryMethod: "COURIER",
+      pickupPointExternalId: null,
+      pickupPointId: null,
+    });
+  });
+});

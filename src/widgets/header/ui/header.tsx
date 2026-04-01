@@ -22,17 +22,14 @@ import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { SegmentedControl } from "@/shared/ui/segmented-control";
 import { useUiStore } from "@/store/ui-store";
 
-type FulfillmentMode = "delivery" | "pickup";
-
-function resolveFulfillmentMode(
+function isPickupDeliveryMethod(
   deliveryMethod: StorefrontCartDeliveryMethod | null | undefined,
-): FulfillmentMode {
-  return deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
-    ? "pickup"
-    : "delivery";
+): boolean {
+  return (
+    deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
+  );
 }
 
 function formatDeliveryAddress(
@@ -77,7 +74,7 @@ export function Header() {
   const tenantConfig = useTenantTheme();
   const { data: storefrontCart } = useStorefrontCartQuery(tenantSlug);
   const { t } = useTranslation();
-  const fulfillmentMode = resolveFulfillmentMode(
+  const isPickup = isPickupDeliveryMethod(
     storefrontCart?.delivery?.deliveryMethod,
   );
   const deliveryAddress = formatDeliveryAddress(storefrontCart?.delivery);
@@ -85,9 +82,7 @@ export function Header() {
   const cartTotal = storefrontCart?.totalPrice ?? 0;
 
   const addressLabel = t(
-    fulfillmentMode === "delivery"
-      ? "header.deliveryAddressLabel"
-      : "header.pickupAddressLabel",
+    isPickup ? "header.pickupAddressLabel" : "header.deliveryAddressLabel",
     {
       address: deliveryAddress ?? t("header.addressPending"),
     },
@@ -102,8 +97,8 @@ export function Header() {
             : t("header.etaDays", {
                 days: storefrontCart.delivery.quote.estimatedDays,
               })
-          : t("header.etaPending")))
-      : t("header.etaPending");
+          : null))
+      : null;
 
   const cartTotalLabel =
     cartTotal > 0
@@ -116,8 +111,8 @@ export function Header() {
   return (
     <header className="border-border/60 bg-background/95 md:bg-background/85 border-b md:sticky md:top-0 md:z-40 md:backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Link className="flex min-w-0 items-center gap-3" href={href()}>
+        <div className="flex items-center justify-between gap-3">
+          <Link className="flex min-w-0 flex-1 items-center gap-3" href={href()}>
             <div className="bg-primary text-primary-foreground flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-bold">
               {tenantConfig.logoText.slice(0, 2)}
             </div>
@@ -128,60 +123,13 @@ export function Header() {
             </div>
           </Link>
 
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
-            <Button
-              className="border-border/80 bg-card/90 h-11 justify-between rounded-full px-4 text-left shadow-sm lg:min-w-80"
-              type="button"
-              variant="outline"
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <MapPin className="text-muted-foreground h-4 w-4 shrink-0" />
-                <span className="truncate">{addressLabel}</span>
-              </span>
-              <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
-            </Button>
-
-            <SegmentedControl
-              className="self-start lg:self-auto"
-              disabled
-              options={[
-                {
-                  label: t("header.delivery"),
-                  value: "delivery",
-                },
-                {
-                  label: t("header.pickup"),
-                  value: "pickup",
-                },
-              ]}
-              value={fulfillmentMode}
-            />
-
-            <div className="bg-secondary text-secondary-foreground inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium shadow-sm">
-              <Clock3 className="h-4 w-4 shrink-0" />
-              <span>{etaLabel}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative flex-1">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
-            <Input
-              aria-label={t("header.searchPlaceholder")}
-              className="border-border/80 bg-card/95 h-12 rounded-full pr-4 pl-11 text-base shadow-sm"
-              placeholder={t("header.searchPlaceholder")}
-              type="search"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-2 sm:gap-3 lg:ml-4">
-            <Button className="rounded-full px-5" type="button" variant="ghost">
+          <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
+            <Button className="rounded-full px-3 sm:px-5" type="button" variant="ghost">
               <UserRound className="h-4 w-4" />
               {t("header.login")}
             </Button>
             <Button
-              className="rounded-full px-5"
+              className="rounded-full px-3 sm:px-5"
               onClick={openCartSidebar}
               size="lg"
             >
@@ -197,6 +145,41 @@ export function Header() {
                 </Badge>
               ) : null}
             </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
+            <Input
+              aria-label={t("header.searchPlaceholder")}
+              className="border-border/80 bg-card/95 h-12 rounded-full pr-4 pl-11 text-base shadow-sm"
+              placeholder={t("header.searchPlaceholder")}
+              type="search"
+            />
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:ml-3">
+            <Button
+              asChild
+              className="border-border/80 bg-card/90 h-11 justify-between rounded-full px-4 text-left shadow-sm sm:min-w-80"
+              variant="outline"
+            >
+              <Link href={href("/delivery")}>
+                <span className="flex min-w-0 items-center gap-2">
+                  <MapPin className="text-muted-foreground h-4 w-4 shrink-0" />
+                  <span className="truncate">{addressLabel}</span>
+                </span>
+                <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+              </Link>
+            </Button>
+
+            {etaLabel ? (
+              <div className="bg-secondary text-secondary-foreground inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-medium shadow-sm">
+                <Clock3 className="h-4 w-4 shrink-0" />
+                <span>{etaLabel}</span>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

@@ -14,22 +14,22 @@ import type {
 } from "@/entities/cart/model/cart.types";
 
 function mapDeliveryAddressDto(
-  dto: DeliveryAddressResponseDto | null,
+  dto: DeliveryAddressResponseDto | null | undefined,
 ): StorefrontCartDeliveryAddress | null {
   if (!dto) {
     return null;
   }
 
   return {
-    apartment: dto.apartment,
-    city: dto.city,
-    house: dto.house,
-    street: dto.street,
+    apartment: dto.apartment ?? null,
+    city: dto.city ?? null,
+    house: dto.house ?? null,
+    street: dto.street ?? null,
   };
 }
 
 function mapDeliveryQuoteDto(
-  dto: DeliveryQuoteResponseDto | null,
+  dto: DeliveryQuoteResponseDto | null | undefined,
 ): StorefrontCartDeliveryQuote | null {
   if (!dto) {
     return null;
@@ -37,16 +37,16 @@ function mapDeliveryQuoteDto(
 
   return {
     available: dto.available,
-    estimatedDays: dto.estimatedDays,
-    message: dto.message,
-    pickupPointAddress: dto.pickupPointAddress,
-    pickupPointName: dto.pickupPointName,
-    zoneName: dto.zoneName,
+    estimatedDays: dto.estimatedDays ?? null,
+    message: dto.message ?? null,
+    pickupPointAddress: dto.pickupPointAddress ?? null,
+    pickupPointName: dto.pickupPointName ?? null,
+    zoneName: dto.zoneName ?? null,
   };
 }
 
 function mapCartDeliveryDto(
-  dto: CartDeliveryDraftResponseDto | null,
+  dto: CartDeliveryDraftResponseDto | null | undefined,
 ): StorefrontCartDelivery | null {
   if (!dto) {
     return null;
@@ -54,9 +54,9 @@ function mapCartDeliveryDto(
 
   return {
     address: mapDeliveryAddressDto(dto.address),
-    deliveryMethod: dto.deliveryMethod,
-    pickupPointAddress: dto.pickupPointAddress,
-    pickupPointName: dto.pickupPointName,
+    deliveryMethod: dto.deliveryMethod ?? null,
+    pickupPointAddress: dto.pickupPointAddress ?? null,
+    pickupPointName: dto.pickupPointName ?? null,
     quote: mapDeliveryQuoteDto(dto.quote),
     quoteExpired: dto.quoteExpired,
   };

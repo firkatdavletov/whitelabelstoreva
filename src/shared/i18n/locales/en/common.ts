@@ -19,6 +19,48 @@ export const enMessages = {
     subtitle: "Validated client-side form ready to POST into Spring Boot.",
     title: "Checkout",
   },
+  deliveryAddress: {
+    available: "Available",
+    back: "Back",
+    conditionNotAvailable: "No data",
+    conditionsEta: "ETA",
+    conditionsPrice: "Price",
+    conditionsStatus: "Status",
+    conditionsZone: "Zone",
+    confirm: "Choose address",
+    detecting: "Refreshing delivery conditions for the map center...",
+    detectError: "Failed to load delivery conditions for this map location.",
+    free: "Free",
+    dragMapHint: "Move the map so the center marker sits on the exact address.",
+    mapKeyMissing:
+      "Add NEXT_PUBLIC_YANDEX_MAPS_API_KEY to render the Yandex map.",
+    mapLoadError: "The map could not be loaded. Try refreshing the page.",
+    mapLoading: "Loading Yandex map...",
+    mapSubtitle:
+      "The marker stays fixed in the center. Move the map to choose the delivery address precisely.",
+    mapTitle: "Delivery map",
+    methodSubtitle:
+      "Choose how the order should be fulfilled. Courier delivery is confirmed via the map.",
+    methodTitle: "Fulfillment method",
+    methodsEmpty: "The backend did not return any delivery methods yet.",
+    methodsError: "Failed to load delivery methods.",
+    retry: "Retry",
+    saveErrorDescription:
+      "Check the selected address and try saving it one more time.",
+    saveErrorTitle: "Failed to save address",
+    saveSuccessDescription: "The cart is updated. Returning to the storefront.",
+    saveSuccessTitle: "Address saved",
+    selectedAddressPending:
+      "Move the map to fetch the address and delivery conditions.",
+    selectedAddressTitle: "Selected address",
+    subtitle:
+      "Choose the fulfillment method and confirm the point on the map. Saving updates the active cart delivery settings.",
+    summarySubtitle:
+      "We show the address resolved by the backend for the current map center together with the delivery conditions.",
+    summaryTitle: "Delivery conditions",
+    title: "Address and fulfillment",
+    unavailable: "Unavailable",
+  },
   footer: {
     caption:
       "Feature-first storefront shell ready for Spring Boot integration.",

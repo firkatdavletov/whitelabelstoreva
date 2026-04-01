@@ -7,6 +7,7 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_API_MOCKING: z.enum(["disabled", "enabled"]).default("enabled"),
   NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(["en", "ru"]).default("en"),
   NEXT_PUBLIC_DEFAULT_TENANT: z.string().min(1).default("urban-bites"),
+  NEXT_PUBLIC_YANDEX_MAPS_API_KEY: z.string().optional(),
 });
 
 const parsedEnv = publicEnvSchema.safeParse({
@@ -14,6 +15,7 @@ const parsedEnv = publicEnvSchema.safeParse({
   NEXT_PUBLIC_API_MOCKING: process.env.NEXT_PUBLIC_API_MOCKING,
   NEXT_PUBLIC_DEFAULT_LOCALE: process.env.NEXT_PUBLIC_DEFAULT_LOCALE,
   NEXT_PUBLIC_DEFAULT_TENANT: process.env.NEXT_PUBLIC_DEFAULT_TENANT,
+  NEXT_PUBLIC_YANDEX_MAPS_API_KEY: process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY,
 });
 
 if (!parsedEnv.success) {

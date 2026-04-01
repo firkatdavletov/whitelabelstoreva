@@ -1,52 +1,23 @@
-import type { StorefrontCartDeliveryMethod } from "@/entities/cart/model/cart.types";
+import type { components, paths } from "@/shared/api/generated/schema";
 
-export type CartResponseDto = {
-  delivery: CartDeliveryDraftResponseDto | null;
-  id: string;
-  items: CartItemResponseDto[];
-  totalPriceMinor: number;
-};
+export type CartResponseDto =
+  paths["/api/v1/cart"]["get"]["responses"][200]["content"]["application/json"];
 
-export type CartItemResponseDto = {
-  id: string;
-  lineTotalMinor: number;
-  productId: string;
-  quantity: number;
-  title: string;
-};
+export type CartItemResponseDto = components["schemas"]["CartItemResponse"];
 
-export type CartDeliveryDraftResponseDto = {
-  address: DeliveryAddressResponseDto | null;
-  deliveryMethod: StorefrontCartDeliveryMethod | null;
-  pickupPointAddress: string | null;
-  pickupPointName: string | null;
-  quote: DeliveryQuoteResponseDto | null;
-  quoteExpired: boolean;
-};
+export type CartDeliveryDraftResponseDto =
+  components["schemas"]["CartDeliveryDraftResponse"];
 
-export type DeliveryAddressResponseDto = {
-  apartment: string | null;
-  city: string | null;
-  house: string | null;
-  street: string | null;
-};
+export type DeliveryAddressResponseDto =
+  components["schemas"]["DeliveryAddressResponse"];
 
-export type DeliveryQuoteResponseDto = {
-  available: boolean;
-  estimatedDays: number | null;
-  message: string | null;
-  pickupPointAddress: string | null;
-  pickupPointName: string | null;
-  zoneName: string | null;
-};
+export type DeliveryQuoteResponseDto = components["schemas"]["DeliveryQuoteResponse"];
 
-export type AddCartItemRequestDto = {
-  modifiers?: never[];
-  productId: string;
-  quantity: number;
-  variantId?: string | null;
-};
+export type AddCartItemRequestDto =
+  paths["/api/v1/cart/items"]["post"]["requestBody"]["content"]["application/json"];
 
-export type ChangeCartItemQuantityRequestDto = {
-  quantity: number;
-};
+export type ChangeCartItemQuantityRequestDto =
+  paths["/api/v1/cart/items/{itemId}"]["patch"]["requestBody"]["content"]["application/json"];
+
+export type PutCartDeliveryRequestDto =
+  paths["/api/v1/cart/delivery"]["put"]["requestBody"]["content"]["application/json"];

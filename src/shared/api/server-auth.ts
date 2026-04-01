@@ -12,5 +12,7 @@ export async function buildServerRequestContext() {
   return {
     accessToken,
     cookie: headerStore.get("cookie") ?? cookieStore.toString(),
+    installId:
+      headerStore.get("x-install-id") ?? cookieStore.get("install_id")?.value,
   };
 }
