@@ -21,5 +21,9 @@ export default async function DeliveryPage({ params }: DeliveryPageProps) {
     notFound();
   }
 
-  return <DeliveryAddressScreen />;
+  return (
+    <div className="relative left-1/2 -mt-6 -mb-16 w-dvw max-w-none -translate-x-1/2">
+      <DeliveryAddressScreen />
+    </div>
+  );
 }

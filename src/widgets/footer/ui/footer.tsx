@@ -1,12 +1,18 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 import { useTenantTheme } from "@/features/tenant-theme";
 
 export function Footer() {
   const tenantConfig = useTenantTheme();
+  const pathname = usePathname();
   const { t } = useTranslation();
+
+  if (pathname.endsWith("/delivery")) {
+    return null;
+  }
 
   return (
     <footer className="border-t border-border/60 bg-background/80">

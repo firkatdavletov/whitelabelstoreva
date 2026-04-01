@@ -21,17 +21,9 @@ import { YandexMapPicker } from "@/features/delivery-address/ui/yandex-map-picke
 import { env } from "@/shared/config/env";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { formatCurrency } from "@/shared/lib/currency";
+import { cn } from "@/shared/lib/styles";
 import type { CurrencyCode } from "@/shared/types/common";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
 import { SegmentedControl } from "@/shared/ui/segmented-control";
 import { Skeleton } from "@/shared/ui/skeleton";
 
@@ -195,9 +187,6 @@ export function DeliveryAddressScreen() {
       ? (pickupPointToMapCenter(selectedPickupPoint) ?? mapCenter)
       : mapCenter;
 
-  const selectedMethod = deliveryMethods.find(
-    (method) => method.code === selectedMethodCode,
-  );
   const selectedCourierDraft =
     selectedMethodCode === "COURIER" ? courierDraftQuery.data : null;
   const selectedAddressLabel = formatDeliveryDraftAddress(selectedCourierDraft);
@@ -229,6 +218,20 @@ export function DeliveryAddressScreen() {
       : isPickup
         ? Boolean(selectedPickupPoint)
         : false);
+  const selectedSummaryTitle = isPickup
+    ? t("deliveryAddress.selectedPickupTitle")
+    : t("deliveryAddress.selectedAddressTitle");
+  const selectedSummaryPrimary = isPickup
+    ? (selectedPickupPoint?.name ?? t("deliveryAddress.selectedPickupPending"))
+    : courierDraftQuery.isLoading
+      ? t("deliveryAddress.detecting")
+      : (selectedAddressLabel ?? t("deliveryAddress.selectedAddressPending"));
+  const selectedSummarySecondary =
+    isPickup &&
+    selectedPickupAddressLabel &&
+    selectedPickupAddressLabel !== selectedPickupPoint?.name
+      ? selectedPickupAddressLabel
+      : null;
 
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -239,45 +242,90 @@ export function DeliveryAddressScreen() {
     router.push(href("/"));
   };
 
+  const handleConfirm = () => {
+    if (!putCartDeliveryRequest) {
+      return;
+    }
+
+    updateCartDeliveryMutation.mutate(putCartDeliveryRequest, {
+      onError: (error) => {
+        toast.error(t("deliveryAddress.saveErrorTitle"), {
+          description:
+            error instanceof Error
+              ? error.message
+              : t("deliveryAddress.saveErrorDescription"),
+        });
+      },
+      onSuccess: () => {
+        toast.success(t("deliveryAddress.saveSuccessTitle"), {
+          description: t("deliveryAddress.saveSuccessDescription"),
+        });
+        handleBack();
+      },
+    });
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-2">
-          <Button className="-ml-3 w-fit" onClick={handleBack} variant="ghost">
+    <section className="relative min-h-[calc(100dvh-6.5rem)] overflow-hidden bg-[radial-gradient(circle_at_top,_color-mix(in_srgb,var(--primary)_12%,transparent),transparent_48%),linear-gradient(180deg,color-mix(in_srgb,var(--background)_94%,transparent),color-mix(in_srgb,var(--background)_78%,transparent))]">
+      <YandexMapPicker
+        center={selectedMethodCode === "COURIER" ? mapCenter : pickupMapCenter}
+        className="min-h-[calc(100dvh-6.5rem)] rounded-none border-0 bg-muted/20"
+        locale={locale}
+        onCenterChange={(nextCenter) => {
+          if (selectedMethodCode === "COURIER") {
+            setMapCenter(nextCenter);
+            return;
+          }
+
+          setPickupMapHasManualCenter(true);
+          setMapCenter(nextCenter);
+        }}
+        onPickupPointSelect={
+          isPickup
+            ? (pickupPoint) => {
+                setPickupMapHasManualCenter(false);
+                setSelectedPickupPointIdOverride(pickupPoint.id);
+              }
+            : undefined
+        }
+        pickupPoints={isPickup ? pickupPointsQuery.data?.pickupPoints ?? [] : []}
+        selectedPickupPointId={isPickup ? selectedPickupPointId : null}
+        showHint={false}
+      />
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-36 bg-gradient-to-b from-background/88 via-background/36 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-48 bg-gradient-to-t from-background/92 via-background/48 to-transparent" />
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col gap-3 p-3 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <Button
+            className="pointer-events-auto h-11 rounded-full border-border/70 bg-background/86 px-4 shadow-lg backdrop-blur-xl"
+            onClick={handleBack}
+            variant="outline"
+          >
             <ArrowLeft className="h-4 w-4" />
-            {t("deliveryAddress.back")}
+            <span className="hidden sm:inline">{t("deliveryAddress.back")}</span>
           </Button>
-          <div className="space-y-2">
-            <h1 className="font-heading text-4xl font-semibold">
-              {t("deliveryAddress.title")}
-            </h1>
-            <p className="text-muted-foreground max-w-2xl text-sm">
-              {t("deliveryAddress.subtitle")}
-            </p>
-          </div>
+
+          {(deliveryMethodsQuery.isLoading ||
+            deliveryMethodsQuery.isError ||
+            !deliveryMethodsQuery.data?.methods.length) && (
+            <div className="h-11 w-11 sm:w-28" />
+          )}
         </div>
 
-        {selectedMethod ? <Badge>{selectedMethod.name}</Badge> : null}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("deliveryAddress.methodTitle")}</CardTitle>
-          <CardDescription>
-            {t("deliveryAddress.methodSubtitle")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <div className="flex justify-center">
           {deliveryMethodsQuery.isLoading ? (
-            <Skeleton className="h-12 w-full max-w-md rounded-full" />
+            <Skeleton className="pointer-events-auto h-12 w-full max-w-md rounded-full border border-border/60 bg-background/75 shadow-lg backdrop-blur-xl" />
           ) : deliveryMethodsQuery.isError ? (
-            <div className="border-border/70 bg-muted/40 flex flex-col gap-3 rounded-[calc(var(--radius)+0.15rem)] border p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-muted-foreground text-sm">
+            <div className="pointer-events-auto flex max-w-xl flex-col gap-3 rounded-[1.5rem] border border-border/70 bg-background/84 p-4 shadow-lg backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
                 {deliveryMethodsQuery.error instanceof Error
                   ? deliveryMethodsQuery.error.message
                   : t("deliveryAddress.methodsError")}
               </p>
               <Button
+                className="rounded-full"
                 onClick={() => deliveryMethodsQuery.refetch()}
                 size="sm"
                 variant="outline"
@@ -288,6 +336,7 @@ export function DeliveryAddressScreen() {
             </div>
           ) : deliveryMethodsQuery.data?.methods.length ? (
             <SegmentedControl
+              className="pointer-events-auto border-border/70 bg-background/82 shadow-lg backdrop-blur-xl"
               onValueChange={(value) => {
                 const nextMethodCode =
                   value as PutCartDeliveryRequestDto["deliveryMethod"];
@@ -307,274 +356,127 @@ export function DeliveryAddressScreen() {
               }
             />
           ) : (
-            <p className="text-muted-foreground text-sm">
+            <div className="pointer-events-auto rounded-full border border-border/70 bg-background/84 px-5 py-3 text-sm text-muted-foreground shadow-lg backdrop-blur-xl">
               {t("deliveryAddress.methodsEmpty")}
-            </p>
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {selectedMethodCode === "COURIER" ? (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
-          <Card className="overflow-hidden">
-            <CardHeader>
-              <CardTitle>{t("deliveryAddress.mapTitle")}</CardTitle>
-              <CardDescription>
-                {t("deliveryAddress.mapSubtitle")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <YandexMapPicker
-                center={mapCenter}
-                locale={locale}
-                onCenterChange={setMapCenter}
-              />
-            </CardContent>
-          </Card>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 p-3 sm:p-5">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-border/70 bg-background/84 shadow-[0_36px_120px_-64px_rgba(15,23,42,0.75)] backdrop-blur-2xl">
+          <div className="pointer-events-auto space-y-4 p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background/88">
+                <MapPin className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium tracking-[0.22em] text-muted-foreground uppercase">
+                  {selectedSummaryTitle}
+                </p>
+                <p className="mt-1 text-sm font-medium text-foreground sm:text-base">
+                  {selectedSummaryPrimary}
+                </p>
+                {selectedSummarySecondary ? (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {selectedSummarySecondary}
+                  </p>
+                ) : null}
+              </div>
+            </div>
 
-          <Card className="h-fit xl:sticky xl:top-28">
-            <CardHeader>
-              <CardTitle>{t("deliveryAddress.summaryTitle")}</CardTitle>
-              <CardDescription>
-                {t("deliveryAddress.summarySubtitle")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="border-border/70 bg-muted/35 rounded-[calc(var(--radius)+0.1rem)] border p-4">
-                <div className="flex items-start gap-3">
-                  <div className="bg-background text-primary border-border/70 rounded-full border p-2">
-                    <MapPin className="h-4 w-4" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      {t("deliveryAddress.selectedAddressTitle")}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      {courierDraftQuery.isLoading
-                        ? t("deliveryAddress.detecting")
-                        : (selectedAddressLabel ??
-                          t("deliveryAddress.selectedAddressPending"))}
-                    </p>
-                  </div>
+            {selectedMethodCode === "COURIER" && selectedCourierDraft?.quote ? (
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
+                  <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+                    {t("deliveryAddress.conditionsEta")}
+                  </p>
+                  <p className="mt-1 text-sm font-medium">
+                    {selectedCourierQuoteEtaLabel ??
+                      t("deliveryAddress.conditionNotAvailable")}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
+                  <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+                    {t("deliveryAddress.conditionsPrice")}
+                  </p>
+                  <p className="mt-1 text-sm font-medium">
+                    {quotePriceLabel ?? t("deliveryAddress.free")}
+                  </p>
                 </div>
               </div>
+            ) : null}
 
-              {selectedCourierDraft?.quote ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
-                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
-                      {t("deliveryAddress.conditionsEta")}
-                    </p>
-                    <p className="mt-2 text-sm font-medium">
-                      {selectedCourierQuoteEtaLabel ??
-                        t("deliveryAddress.conditionNotAvailable")}
-                    </p>
-                  </div>
-                  <div className="border-border/70 rounded-[calc(var(--radius)+0.1rem)] border p-4">
-                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
-                      {t("deliveryAddress.conditionsPrice")}
-                    </p>
-                    <p className="mt-2 text-sm font-medium">
-                      {quotePriceLabel ?? t("deliveryAddress.free")}
-                    </p>
-                  </div>
-                </div>
-              ) : courierDraftQuery.isError ? (
-                <div className="border-destructive/20 bg-destructive/5 text-muted-foreground rounded-[calc(var(--radius)+0.1rem)] border p-4 text-sm">
-                  {courierDraftQuery.error instanceof Error
-                    ? courierDraftQuery.error.message
-                    : t("deliveryAddress.detectError")}
-                </div>
-              ) : null}
+            {selectedMethodCode === "COURIER" && courierDraftQuery.isError ? (
+              <div className="rounded-2xl border border-destructive/20 bg-destructive/6 px-4 py-3 text-sm text-muted-foreground">
+                {courierDraftQuery.error instanceof Error
+                  ? courierDraftQuery.error.message
+                  : t("deliveryAddress.detectError")}
+              </div>
+            ) : null}
 
-              {!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? (
-                <div className="border-border/70 bg-muted/35 text-muted-foreground rounded-[calc(var(--radius)+0.1rem)] border p-4 text-sm">
-                  {t("deliveryAddress.mapKeyMissing")}
-                </div>
-              ) : null}
-            </CardContent>
-            <CardFooter>
-              <Button
-                className="w-full"
-                disabled={
-                  !canSubmitSelectedAddress ||
-                  courierDraftQuery.isLoading ||
-                  updateCartDeliveryMutation.isPending
-                }
-                onClick={() => {
-                  if (!putCartDeliveryRequest) {
-                    return;
-                  }
+            {isPickup && pickupPointsQuery.isLoading ? (
+              <Skeleton className="h-12 rounded-2xl" />
+            ) : null}
 
-                  updateCartDeliveryMutation.mutate(putCartDeliveryRequest, {
-                    onError: (error) => {
-                      toast.error(t("deliveryAddress.saveErrorTitle"), {
-                        description:
-                          error instanceof Error
-                            ? error.message
-                            : t("deliveryAddress.saveErrorDescription"),
-                      });
-                    },
-                    onSuccess: () => {
-                      toast.success(t("deliveryAddress.saveSuccessTitle"), {
-                        description: t(
-                          "deliveryAddress.saveSuccessDescription",
-                        ),
-                      });
-                      handleBack();
-                    },
-                  });
-                }}
-                size="lg"
-              >
-                {updateCartDeliveryMutation.isPending ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Navigation className="h-4 w-4" />
-                )}
-                {t("deliveryAddress.confirm")}
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      ) : isPickup ? (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
-          <Card className="overflow-hidden">
-            <CardHeader>
-              <CardTitle>{t("deliveryAddress.pickupMapTitle")}</CardTitle>
-              <CardDescription>
-                {t("deliveryAddress.pickupMapSubtitle")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <YandexMapPicker
-                center={pickupMapCenter}
-                locale={locale}
-                onCenterChange={(nextCenter) => {
-                  setPickupMapHasManualCenter(true);
-                  setMapCenter(nextCenter);
-                }}
-                onPickupPointSelect={(pickupPoint) => {
-                  setPickupMapHasManualCenter(false);
-                  setSelectedPickupPointIdOverride(pickupPoint.id);
-                }}
-                pickupPoints={pickupPointsQuery.data?.pickupPoints ?? []}
-                selectedPickupPointId={selectedPickupPointId}
-              />
+            {isPickup && pickupPointsQuery.isError ? (
+              <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {pickupPointsQuery.error instanceof Error
+                    ? pickupPointsQuery.error.message
+                    : t("deliveryAddress.pickupPointsError")}
+                </p>
+                <Button
+                  className="rounded-full"
+                  onClick={() => pickupPointsQuery.refetch()}
+                  size="sm"
+                  variant="outline"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  {t("deliveryAddress.retry")}
+                </Button>
+              </div>
+            ) : null}
 
-              {pickupPointsQuery.isLoading ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Skeleton className="h-24 rounded-[calc(var(--radius)+0.1rem)]" />
-                  <Skeleton className="h-24 rounded-[calc(var(--radius)+0.1rem)]" />
-                </div>
-              ) : pickupPointsQuery.isError ? (
-                <div className="border-border/70 bg-muted/40 flex flex-col gap-3 rounded-[calc(var(--radius)+0.15rem)] border p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-muted-foreground text-sm">
-                    {pickupPointsQuery.error instanceof Error
-                      ? pickupPointsQuery.error.message
-                      : t("deliveryAddress.pickupPointsError")}
-                  </p>
-                  <Button
-                    onClick={() => pickupPointsQuery.refetch()}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    {t("deliveryAddress.retry")}
-                  </Button>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
+            {isPickup &&
+            !pickupPointsQuery.isLoading &&
+            !pickupPointsQuery.isError &&
+            !pickupPointsQuery.data?.pickupPoints.length ? (
+              <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                {t("deliveryAddress.pickupPointsEmpty")}
+              </div>
+            ) : null}
 
-          <Card className="h-fit xl:sticky xl:top-28">
-            <CardHeader>
-              <CardTitle>{t("deliveryAddress.pickupSummaryTitle")}</CardTitle>
-              <CardDescription>
-                {t("deliveryAddress.pickupSummarySubtitle")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {pickupPointsQuery.data?.pickupPoints.length ? (
-                <>
-                  <div className="border-border/70 bg-muted/35 rounded-[calc(var(--radius)+0.1rem)] border p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="bg-background text-primary border-border/70 rounded-full border p-2">
-                        <MapPin className="h-4 w-4" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium">
-                          {t("deliveryAddress.selectedPickupTitle")}
-                        </p>
-                        <p className="text-foreground text-sm">
-                          {selectedPickupPoint?.name ??
-                            t("deliveryAddress.selectedPickupPending")}
-                        </p>
-                        <p className="text-muted-foreground text-sm">
-                          {selectedPickupAddressLabel ??
-                            t("deliveryAddress.conditionNotAvailable")}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : pickupPointsQuery.isLoading ? null : (
-                <div className="border-border/70 bg-muted/35 text-muted-foreground rounded-[calc(var(--radius)+0.1rem)] border p-4 text-sm">
-                  {t("deliveryAddress.pickupPointsEmpty")}
-                </div>
+            {!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? (
+              <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                {t("deliveryAddress.mapKeyMissing")}
+              </div>
+            ) : null}
+
+            <Button
+              className={cn(
+                "h-12 w-full rounded-2xl shadow-none",
+                !canSubmitSelectedAddress && "opacity-100",
               )}
-
-              {!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? (
-                <div className="border-border/70 bg-muted/35 text-muted-foreground rounded-[calc(var(--radius)+0.1rem)] border p-4 text-sm">
-                  {t("deliveryAddress.mapKeyMissing")}
-                </div>
-              ) : null}
-            </CardContent>
-            <CardFooter>
-              <Button
-                className="w-full"
-                disabled={
-                  !canSubmitSelectedAddress ||
-                  pickupPointsQuery.isLoading ||
-                  updateCartDeliveryMutation.isPending
-                }
-                onClick={() => {
-                  if (!putCartDeliveryRequest) {
-                    return;
-                  }
-
-                  updateCartDeliveryMutation.mutate(putCartDeliveryRequest, {
-                    onError: (error) => {
-                      toast.error(t("deliveryAddress.saveErrorTitle"), {
-                        description:
-                          error instanceof Error
-                            ? error.message
-                            : t("deliveryAddress.saveErrorDescription"),
-                      });
-                    },
-                    onSuccess: () => {
-                      toast.success(t("deliveryAddress.saveSuccessTitle"), {
-                        description: t(
-                          "deliveryAddress.saveSuccessDescription",
-                        ),
-                      });
-                      handleBack();
-                    },
-                  });
-                }}
-                size="lg"
-              >
-                {updateCartDeliveryMutation.isPending ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Navigation className="h-4 w-4" />
-                )}
-                {t("deliveryAddress.confirm")}
-              </Button>
-            </CardFooter>
-          </Card>
+              disabled={
+                !canSubmitSelectedAddress ||
+                courierDraftQuery.isLoading ||
+                pickupPointsQuery.isLoading ||
+                updateCartDeliveryMutation.isPending
+              }
+              onClick={handleConfirm}
+              size="lg"
+            >
+              {updateCartDeliveryMutation.isPending ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Navigation className="h-4 w-4" />
+              )}
+              {t("deliveryAddress.confirm")}
+            </Button>
+          </div>
         </div>
-      ) : null}
-    </div>
+      </div>
+    </section>
   );
 }

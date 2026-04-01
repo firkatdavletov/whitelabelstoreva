@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { env } from "@/shared/config/env";
+import { cn } from "@/shared/lib/styles";
 import type { Locale } from "@/shared/types/common";
 
 import type { DeliveryMapCenter } from "@/features/delivery-address/lib/delivery-address.utils";
@@ -113,20 +114,24 @@ async function loadYandexMapsApi(apiKey: string, locale: Locale) {
 
 type YandexMapPickerProps = {
   center: DeliveryMapCenter;
+  className?: string;
   locale: Locale;
   onCenterChange: (center: DeliveryMapCenter) => void;
   pickupPoints?: PickupPointDto[];
   selectedPickupPointId?: string | null;
   onPickupPointSelect?: (pickupPoint: PickupPointDto) => void;
+  showHint?: boolean;
 };
 
 export function YandexMapPicker({
   center,
+  className,
   locale,
   onCenterChange,
   pickupPoints = [],
   selectedPickupPointId = null,
   onPickupPointSelect,
+  showHint = true,
 }: YandexMapPickerProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -375,8 +380,13 @@ export function YandexMapPicker({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[calc(var(--radius)+0.2rem)] border border-border/70 bg-muted/30">
-      <div className="h-[420px] w-full" ref={containerRef} />
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-[calc(var(--radius)+0.2rem)] border border-border/70 bg-muted/30",
+        className,
+      )}
+    >
+      <div className="h-full w-full" ref={containerRef} />
 
       {status !== "ready" ? (
         <div className="absolute inset-0 flex items-center justify-center bg-card/95">
@@ -401,13 +411,15 @@ export function YandexMapPicker({
         </div>
       ) : null}
 
-      <div className="pointer-events-none absolute inset-x-0 top-4 flex justify-center px-4">
-        <div className="rounded-full border border-border/70 bg-background/90 px-4 py-2 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
-          {pickupPoints.length
-            ? t("deliveryAddress.pickupMapHint")
-            : t("deliveryAddress.dragMapHint")}
+      {showHint ? (
+        <div className="pointer-events-none absolute inset-x-0 top-4 flex justify-center px-4">
+          <div className="rounded-full border border-border/70 bg-background/90 px-4 py-2 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
+            {pickupPoints.length
+              ? t("deliveryAddress.pickupMapHint")
+              : t("deliveryAddress.dragMapHint")}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {status === "ready" ? (
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
