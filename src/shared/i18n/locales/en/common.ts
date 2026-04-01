@@ -1,4 +1,13 @@
 export const enMessages = {
+  account: {
+    cardDescription:
+      "Connect sign-in, loyalty, saved addresses, and order history here when the tenant account flow is ready.",
+    cardTitle: "Account shell is ready for integration",
+    openStorefront: "Back to storefront",
+    subtitle:
+      "A minimal white label account page prepared for sign-in, loyalty, and customer profile flows.",
+    title: "Account",
+  },
   cart: {
     checkout: "Proceed to checkout",
     continue: "Browse menu",
@@ -93,6 +102,7 @@ export const enMessages = {
     login: "Sign in",
     pickup: "Pickup",
     pickupAddressLabel: "Pickup: {{address}}",
+    search: "Search",
     searchPlaceholder: "Search menu",
   },
   home: {
@@ -128,6 +138,15 @@ export const enMessages = {
   product: {
     addToCart: "Add to cart",
     preview: "Preview",
+  },
+  search: {
+    cardDescription:
+      "This page is already wired into the header navigation and is ready for catalog search integration.",
+    cardTitle: "Search can now be extended per storefront",
+    openMenu: "Open menu",
+    subtitle:
+      "A baseline white label search page prepared for dishes, categories, and brand search scenarios.",
+    title: "Search menu",
   },
   shared: {
     locale: "Language",

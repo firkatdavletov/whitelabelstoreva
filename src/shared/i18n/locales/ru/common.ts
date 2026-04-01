@@ -1,4 +1,13 @@
 export const ruMessages = {
+  account: {
+    cardDescription:
+      "Здесь можно подключить авторизацию, бонусную программу, сохранённые адреса и историю заказов.",
+    cardTitle: "Аккаунт готов к интеграции",
+    openStorefront: "Вернуться на витрину",
+    subtitle:
+      "Базовая страница профиля для white label сценариев входа, loyalty и персональных данных клиента.",
+    title: "Профиль",
+  },
   cart: {
     checkout: "Перейти к оформлению",
     continue: "Открыть меню",
@@ -94,6 +103,7 @@ export const ruMessages = {
     login: "Войти",
     pickup: "Самовывоз",
     pickupAddressLabel: "Самовывоз: {{address}}",
+    search: "Поиск",
     searchPlaceholder: "Поиск по меню",
   },
   home: {
@@ -129,6 +139,15 @@ export const ruMessages = {
   product: {
     addToCart: "Добавить",
     preview: "Подробнее",
+  },
+  search: {
+    cardDescription:
+      "Эта страница уже встроена в навигацию header и готова к подключению полнотекстового поиска по каталогу.",
+    cardTitle: "Поиск можно расширить под конкретный storefront",
+    openMenu: "Открыть меню",
+    subtitle:
+      "Базовая страница поиска для white label ресторана: сюда можно подключить поиск по блюдам, категориям и брендам.",
+    title: "Поиск по меню",
   },
   shared: {
     locale: "Язык",
