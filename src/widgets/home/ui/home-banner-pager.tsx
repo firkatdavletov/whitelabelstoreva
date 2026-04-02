@@ -15,6 +15,16 @@ type HomeBannerPagerProps = {
   previousLabel: string;
 };
 
+const interactiveElementSelector = [
+  "a",
+  "button",
+  "input",
+  "select",
+  "summary",
+  "textarea",
+  "[role='button']",
+].join(", ");
+
 export function HomeBannerPager({
   banners,
   nextLabel,
@@ -47,15 +57,25 @@ export function HomeBannerPager({
     swipeStateRef.current.startY = 0;
   }
 
+  function isInteractiveTarget(target: EventTarget | null) {
+    return (
+      target instanceof Element &&
+      target.closest(interactiveElementSelector) !== null
+    );
+  }
+
   function handlePointerDown(event: ReactPointerEvent<HTMLElement>) {
-    if (!event.isPrimary) {
+    if (!event.isPrimary || isInteractiveTarget(event.target)) {
       return;
     }
 
     swipeStateRef.current.pointerId = event.pointerId;
     swipeStateRef.current.startX = event.clientX;
     swipeStateRef.current.startY = event.clientY;
-    event.currentTarget.setPointerCapture(event.pointerId);
+
+    if (typeof event.currentTarget.setPointerCapture === "function") {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
   }
 
   function handlePointerUp(event: ReactPointerEvent<HTMLElement>) {
@@ -69,7 +89,10 @@ export function HomeBannerPager({
     const deltaX = event.clientX - swipeStateRef.current.startX;
     const deltaY = event.clientY - swipeStateRef.current.startY;
 
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+    if (
+      typeof event.currentTarget.hasPointerCapture === "function" &&
+      event.currentTarget.hasPointerCapture(event.pointerId)
+    ) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
@@ -90,6 +113,7 @@ export function HomeBannerPager({
   function handlePointerCancel(event: ReactPointerEvent<HTMLElement>) {
     if (
       swipeStateRef.current.pointerId === event.pointerId &&
+      typeof event.currentTarget.hasPointerCapture === "function" &&
       event.currentTarget.hasPointerCapture(event.pointerId)
     ) {
       event.currentTarget.releasePointerCapture(event.pointerId);
