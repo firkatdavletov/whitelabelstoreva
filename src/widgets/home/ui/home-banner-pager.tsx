@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -20,6 +21,15 @@ export function HomeBannerPager({
   previousLabel,
 }: HomeBannerPagerProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const swipeStateRef = useRef<{
+    pointerId: number | null;
+    startX: number;
+    startY: number;
+  }>({
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+  });
 
   if (!banners.length) {
     return null;
@@ -31,20 +41,83 @@ export function HomeBannerPager({
     setActiveIndex((nextIndex + banners.length) % banners.length);
   }
 
+  function resetSwipe() {
+    swipeStateRef.current.pointerId = null;
+    swipeStateRef.current.startX = 0;
+    swipeStateRef.current.startY = 0;
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLElement>) {
+    if (!event.isPrimary) {
+      return;
+    }
+
+    swipeStateRef.current.pointerId = event.pointerId;
+    swipeStateRef.current.startX = event.clientX;
+    swipeStateRef.current.startY = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handlePointerUp(event: ReactPointerEvent<HTMLElement>) {
+    if (
+      !event.isPrimary ||
+      swipeStateRef.current.pointerId !== event.pointerId
+    ) {
+      return;
+    }
+
+    const deltaX = event.clientX - swipeStateRef.current.startX;
+    const deltaY = event.clientY - swipeStateRef.current.startY;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    resetSwipe();
+
+    if (Math.abs(deltaX) < 48 || Math.abs(deltaX) <= Math.abs(deltaY)) {
+      return;
+    }
+
+    if (deltaX < 0) {
+      showSlide(activeIndex + 1);
+      return;
+    }
+
+    showSlide(activeIndex - 1);
+  }
+
+  function handlePointerCancel(event: ReactPointerEvent<HTMLElement>) {
+    if (
+      swipeStateRef.current.pointerId === event.pointerId &&
+      event.currentTarget.hasPointerCapture(event.pointerId)
+    ) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    resetSwipe();
+  }
+
   return (
     <section
       aria-label="Promotions"
       className="border-border/60 bg-card/95 relative overflow-hidden rounded-[calc(var(--radius)+0.75rem)] border shadow-[0_32px_72px_-48px_rgba(31,26,23,0.48)]"
+      onPointerCancel={handlePointerCancel}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      style={{ touchAction: "pan-y" }}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.88),transparent_34%)]" />
 
       <div className="relative grid h-[34rem] grid-rows-[minmax(0,1fr)_220px] items-stretch sm:h-[36rem] lg:h-[30rem] lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.82fr)] lg:grid-rows-1">
-        <div className="flex min-h-0 flex-col justify-between gap-8 p-6 sm:p-8">
-          <div className="space-y-6">
+        <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-6 p-6 sm:gap-8 sm:p-8">
+          <div>
             <span className="border-border/60 bg-background/80 text-muted-foreground inline-flex w-fit items-center rounded-full border px-3 py-1 text-[0.7rem] font-medium tracking-[0.22em] uppercase">
               {currentBanner.eyebrow}
             </span>
+          </div>
 
+          <div className="min-h-0 overflow-hidden">
             <div className="space-y-4">
               <h1 className="font-heading max-w-[12ch] text-4xl leading-none font-semibold sm:text-5xl">
                 {currentBanner.title}
@@ -56,7 +129,7 @@ export function HomeBannerPager({
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 self-end sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               {banners.map((banner, index) => (
                 <button
