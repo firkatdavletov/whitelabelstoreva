@@ -112,6 +112,8 @@ export const ruMessages = {
     searchPlaceholder: "Поиск по меню",
   },
   home: {
+    bannerNext: "Следующий баннер",
+    bannerPrevious: "Предыдущий баннер",
     browseMenu: "Открыть меню",
     checkout: "Перейти к checkout",
     eyebrow: "White label платформа заказа еды",

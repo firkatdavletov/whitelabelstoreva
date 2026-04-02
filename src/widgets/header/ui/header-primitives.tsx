@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ChevronDown, MapPin } from "lucide-react";
 
 import { cn } from "@/shared/lib/styles";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
 function buildLogoMark(logoText: string) {
@@ -101,15 +100,13 @@ export function HeaderAddressLink({
     <Button
       asChild
       className={cn(
-        "bg-card/84 border-border/70 hover:bg-card h-auto w-full justify-start rounded-[calc(var(--radius)+0.05rem)] px-3 py-3 text-left shadow-sm",
+        "hover:text-foreground h-auto w-full justify-start gap-2 rounded-xl border-0 bg-transparent px-0 py-1 text-left shadow-none hover:bg-transparent",
         className,
       )}
-      variant="outline"
+      variant="ghost"
     >
       <Link href={href}>
-        <span className="bg-secondary text-secondary-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-          <MapPin className="h-4 w-4" />
-        </span>
+        <MapPin className="text-muted-foreground h-4 w-4 shrink-0" />
         <span className="min-w-0 flex-1 text-left">
           <span className="text-muted-foreground block text-[0.65rem] tracking-[0.18em] uppercase">
             {label}
@@ -119,9 +116,9 @@ export function HeaderAddressLink({
           </span>
         </span>
         {etaLabel ? (
-          <Badge className="hidden shrink-0 md:inline-flex" variant="secondary">
+          <span className="text-muted-foreground hidden shrink-0 text-xs md:inline">
             {etaLabel}
-          </Badge>
+          </span>
         ) : null}
         <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
       </Link>

@@ -111,6 +111,8 @@ export const enMessages = {
     searchPlaceholder: "Search menu",
   },
   home: {
+    bannerNext: "Next banner",
+    bannerPrevious: "Previous banner",
     browseMenu: "Browse full menu",
     checkout: "Go to checkout",
     eyebrow: "White label food ordering platform",
