@@ -22,6 +22,7 @@ describe("mapProductDtoToProduct", () => {
 
     expect(product).toEqual({
       categoryId: "cat-burgers",
+      countStep: 1,
       currency: "USD",
       defaultVariantId: null,
       description: "Double smash patty.",
@@ -35,6 +36,7 @@ describe("mapProductDtoToProduct", () => {
       price: 14.9,
       slug: "city-smash",
       tags: ["best seller"],
+      unit: "PIECE",
       variants: [],
       visual: "C",
     });
@@ -116,6 +118,7 @@ describe("mapProductDtoToProduct", () => {
       },
       {
         categoryId: "cat-burgers",
+        countStep: 1,
         currency: "USD",
         defaultVariantId: null,
         description: "Double smash patty.",
@@ -129,6 +132,7 @@ describe("mapProductDtoToProduct", () => {
         price: 14.9,
         slug: "city-smash",
         tags: ["best seller"],
+        unit: "PIECE",
         variants: [],
         visual: "C",
       },
@@ -136,6 +140,7 @@ describe("mapProductDtoToProduct", () => {
 
     expect(detailedProduct).toEqual({
       categoryId: "cat-burgers",
+      countStep: 1,
       currency: "USD",
       defaultVariantId: "variant-double",
       description: "Choose size and extras.",
@@ -179,6 +184,7 @@ describe("mapProductDtoToProduct", () => {
       price: 14.9,
       slug: "city-smash",
       tags: ["best seller"],
+      unit: "PIECE",
       variants: [
         {
           id: "variant-double",

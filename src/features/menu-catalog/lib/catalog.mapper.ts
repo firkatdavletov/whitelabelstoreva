@@ -24,6 +24,7 @@ export function mapCatalogProductDtoToProduct(
 ): Product {
   return {
     categoryId: dto.categoryId,
+    countStep: dto.countStep,
     currency,
     defaultVariantId: null,
     description: dto.description ?? "",
@@ -37,6 +38,7 @@ export function mapCatalogProductDtoToProduct(
     price: dto.priceMinor / 100,
     slug: dto.slug,
     tags: dto.brand ? [dto.brand] : [],
+    unit: dto.unit,
     variants: [],
     visual: dto.title.trim().charAt(0).toUpperCase() || "?",
   };

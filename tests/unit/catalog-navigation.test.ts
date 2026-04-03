@@ -25,6 +25,7 @@ const categories: Category[] = [
 const products: Product[] = [
   {
     categoryId: "cat-burgers",
+    countStep: 1,
     currency: "USD",
     defaultVariantId: null,
     description: "",
@@ -38,11 +39,13 @@ const products: Product[] = [
     price: 14.9,
     slug: "city-smash-burger",
     tags: [],
+    unit: "PIECE",
     variants: [],
     visual: "C",
   },
   {
     categoryId: "cat-drinks",
+    countStep: 1,
     currency: "USD",
     defaultVariantId: null,
     description: "",
@@ -56,6 +59,7 @@ const products: Product[] = [
     price: 5.4,
     slug: "yuzu-mint-fizz",
     tags: [],
+    unit: "PIECE",
     variants: [],
     visual: "Y",
   },

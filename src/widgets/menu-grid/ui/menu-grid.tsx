@@ -1,18 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  startTransition,
-  useEffect,
-  useOptimistic,
-  useRef,
-  useState,
-} from "react";
+import { startTransition, useEffect, useOptimistic, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { AddToCartButton } from "@/features/add-to-cart";
-import { ProductPreviewDialog } from "@/features/menu-catalog";
 import {
   buildMenuCategoryHref,
   getMenuCategoryProducts,
@@ -20,10 +14,8 @@ import {
 } from "@/features/menu-catalog/lib/catalog-navigation";
 import type { Category } from "@/entities/category";
 import type { Product } from "@/entities/product";
-import {
-  getProductCardImageSrc,
-  getProductCardMeta,
-} from "@/entities/product/lib/product-card";
+import { getProductCardImageSrc } from "@/entities/product/lib/product-card";
+import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { formatCurrency } from "@/shared/lib/currency";
 import type { Locale } from "@/shared/types/common";
 import { Button } from "@/shared/ui/button";
@@ -38,31 +30,33 @@ type MenuGridProps = {
 };
 
 type MenuProductCardProps = {
+  activeCategorySlug: string | null;
   locale: Locale;
   product: Product;
 };
 
-function MenuProductCard({ locale, product }: MenuProductCardProps) {
-  const compactMeta = getProductCardMeta(product);
+function MenuProductCard({
+  activeCategorySlug,
+  locale,
+  product,
+}: MenuProductCardProps) {
+  const { href } = useStorefrontRoute();
   const { t } = useTranslation();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const productHref = `${href(`/menu/${product.slug}`)}${
+    activeCategorySlug
+      ? `?category=${encodeURIComponent(activeCategorySlug)}`
+      : ""
+  }`;
 
   return (
     <Card className="group border-border/75 bg-card relative flex min-h-[244px] w-full max-w-[164px] flex-col overflow-hidden rounded-[22px] shadow-[0_18px_38px_-26px_rgba(31,26,23,0.42)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_-28px_rgba(31,26,23,0.38)] md:min-h-[348px] md:max-w-[280px]">
-      <ProductPreviewDialog
-        locale={locale}
-        onOpenChange={setIsDialogOpen}
-        open={isDialogOpen}
-        product={product}
-      />
-      <button
+      <Link
         aria-label={`${t("product.preview")} ${product.name}`}
         className="focus-visible:ring-ring absolute inset-0 z-10 rounded-[22px] outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-        onClick={() => setIsDialogOpen(true)}
-        type="button"
+        href={productHref}
       >
         <span className="sr-only">{`${t("product.preview")} ${product.name}`}</span>
-      </button>
+      </Link>
 
       <div className="bg-muted/38 relative aspect-[4/3] w-full overflow-hidden">
         <Image
@@ -83,30 +77,27 @@ function MenuProductCard({ locale, product }: MenuProductCardProps) {
           </h3>
 
           <p className="font-heading text-[1.05rem] leading-none font-semibold md:text-[1.45rem]">
-            {formatCurrency(product.price, product.currency, locale)}
+            {product.isConfigured
+              ? t("product.priceFrom", {
+                  price: formatCurrency(
+                    product.price,
+                    product.currency,
+                    locale,
+                  ),
+                })
+              : formatCurrency(product.price, product.currency, locale)}
           </p>
 
-          <p className="text-muted-foreground truncate text-[0.72rem] leading-4 md:text-xs md:leading-5">
-            {compactMeta ?? product.description}
+          <p className="text-muted-foreground [display:-webkit-box] h-8 overflow-hidden text-[0.72rem] leading-4 [-webkit-box-orient:vertical] [-webkit-line-clamp:2] md:h-10 md:text-xs md:leading-5">
+            {product.description || " "}
           </p>
         </div>
 
-        {product.isConfigured ? (
-          <Button
-            className="relative z-20 mt-auto rounded-xl text-[0.78rem] md:text-sm"
-            onClick={() => setIsDialogOpen(true)}
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            {t("product.choose")}
-          </Button>
-        ) : (
-          <AddToCartButton
-            className="relative z-20 mt-auto rounded-xl text-[0.78rem] md:text-sm"
-            product={product}
-          />
-        )}
+        <AddToCartButton
+          className="text-[0.78rem] md:text-sm"
+          product={product}
+          productHref={productHref}
+        />
       </div>
     </Card>
   );
@@ -217,6 +208,7 @@ export function MenuGrid({
           <div className="grid min-w-0 grid-cols-2 justify-between gap-x-2 gap-y-4 sm:gap-x-3 md:grid-cols-[repeat(auto-fit,minmax(280px,280px))] md:justify-start md:gap-5">
             {visibleProducts.map((product) => (
               <MenuProductCard
+                activeCategorySlug={selectedCategory?.slug ?? null}
                 key={product.id}
                 locale={locale}
                 product={product}

@@ -5,6 +5,7 @@ import type {
   PutCartDeliveryRequestDto,
 } from "@/entities/cart/api/cart.dto";
 import { mapCartDtoToStorefrontCart } from "@/entities/cart";
+import type { ProductUnit } from "@/shared/lib/product-quantity";
 import { apiRequest } from "@/shared/api";
 import { env } from "@/shared/config/env";
 
@@ -18,10 +19,12 @@ export type StorefrontCartItemModifierInput = {
 };
 
 export type AddStorefrontCartItemInput = {
+  countStep?: number;
   modifiers?: StorefrontCartItemModifierInput[];
   productId: string;
   quantity?: number;
   title?: string;
+  unit?: ProductUnit;
   unitPrice?: number;
   variantId?: string | null;
 };
@@ -272,7 +275,7 @@ export async function addStorefrontCartItem(
       items: [
         ...cart.items,
         {
-          countStep: 1,
+          countStep: input.countStep ?? 1,
           id: `mock-item-${configurationKey}`,
           lineTotalMinor: unitTotalMinor * quantity,
           modifiers: modifiers.map((modifier) => ({
@@ -291,7 +294,7 @@ export async function addStorefrontCartItem(
           productId: input.productId,
           quantity,
           title: resolveCartLineTitle(input),
-          unit: "PIECE",
+          unit: input.unit ?? "PIECE",
           unitPriceMinor,
           variantId: input.variantId ?? null,
         },

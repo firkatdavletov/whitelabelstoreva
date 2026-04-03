@@ -1,12 +1,14 @@
 import type { components } from "@/shared/api/generated/schema";
 
 export type StorefrontCartItem = {
+  countStep: number;
   id: string;
   lineTotal: number;
   modifierNames: string[];
   productId: string;
   quantity: number;
   title: string;
+  unit: components["schemas"]["ProductUnit"];
 };
 
 export type StorefrontCartDeliveryMethod =

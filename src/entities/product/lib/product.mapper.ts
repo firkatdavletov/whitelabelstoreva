@@ -8,6 +8,7 @@ import type { Product } from "@/entities/product/model/product.types";
 export function mapProductDtoToProduct(dto: ProductDto): Product {
   return {
     categoryId: dto.category_id,
+    countStep: 1,
     currency: dto.currency,
     defaultVariantId: null,
     description: dto.description,
@@ -21,6 +22,7 @@ export function mapProductDtoToProduct(dto: ProductDto): Product {
     price: dto.price_minor / 100,
     slug: dto.slug,
     tags: dto.tags,
+    unit: "PIECE",
     variants: [],
     visual: dto.visual_hint,
   };
@@ -33,6 +35,7 @@ export function mapProductDetailsDtoToProduct(
   return {
     ...product,
     categoryId: dto.categoryId,
+    countStep: dto.countStep,
     defaultVariantId: dto.defaultVariantId ?? null,
     description: dto.description ?? product.description,
     imageUrl: dto.imageUrls[0] ?? product.imageUrl,
@@ -77,6 +80,7 @@ export function mapProductDetailsDtoToProduct(
       })),
     price: dto.priceMinor / 100,
     slug: dto.slug,
+    unit: dto.unit,
     variants: dto.variants
       .slice()
       .sort((left, right) => left.sortOrder - right.sortOrder)

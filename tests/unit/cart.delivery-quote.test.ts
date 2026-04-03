@@ -71,11 +71,31 @@ describe("mapCartDtoToStorefrontCart", () => {
         updatedAt: null,
       },
       id: "cart-1",
-      items: [],
+      items: [
+        {
+          countStep: 1,
+          id: "item-1",
+          lineTotalMinor: 1490,
+          modifiers: [],
+          modifiersTotalMinor: 0,
+          priceMinor: 1490,
+          productId: "product-1",
+          quantity: 1,
+          title: "City Smash",
+          unit: "PIECE",
+          unitPriceMinor: 1490,
+          variantId: null,
+        },
+      ],
       status: "ACTIVE",
-      totalPriceMinor: 0,
+      totalPriceMinor: 1490,
     });
 
     expect(storefrontCart.delivery?.quote?.estimatedMinutes).toBe(25);
+    expect(storefrontCart.items[0]).toMatchObject({
+      countStep: 1,
+      quantity: 1,
+      unit: "PIECE",
+    });
   });
 });

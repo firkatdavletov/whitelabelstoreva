@@ -1,6 +1,8 @@
 import type { components } from "@/shared/api/generated/schema";
 import type { CurrencyCode } from "@/shared/types/common";
 
+export type ProductUnit = components["schemas"]["ProductUnit"];
+
 export type ProductOptionValue = {
   id: string;
   title: string;
@@ -42,6 +44,7 @@ export type ProductVariant = {
 
 export type Product = {
   categoryId: string;
+  countStep: number;
   currency: CurrencyCode;
   defaultVariantId: string | null;
   description: string;
@@ -55,6 +58,7 @@ export type Product = {
   price: number;
   slug: string;
   tags: string[];
+  unit: ProductUnit;
   variants: ProductVariant[];
   visual: string;
 };

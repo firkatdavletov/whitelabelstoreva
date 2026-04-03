@@ -43,6 +43,21 @@ export function getMenuCategoryProducts(
   return products.filter((product) => product.categoryId === categoryId);
 }
 
+export function resolveMenuProduct(
+  products: Product[],
+  productParam: string | null | undefined,
+) {
+  if (!productParam) {
+    return null;
+  }
+
+  return (
+    products.find(
+      (product) => product.slug === productParam || product.id === productParam,
+    ) ?? null
+  );
+}
+
 export function buildMenuCategoryHref(href: string, categorySlug: string) {
   const [pathWithQuery, hash = ""] = href.split("#", 2);
   const [pathname, queryString = ""] = pathWithQuery.split("?", 2);
