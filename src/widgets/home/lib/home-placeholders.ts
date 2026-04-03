@@ -13,6 +13,7 @@ export type HomeCategoryCard = {
   id: string;
   imageSrc: string;
   name: string;
+  slug: string;
 };
 
 const bannerContent = {
@@ -174,5 +175,6 @@ export function getHomeCategoryCards(
     id: category.id,
     imageSrc: createCategorySvg(category.name, index),
     name: category.name,
+    slug: category.slug,
   }));
 }

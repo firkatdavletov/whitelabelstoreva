@@ -70,6 +70,7 @@ export const enMessages = {
     methodsEmpty: "The backend did not return any delivery methods yet.",
     methodsError: "Failed to load delivery methods.",
     retry: "Retry",
+    quoteUnavailableFallback: "Delivery is unavailable for the selected address.",
     saveErrorDescription:
       "Check the selected address and try saving it one more time.",
     saveErrorTitle: "Failed to save address",

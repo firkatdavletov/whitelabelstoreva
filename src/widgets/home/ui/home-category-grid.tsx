@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
+import { buildMenuCategoryHref } from "@/features/menu-catalog/lib/catalog-navigation";
 import { Button } from "@/shared/ui/button";
 import type { HomeCategoryCard } from "@/widgets/home/lib/home-placeholders";
 
@@ -26,7 +27,7 @@ export function HomeCategoryGrid({
         {categories.map((category) => (
           <Link
             className="group border-border/60 bg-card/96 overflow-hidden rounded-[calc(var(--radius)+0.35rem)] border shadow-[0_24px_60px_-48px_rgba(31,26,23,0.55)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_80px_-44px_rgba(31,26,23,0.42)]"
-            href={actionHref}
+            href={buildMenuCategoryHref(actionHref, category.slug)}
             key={category.id}
           >
             <div className="bg-muted/50 relative aspect-[4/3] overflow-hidden">

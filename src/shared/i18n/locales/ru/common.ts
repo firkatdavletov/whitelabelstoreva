@@ -72,6 +72,7 @@ export const ruMessages = {
     methodsEmpty: "Backend пока не вернул доступные способы доставки.",
     methodsError: "Не удалось загрузить способы доставки.",
     retry: "Повторить",
+    quoteUnavailableFallback: "Доставка по выбранному адресу недоступна.",
     saveErrorDescription:
       "Проверьте выбранный адрес и попробуйте сохранить его ещё раз.",
     saveErrorTitle: "Не удалось сохранить адрес",

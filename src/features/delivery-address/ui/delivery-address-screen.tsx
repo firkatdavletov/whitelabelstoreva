@@ -36,6 +36,10 @@ import {
   pickupPointToMapCenter,
   type DeliveryMapCenter,
 } from "@/features/delivery-address/lib/delivery-address.utils";
+import {
+  resolveDeliveryQuoteAvailability,
+  resolveDeliveryQuoteUnavailableMessage,
+} from "@/features/delivery-address/lib/delivery-quote.utils";
 
 function formatQuotePrice(
   currency: string,
@@ -196,6 +200,14 @@ export function DeliveryAddressScreen() {
     resolveDeliveryQuoteEta(selectedCourierDraft?.quote),
     t,
   );
+  const selectedCourierQuoteAvailability = resolveDeliveryQuoteAvailability(
+    selectedCourierDraft?.quote,
+  );
+  const selectedCourierQuoteUnavailableMessage =
+    selectedCourierQuoteAvailability === false
+      ? (resolveDeliveryQuoteUnavailableMessage(selectedCourierDraft?.quote) ??
+        t("deliveryAddress.quoteUnavailableFallback"))
+      : null;
   const quotePriceLabel = selectedCourierDraft?.quote
     ? formatQuotePrice(
         selectedCourierDraft.quote.currency,
@@ -213,7 +225,7 @@ export function DeliveryAddressScreen() {
   const canSubmitSelectedAddress =
     Boolean(putCartDeliveryRequest) &&
     (selectedMethodCode === "COURIER"
-      ? Boolean(selectedCourierDraft?.quote?.available) &&
+      ? selectedCourierQuoteAvailability === true &&
         Boolean(env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY)
       : isPickup
         ? Boolean(selectedPickupPoint)
@@ -386,25 +398,31 @@ export function DeliveryAddressScreen() {
             </div>
 
             {selectedMethodCode === "COURIER" && selectedCourierDraft?.quote ? (
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
-                  <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
-                    {t("deliveryAddress.conditionsEta")}
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {selectedCourierQuoteEtaLabel ??
-                      t("deliveryAddress.conditionNotAvailable")}
-                  </p>
+              selectedCourierQuoteAvailability === false ? (
+                <div className="rounded-2xl border border-destructive/20 bg-destructive/6 px-4 py-3 text-sm text-destructive">
+                  {selectedCourierQuoteUnavailableMessage}
                 </div>
-                <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
-                  <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
-                    {t("deliveryAddress.conditionsPrice")}
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {quotePriceLabel ?? t("deliveryAddress.free")}
-                  </p>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
+                    <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+                      {t("deliveryAddress.conditionsEta")}
+                    </p>
+                    <p className="mt-1 text-sm font-medium">
+                      {selectedCourierQuoteEtaLabel ??
+                        t("deliveryAddress.conditionNotAvailable")}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
+                    <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+                      {t("deliveryAddress.conditionsPrice")}
+                    </p>
+                    <p className="mt-1 text-sm font-medium">
+                      {quotePriceLabel ?? t("deliveryAddress.free")}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )
             ) : null}
 
             {selectedMethodCode === "COURIER" && courierDraftQuery.isError ? (
