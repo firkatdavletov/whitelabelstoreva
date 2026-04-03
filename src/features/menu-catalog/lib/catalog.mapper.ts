@@ -30,6 +30,7 @@ export function mapCatalogProductDtoToProduct(
     id: dto.id,
     imageUrl: dto.imageUrls[0] ?? null,
     isAvailable: dto.isActive,
+    isConfigured: dto.isConfigured,
     modifierGroups: [],
     name: dto.title,
     optionGroups: [],

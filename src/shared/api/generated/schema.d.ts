@@ -964,6 +964,7 @@ export interface components {
             /** Format: int32 */
             countStep: number;
             isActive: boolean;
+            isConfigured: boolean;
         };
         ProductDetailsResponse: {
             /** Format: uuid */
@@ -983,6 +984,7 @@ export interface components {
             /** Format: int32 */
             countStep: number;
             isActive: boolean;
+            isConfigured: boolean;
             optionGroups: components["schemas"]["ProductOptionGroupResponse"][];
             modifierGroups: components["schemas"]["ProductModifierGroupResponse"][];
             /** Format: uuid */

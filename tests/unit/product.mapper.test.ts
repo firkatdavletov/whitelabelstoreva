@@ -28,6 +28,7 @@ describe("mapProductDtoToProduct", () => {
       id: "prod-1",
       imageUrl: null,
       isAvailable: true,
+      isConfigured: false,
       modifierGroups: [],
       name: "City Smash",
       optionGroups: [],
@@ -49,6 +50,7 @@ describe("mapProductDtoToProduct", () => {
         id: "prod-1",
         imageUrls: ["https://cdn.example.com/city-smash.jpg"],
         isActive: true,
+        isConfigured: true,
         modifierGroups: [
           {
             code: "extras",
@@ -120,6 +122,7 @@ describe("mapProductDtoToProduct", () => {
         id: "prod-1",
         imageUrl: null,
         isAvailable: true,
+        isConfigured: false,
         modifierGroups: [],
         name: "City Smash",
         optionGroups: [],
@@ -139,6 +142,7 @@ describe("mapProductDtoToProduct", () => {
       id: "prod-1",
       imageUrl: "https://cdn.example.com/city-smash.jpg",
       isAvailable: true,
+      isConfigured: true,
       modifierGroups: [
         {
           id: "group-extras",

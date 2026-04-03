@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Check, ShoppingBag } from "lucide-react";
+import { Check, RefreshCw, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -14,6 +14,7 @@ import type {
 import { getProductCardImageSrc } from "@/entities/product/lib/product-card";
 import { useAddStorefrontCartItemMutation } from "@/features/cart-summary/hooks/use-storefront-cart-mutations";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
+import { useMenuProductDetailsQuery } from "@/features/menu-catalog/hooks/use-menu-product-details-query";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { formatCurrency } from "@/shared/lib/currency";
 import { cn } from "@/shared/lib/styles";
@@ -26,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { useUiStore } from "@/store/ui-store";
 
 type ProductPreviewDialogProps = {
@@ -161,6 +163,11 @@ export function ProductPreviewDialog({
   const { tenantSlug } = useStorefrontRoute();
   const { data: storefrontCart } = useStorefrontCartQuery(tenantSlug);
   const addCartItemMutation = useAddStorefrontCartItemMutation(tenantSlug);
+  const productDetailsQuery = useMenuProductDetailsQuery(
+    product,
+    tenantSlug,
+    open,
+  );
   const openCartSidebar = useUiStore((state) => state.openCartSidebar);
   const { t } = useTranslation();
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
@@ -170,21 +177,28 @@ export function ProductPreviewDialog({
     useState<SelectedModifiersState>(() =>
       createInitialModifierSelection(product),
     );
+  const resolvedProduct = productDetailsQuery.data ?? product;
+  const isDetailsLoading =
+    open && !productDetailsQuery.data && productDetailsQuery.isPending;
+  const isDetailsError =
+    open && !productDetailsQuery.data && productDetailsQuery.isError;
 
   useEffect(() => {
-    if (!open) {
+    if (!open || isDetailsLoading || isDetailsError) {
       return;
     }
 
-    setSelectedVariantId(getDefaultVariantId(product));
-    setSelectedModifierIdsByGroup(createInitialModifierSelection(product));
-  }, [open, product]);
+    setSelectedVariantId(getDefaultVariantId(resolvedProduct));
+    setSelectedModifierIdsByGroup(
+      createInitialModifierSelection(resolvedProduct),
+    );
+  }, [isDetailsError, isDetailsLoading, open, resolvedProduct]);
 
-  const activeVariants = getActiveVariants(product);
-  const modifierGroups = getRenderableModifierGroups(product);
+  const activeVariants = getActiveVariants(resolvedProduct);
+  const modifierGroups = getRenderableModifierGroups(resolvedProduct);
   const selectedVariant =
     activeVariants.find((variant) => variant.id === selectedVariantId) ?? null;
-  const selectedUnitPrice = selectedVariant?.price ?? product.price;
+  const selectedUnitPrice = selectedVariant?.price ?? resolvedProduct.price;
   const selectedModifierOptions = modifierGroups.flatMap((group) => {
     const selectedIds = selectedModifierIdsByGroup[group.id] ?? [];
 
@@ -224,15 +238,106 @@ export function ProductPreviewDialog({
   );
   const imageSrc =
     selectedVariant?.imageUrl ??
-    product.imageUrl ??
-    getProductCardImageSrc(product);
+    resolvedProduct.imageUrl ??
+    getProductCardImageSrc(resolvedProduct);
   const configuredTitle = selectedVariant
-    ? `${product.name} · ${resolveVariantLabel(product, selectedVariant)}`
-    : product.name;
+    ? `${resolvedProduct.name} · ${resolveVariantLabel(
+        resolvedProduct,
+        selectedVariant,
+      )}`
+    : resolvedProduct.name;
   const isSubmitDisabled =
-    !product.isAvailable ||
+    !resolvedProduct.isAvailable ||
     missingRequiredGroups.length > 0 ||
     addCartItemMutation.isPending;
+
+  if (isDetailsLoading) {
+    return (
+      <Dialog onOpenChange={onOpenChange} open={open}>
+        <DialogContent className="border-border/70 bg-card overflow-hidden rounded-[30px] p-0 sm:max-w-[960px]">
+          <div className="grid max-h-[calc(100vh-2rem)] md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+            <div className="relative min-h-[280px] overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.82),transparent_32%),linear-gradient(180deg,#f8ecdf_0%,#ead6c0_100%)]">
+              <Image
+                alt={product.name}
+                className="object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, 480px"
+                src={getProductCardImageSrc(product)}
+                unoptimized
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(28,17,11,0.08),rgba(28,17,11,0.4))]" />
+            </div>
+
+            <div className="bg-card flex min-h-0 flex-col">
+              <div className="overflow-y-auto px-5 pt-5 pb-4 sm:px-6 sm:pt-6">
+                <DialogHeader className="gap-3">
+                  <DialogTitle className="text-2xl leading-tight sm:text-[2rem]">
+                    {product.name}
+                  </DialogTitle>
+                  <DialogDescription className="max-w-[42ch] text-sm leading-6 sm:text-[0.95rem]">
+                    {t("product.loading")}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="mt-6 space-y-4">
+                  <Skeleton className="h-32 rounded-[28px]" />
+                  <Skeleton className="h-40 rounded-[28px]" />
+                  <Skeleton className="h-28 rounded-[28px]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (isDetailsError) {
+    return (
+      <Dialog onOpenChange={onOpenChange} open={open}>
+        <DialogContent className="border-border/70 bg-card overflow-hidden rounded-[30px] p-0 sm:max-w-[960px]">
+          <div className="grid max-h-[calc(100vh-2rem)] md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+            <div className="relative min-h-[280px] overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.82),transparent_32%),linear-gradient(180deg,#f8ecdf_0%,#ead6c0_100%)]">
+              <Image
+                alt={product.name}
+                className="object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, 480px"
+                src={getProductCardImageSrc(product)}
+                unoptimized
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(28,17,11,0.08),rgba(28,17,11,0.4))]" />
+            </div>
+
+            <div className="bg-card flex min-h-0 flex-col">
+              <div className="flex flex-1 flex-col justify-center px-5 py-5 sm:px-6 sm:py-6">
+                <DialogHeader className="gap-3">
+                  <DialogTitle className="text-2xl leading-tight sm:text-[2rem]">
+                    {product.name}
+                  </DialogTitle>
+                  <DialogDescription className="max-w-[42ch] text-sm leading-6 sm:text-[0.95rem]">
+                    {productDetailsQuery.error instanceof Error
+                      ? productDetailsQuery.error.message
+                      : t("product.loadError")}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Button
+                  className="mt-6 w-full rounded-2xl sm:w-auto"
+                  onClick={() => productDetailsQuery.refetch()}
+                  size="lg"
+                  variant="outline"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  {t("shared.retry")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
@@ -240,7 +345,7 @@ export function ProductPreviewDialog({
         <div className="grid max-h-[calc(100vh-2rem)] md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
           <div className="relative min-h-[280px] overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.82),transparent_32%),linear-gradient(180deg,#f8ecdf_0%,#ead6c0_100%)]">
             <Image
-              alt={product.name}
+              alt={resolvedProduct.name}
               className="object-cover"
               fill
               sizes="(max-width: 768px) 100vw, 480px"
@@ -256,13 +361,17 @@ export function ProductPreviewDialog({
                   : t("shared.total")}
               </p>
               <p className="font-heading text-foreground mt-2 text-3xl leading-none font-semibold">
-                {formatCurrency(selectedUnitPrice, product.currency, locale)}
+                {formatCurrency(
+                  selectedUnitPrice,
+                  resolvedProduct.currency,
+                  locale,
+                )}
               </p>
               {selectedVariant ? (
                 <p className="text-muted-foreground mt-2 text-sm">
-                  {resolveVariantLabel(product, selectedVariant)}
+                  {resolveVariantLabel(resolvedProduct, selectedVariant)}
                 </p>
-              ) : product.isAvailable ? null : (
+              ) : resolvedProduct.isAvailable ? null : (
                 <p className="text-muted-foreground mt-2 text-sm">
                   {t("product.unavailable")}
                 </p>
@@ -274,11 +383,11 @@ export function ProductPreviewDialog({
             <div className="overflow-y-auto px-5 pt-5 pb-4 sm:px-6 sm:pt-6">
               <DialogHeader className="gap-3">
                 <DialogTitle className="text-2xl leading-tight sm:text-[2rem]">
-                  {product.name}
+                  {resolvedProduct.name}
                 </DialogTitle>
-                {product.description ? (
+                {resolvedProduct.description ? (
                   <DialogDescription className="max-w-[42ch] text-sm leading-6 sm:text-[0.95rem]">
-                    {product.description}
+                    {resolvedProduct.description}
                   </DialogDescription>
                 ) : null}
               </DialogHeader>
@@ -316,14 +425,14 @@ export function ProductPreviewDialog({
                           >
                             <div className="min-w-0">
                               <p className="text-foreground font-medium">
-                                {resolveVariantLabel(product, variant)}
+                                {resolveVariantLabel(resolvedProduct, variant)}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-foreground text-sm font-semibold">
                                 {formatCurrency(
-                                  variant.price ?? product.price,
-                                  product.currency,
+                                  variant.price ?? resolvedProduct.price,
+                                  resolvedProduct.currency,
                                   locale,
                                 )}
                               </span>
@@ -440,7 +549,7 @@ export function ProductPreviewDialog({
                                 {option.price > 0
                                   ? `+${formatCurrency(
                                       option.price,
-                                      product.currency,
+                                      resolvedProduct.currency,
                                       locale,
                                     )}`
                                   : t("product.included")}
@@ -468,14 +577,22 @@ export function ProductPreviewDialog({
                     {t("shared.total")}
                   </p>
                   <p className="font-heading text-foreground mt-1 text-2xl leading-none font-semibold">
-                    {formatCurrency(totalPrice, product.currency, locale)}
+                    {formatCurrency(
+                      totalPrice,
+                      resolvedProduct.currency,
+                      locale,
+                    )}
                   </p>
                 </div>
 
                 {modifiersTotal > 0 ? (
                   <p className="text-muted-foreground text-right text-sm">
                     {t("product.modifiersTotal")}:{" "}
-                    {formatCurrency(modifiersTotal, product.currency, locale)}
+                    {formatCurrency(
+                      modifiersTotal,
+                      resolvedProduct.currency,
+                      locale,
+                    )}
                   </p>
                 ) : null}
               </div>
@@ -489,11 +606,13 @@ export function ProductPreviewDialog({
                   addCartItemMutation.mutate(
                     {
                       modifiers: selectedModifierOptions,
-                      productId: product.id,
+                      productId: resolvedProduct.id,
                       title: configuredTitle,
                       unitPrice: selectedUnitPrice,
                       variantId:
-                        selectedVariant?.id ?? product.defaultVariantId ?? null,
+                        selectedVariant?.id ??
+                        resolvedProduct.defaultVariantId ??
+                        null,
                     },
                     {
                       onSuccess: () => {
@@ -514,7 +633,7 @@ export function ProductPreviewDialog({
                 size="lg"
               >
                 <ShoppingBag className="h-4 w-4" />
-                {product.isAvailable
+                {resolvedProduct.isAvailable
                   ? t("product.addToCart")
                   : t("product.unavailable")}
               </Button>

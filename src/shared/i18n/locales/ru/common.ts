@@ -150,6 +150,8 @@ export const ruMessages = {
     chooseAtLeast: "Минимум {{count}}",
     chooseUpTo: "До {{count}} опций",
     included: "Входит в цену",
+    loadError: "Не удалось загрузить детали товара.",
+    loading: "Загружаем детали товара...",
     modifiersTotal: "Дополнительно",
     optional: "Опционально",
     preview: "Подробнее",
@@ -170,6 +172,7 @@ export const ruMessages = {
   shared: {
     locale: "Язык",
     quantity: "Кол-во",
+    retry: "Повторить",
     tenant: "Tenant",
     total: "Итого",
   },

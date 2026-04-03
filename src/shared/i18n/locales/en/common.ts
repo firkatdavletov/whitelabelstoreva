@@ -150,6 +150,8 @@ export const enMessages = {
     chooseAtLeast: "Select at least {{count}}",
     chooseUpTo: "Up to {{count}} options",
     included: "Included",
+    loadError: "Couldn't load product details.",
+    loading: "Loading product details...",
     modifiersTotal: "Extras",
     optional: "Optional",
     preview: "Preview",
@@ -170,6 +172,7 @@ export const enMessages = {
   shared: {
     locale: "Language",
     quantity: "Qty",
+    retry: "Retry",
     tenant: "Tenant",
     total: "Total",
   },

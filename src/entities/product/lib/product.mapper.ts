@@ -14,6 +14,7 @@ export function mapProductDtoToProduct(dto: ProductDto): Product {
     id: dto.id,
     imageUrl: null,
     isAvailable: dto.is_available,
+    isConfigured: false,
     modifierGroups: [],
     name: dto.name,
     optionGroups: [],
@@ -36,6 +37,7 @@ export function mapProductDetailsDtoToProduct(
     description: dto.description ?? product.description,
     imageUrl: dto.imageUrls[0] ?? product.imageUrl,
     isAvailable: dto.isActive,
+    isConfigured: dto.isConfigured,
     modifierGroups: dto.modifierGroups
       .slice()
       .sort((left, right) => left.sortOrder - right.sortOrder)

@@ -272,6 +272,15 @@ export function createMockCatalogCategoriesDto(
   }));
 }
 
+function isMockProductConfigured(tenantSlug: string, productId: string) {
+  return (
+    tenantSlug === "storeva-street" &&
+    ["prod-city-smash", "prod-hot-honey", "prod-loaded-fries"].includes(
+      productId,
+    )
+  );
+}
+
 export function createMockCatalogProductsDto(
   tenantSlug: string,
 ): CatalogProductDto[] {
@@ -283,6 +292,7 @@ export function createMockCatalogProductsDto(
     id: product.id,
     imageUrls: [],
     isActive: product.is_available,
+    isConfigured: isMockProductConfigured(tenantSlug, product.id),
     oldPriceMinor: null,
     priceMinor: product.price_minor,
     sku: null,
@@ -314,6 +324,7 @@ function createBaseMockProductDetailsDto(
     id: product.id,
     imageUrls: [],
     isActive: product.is_available,
+    isConfigured: isMockProductConfigured(tenantSlug, product.id),
     modifierGroups: [],
     oldPriceMinor: null,
     optionGroups: [],

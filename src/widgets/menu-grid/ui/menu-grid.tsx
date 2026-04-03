@@ -46,11 +46,6 @@ function MenuProductCard({ locale, product }: MenuProductCardProps) {
   const compactMeta = getProductCardMeta(product);
   const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const hasConfiguration =
-    product.variants.some((variant) => variant.isActive) ||
-    product.modifierGroups.some((group) =>
-      group.options.some((option) => option.isActive),
-    );
 
   return (
     <Card className="group border-border/75 bg-card relative flex min-h-[244px] w-full max-w-[164px] flex-col overflow-hidden rounded-[22px] shadow-[0_18px_38px_-26px_rgba(31,26,23,0.42)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_-28px_rgba(31,26,23,0.38)] md:min-h-[348px] md:max-w-[280px]">
@@ -96,7 +91,7 @@ function MenuProductCard({ locale, product }: MenuProductCardProps) {
           </p>
         </div>
 
-        {hasConfiguration ? (
+        {product.isConfigured ? (
           <Button
             className="relative z-20 mt-auto rounded-xl text-[0.78rem] md:text-sm"
             onClick={() => setIsDialogOpen(true)}

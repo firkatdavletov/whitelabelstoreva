@@ -48,6 +48,7 @@ export type Product = {
   id: string;
   imageUrl: string | null;
   isAvailable: boolean;
+  isConfigured: boolean;
   modifierGroups: ProductModifierGroup[];
   name: string;
   optionGroups: ProductOptionGroup[];
