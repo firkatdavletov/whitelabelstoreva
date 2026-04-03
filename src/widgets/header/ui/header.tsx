@@ -56,13 +56,7 @@ function formatDeliveryAddress(
     delivery.address?.apartment ? `кв. ${delivery.address.apartment}` : null,
   ].filter(Boolean);
 
-  const addressLine = addressParts.join(", ");
-
-  if (addressLine && delivery.quote?.zoneName) {
-    return `${addressLine} · ${delivery.quote.zoneName}`;
-  }
-
-  return addressLine || delivery.quote?.zoneName || null;
+  return addressParts.join(", ") || null;
 }
 
 function formatDeliveryEtaLabel(
