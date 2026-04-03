@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Search, ShoppingBag, UserRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -12,9 +13,9 @@ import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storef
 import { useTenantTheme } from "@/features/tenant-theme";
 import { formatCurrency } from "@/shared/lib/currency";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
+import { cn } from "@/shared/lib/styles";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { useUiStore } from "@/store/ui-store";
 import {
   HeaderActionLink,
   HeaderAddressLink,
@@ -86,7 +87,6 @@ function formatDeliveryEtaLabel(
 
 export function Header() {
   const { href, locale, tenantSlug } = useStorefrontRoute();
-  const openCartSidebar = useUiStore((state) => state.openCartSidebar);
   const tenantConfig = useTenantTheme();
   const { data: storefrontCart } = useStorefrontCartQuery(tenantSlug);
   const { t } = useTranslation();
@@ -152,13 +152,17 @@ export function Header() {
               label={t("header.login")}
               labelClassName="lg:inline"
             />
-            {hasCartItems ? (
-              <Button
-                aria-label={cartButtonLabel}
-                className="relative h-10 w-10 rounded-full px-0 shadow-sm sm:w-auto sm:px-4"
-                onClick={openCartSidebar}
-                size="lg"
-              >
+            <Button
+              aria-label={cartButtonLabel}
+              asChild
+              className={cn(
+                "relative h-10 w-10 rounded-full px-0 shadow-sm sm:w-auto sm:px-4",
+                !hasCartItems && "bg-card/82 border-border/70 hover:bg-card",
+              )}
+              size="lg"
+              variant={hasCartItems ? "default" : "outline"}
+            >
+              <Link href={href("/cart")}>
                 <ShoppingBag className="h-4 w-4 shrink-0" />
                 <span className="sr-only">{cartButtonLabel}</span>
                 <span className="hidden text-sm font-medium sm:inline xl:hidden">
@@ -167,11 +171,13 @@ export function Header() {
                 <span className="hidden text-sm font-medium xl:inline">
                   {cartButtonLabel}
                 </span>
-                <Badge className="absolute -top-1 -right-1 min-w-5 justify-center px-1.5 py-0.5 sm:static sm:ml-1">
-                  {cartCount}
-                </Badge>
-              </Button>
-            ) : null}
+                {hasCartItems ? (
+                  <Badge className="absolute -top-1 -right-1 min-w-5 justify-center px-1.5 py-0.5 sm:static sm:ml-1">
+                    {cartCount}
+                  </Badge>
+                ) : null}
+              </Link>
+            </Button>
           </div>
         </div>
 

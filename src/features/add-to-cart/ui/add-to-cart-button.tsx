@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -15,7 +15,6 @@ import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storef
 import { formatProductQuantity } from "@/shared/lib/product-quantity";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { cn } from "@/shared/lib/styles";
-import { useUiStore } from "@/store/ui-store";
 import { Button, type ButtonProps } from "@/shared/ui/button";
 
 type AddToCartButtonProps = {
@@ -31,6 +30,7 @@ export function AddToCartButton({
   productHref,
   size = "sm",
 }: AddToCartButtonProps) {
+  const router = useRouter();
   const { locale, tenantSlug } = useStorefrontRoute();
   const { data: storefrontCart } = useStorefrontCartQuery(tenantSlug);
   const addCartItemMutation = useAddStorefrontCartItemMutation(tenantSlug);
@@ -38,7 +38,6 @@ export function AddToCartButton({
     useChangeStorefrontCartItemQuantityMutation(tenantSlug);
   const removeCartItemMutation =
     useRemoveStorefrontCartItemMutation(tenantSlug);
-  const openCartSidebar = useUiStore((state) => state.openCartSidebar);
   const { t } = useTranslation();
   const matchingCartItems =
     storefrontCart?.items.filter((item) => item.productId === product.id) ?? [];
@@ -68,8 +67,6 @@ export function AddToCartButton({
     removeCartItemMutation.isPending;
 
   function addProduct({ showToast }: { showToast: boolean }) {
-    const hadItems = (storefrontCart?.itemsCount ?? 0) > 0;
-
     addCartItemMutation.mutate(
       {
         countStep: product.countStep,
@@ -87,10 +84,6 @@ export function AddToCartButton({
                 name: product.name,
               }),
             });
-          }
-
-          if (!hadItems) {
-            openCartSidebar();
           }
         },
       },
@@ -117,27 +110,16 @@ export function AddToCartButton({
 
   if (product.isConfigured) {
     return (
-      <div
-        className={cn(
-          "relative z-20 mt-auto flex items-center gap-2",
-          className,
-        )}
+      <Button
+        className={cn("relative z-20 mt-auto w-full rounded-xl", className)}
+        onClick={() => router.push(productHref)}
+        size={size}
+        type="button"
       >
-        {quantityLabel ? (
-          <div className="bg-secondary/55 text-foreground flex min-w-[4.5rem] items-center justify-center rounded-xl px-2 text-center text-[0.72rem] font-semibold md:min-w-[5.25rem] md:text-xs">
-            {quantityLabel}
-          </div>
-        ) : null}
-
-        <Button
-          asChild
-          className={cn("rounded-xl", quantityLabel ? "flex-1" : "w-full")}
-          size={size}
-          variant="secondary"
-        >
-          <Link href={productHref}>{t("product.choose")}</Link>
-        </Button>
-      </div>
+        {quantityLabel
+          ? t("product.inCartWithQuantity", { quantity: quantityLabel })
+          : t("product.choose")}
+      </Button>
     );
   }
 
@@ -161,7 +143,7 @@ export function AddToCartButton({
           <Minus className="h-4 w-4" />
         </Button>
 
-        <div className="bg-secondary/55 text-foreground flex min-w-0 flex-1 items-center justify-center rounded-xl px-3 text-center text-[0.78rem] font-semibold md:text-sm">
+        <div className="text-foreground flex min-w-0 flex-1 items-center justify-center px-1 text-center text-[0.78rem] font-semibold md:text-sm">
           {quantityLabel}
         </div>
 
@@ -182,7 +164,7 @@ export function AddToCartButton({
 
   return (
     <Button
-      className={cn("w-full", className)}
+      className={cn("relative z-20 mt-auto w-full rounded-xl", className)}
       disabled={!product.isAvailable || isBusy}
       onClick={() => addProduct({ showToast: true })}
       size={size}

@@ -7,7 +7,6 @@ import { resolveLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { SUPPORTED_LOCALES } from "@/shared/config/routing";
 import type { RouteParams } from "@/shared/types/common";
-import { CartSidebar } from "@/widgets/cart-sidebar";
 import { Footer } from "@/widgets/footer";
 import { StorefrontHeader } from "@/widgets/header";
 
@@ -38,7 +37,9 @@ export async function generateMetadata({
     description:
       tenantConfig?.description ??
       "White label storefront starter for food ordering.",
-    title: tenantConfig ? `${tenantConfig.title} Storefront` : "White Label Storefront",
+    title: tenantConfig
+      ? `${tenantConfig.title} Storefront`
+      : "White Label Storefront",
   };
 }
 
@@ -56,14 +57,13 @@ export default async function StorefrontLayout({
 
   return (
     <RootProviders locale={resolvedLocale} tenantConfig={tenantConfig}>
-      <div className="relative min-h-dvh bg-background">
+      <div className="bg-background relative min-h-dvh">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,_color-mix(in_srgb,var(--primary)_16%,transparent),transparent_60%)]" />
         <StorefrontHeader />
-        <main className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+        <main className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 pt-6 pb-16 sm:px-6 lg:px-8">
           {children}
         </main>
         <Footer />
-        <CartSidebar />
       </div>
     </RootProviders>
   );

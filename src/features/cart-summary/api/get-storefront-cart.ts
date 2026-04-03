@@ -4,7 +4,10 @@ import type {
   ChangeCartItemQuantityRequestDto,
   PutCartDeliveryRequestDto,
 } from "@/entities/cart/api/cart.dto";
-import { mapCartDtoToStorefrontCart } from "@/entities/cart";
+import {
+  createCartConfigurationKey,
+  mapCartDtoToStorefrontCart,
+} from "@/entities/cart";
 import type { ProductUnit } from "@/shared/lib/product-quantity";
 import { apiRequest } from "@/shared/api";
 import { env } from "@/shared/config/env";
@@ -139,23 +142,6 @@ function syncMockCartTotal(cart: CartResponseDto) {
       0,
     ),
   };
-}
-
-function createCartConfigurationKey(input: AddStorefrontCartItemInput) {
-  const modifierKey = (input.modifiers ?? [])
-    .slice()
-    .sort((left, right) =>
-      `${left.modifierGroupId}:${left.modifierOptionId}`.localeCompare(
-        `${right.modifierGroupId}:${right.modifierOptionId}`,
-      ),
-    )
-    .map(
-      (modifier) =>
-        `${modifier.modifierGroupId}:${modifier.modifierOptionId}:${modifier.quantity}`,
-    )
-    .join("|");
-
-  return [input.productId, input.variantId ?? "base", modifierKey].join("::");
 }
 
 function resolveCartLineTitle(input: AddStorefrontCartItemInput) {

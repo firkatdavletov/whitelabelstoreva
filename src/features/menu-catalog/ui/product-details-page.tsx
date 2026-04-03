@@ -3,13 +3,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Check, ChevronLeft, RefreshCw, ShoppingBag } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  Minus,
+  Plus,
+  RefreshCw,
+  ShoppingBag,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { createCartConfigurationKey } from "@/entities/cart";
 import type { Product, ProductModifierGroup } from "@/entities/product";
 import { getProductCardImageSrc } from "@/entities/product/lib/product-card";
-import { useAddStorefrontCartItemMutation } from "@/features/cart-summary/hooks/use-storefront-cart-mutations";
+import {
+  useAddStorefrontCartItemMutation,
+  useChangeStorefrontCartItemQuantityMutation,
+  useRemoveStorefrontCartItemMutation,
+} from "@/features/cart-summary/hooks/use-storefront-cart-mutations";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
 import { useMenuProductDetailsQuery } from "@/features/menu-catalog/hooks/use-menu-product-details-query";
 import {
@@ -25,17 +37,16 @@ import {
 } from "@/features/menu-catalog/lib/product-configurator";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { formatCurrency } from "@/shared/lib/currency";
+import { formatProductQuantity } from "@/shared/lib/product-quantity";
 import { cn } from "@/shared/lib/styles";
 import type { Locale } from "@/shared/types/common";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Skeleton } from "@/shared/ui/skeleton";
-import { useUiStore } from "@/store/ui-store";
 
 type ProductDetailsPageProps = {
   backHref: string;
-  categoryName: string | null;
   locale: Locale;
   product: Product;
 };
@@ -60,19 +71,21 @@ function describeModifierGroup(
 
 export function ProductDetailsPage({
   backHref,
-  categoryName,
   locale,
   product,
 }: ProductDetailsPageProps) {
   const { tenantSlug } = useStorefrontRoute();
   const { data: storefrontCart } = useStorefrontCartQuery(tenantSlug);
   const addCartItemMutation = useAddStorefrontCartItemMutation(tenantSlug);
+  const changeCartItemQuantityMutation =
+    useChangeStorefrontCartItemQuantityMutation(tenantSlug);
+  const removeCartItemMutation =
+    useRemoveStorefrontCartItemMutation(tenantSlug);
   const productDetailsQuery = useMenuProductDetailsQuery(
     product,
     tenantSlug,
     true,
   );
-  const openCartSidebar = useUiStore((state) => state.openCartSidebar);
   const { t } = useTranslation();
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
     getDefaultVariantId(product),
@@ -147,13 +160,93 @@ export function ProductDetailsPage({
         selectedVariant,
       )}`
     : resolvedProduct.name;
+  const selectedConfigurationKey = createCartConfigurationKey({
+    modifiers: selectedModifierOptions,
+    productId: resolvedProduct.id,
+    variantId: selectedVariant?.id ?? resolvedProduct.defaultVariantId ?? null,
+  });
+  const matchingCartItems =
+    storefrontCart?.items.filter(
+      (item) =>
+        createCartConfigurationKey({
+          modifiers: item.modifiers,
+          productId: item.productId,
+          variantId: item.variantId,
+        }) === selectedConfigurationKey,
+    ) ?? [];
+  const primaryCartItem = matchingCartItems[0] ?? null;
+  const quantityInCart = matchingCartItems.reduce(
+    (total, item) => total + item.quantity,
+    0,
+  );
+  const quantityLabel =
+    quantityInCart > 0
+      ? formatProductQuantity(
+          quantityInCart,
+          primaryCartItem?.unit ?? resolvedProduct.unit,
+          locale,
+        )
+      : null;
+  const quantityStep = Math.max(
+    primaryCartItem?.countStep ?? resolvedProduct.countStep,
+    1,
+  );
+  const isActionPending =
+    addCartItemMutation.isPending ||
+    changeCartItemQuantityMutation.isPending ||
+    removeCartItemMutation.isPending;
   const isSubmitDisabled =
     !resolvedProduct.isAvailable ||
     missingRequiredGroups.length > 0 ||
     addCartItemMutation.isPending;
+  const hasCustomizations =
+    activeVariants.length > 0 || modifierGroups.length > 0;
+
+  function addConfiguredProduct({ showToast }: { showToast: boolean }) {
+    addCartItemMutation.mutate(
+      {
+        countStep: resolvedProduct.countStep,
+        modifiers: selectedModifierOptions,
+        productId: resolvedProduct.id,
+        title: configuredTitle,
+        unit: resolvedProduct.unit,
+        unitPrice: selectedUnitPrice,
+        variantId: selectedVariant?.id ?? resolvedProduct.defaultVariantId,
+      },
+      {
+        onSuccess: () => {
+          if (showToast) {
+            toast.success(t("toast.itemAddedTitle"), {
+              description: t("toast.itemAddedDescription", {
+                name: configuredTitle,
+              }),
+            });
+          }
+        },
+      },
+    );
+  }
+
+  function decrementConfiguredProduct() {
+    if (!primaryCartItem) {
+      return;
+    }
+
+    const nextQuantity = primaryCartItem.quantity - quantityStep;
+
+    if (nextQuantity <= 0) {
+      removeCartItemMutation.mutate(primaryCartItem.id);
+      return;
+    }
+
+    changeCartItemQuantityMutation.mutate({
+      itemId: primaryCartItem.id,
+      quantity: nextQuantity,
+    });
+  }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[minmax(0,1.06fr)_minmax(0,0.94fr)]">
+    <section className="relative grid items-start gap-6 pb-32 xl:grid-cols-[minmax(0,1.04fr)_minmax(21rem,0.96fr)] xl:gap-8 xl:pb-10">
       <div className="space-y-4">
         <Button
           asChild
@@ -167,36 +260,8 @@ export function ProductDetailsPage({
           </Link>
         </Button>
 
-        <div className="flex flex-wrap gap-2">
-          {categoryName ? (
-            <Badge variant="outline">{categoryName}</Badge>
-          ) : null}
-          <Badge
-            className={cn(
-              resolvedProduct.isAvailable
-                ? "bg-accent/12 text-accent border-transparent"
-                : "bg-destructive/12 text-destructive border-transparent",
-            )}
-          >
-            {resolvedProduct.isAvailable
-              ? t("product.available")
-              : t("product.unavailable")}
-          </Badge>
-        </div>
-
-        <div className="max-w-2xl space-y-3">
-          <h1 className="font-heading text-4xl leading-none font-semibold tracking-tight sm:text-5xl">
-            {resolvedProduct.name}
-          </h1>
-          {resolvedProduct.description ? (
-            <p className="text-muted-foreground max-w-xl text-sm leading-6 sm:text-base">
-              {resolvedProduct.description}
-            </p>
-          ) : null}
-        </div>
-
         <Card className="overflow-hidden rounded-[32px] border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_90%,white),color-mix(in_srgb,var(--secondary)_58%,white))]">
-          <div className="relative aspect-[4/3] min-h-[280px] overflow-hidden">
+          <div className="relative aspect-[4/3] min-h-[280px] overflow-hidden sm:aspect-[16/11]">
             <Image
               alt={resolvedProduct.name}
               className="object-cover"
@@ -205,44 +270,53 @@ export function ProductDetailsPage({
               src={imageSrc}
               unoptimized
             />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(28,17,11,0.08),rgba(28,17,11,0.32))]" />
-            <div className="bg-background/84 absolute inset-x-4 bottom-4 flex items-end justify-between gap-4 rounded-[24px] border border-white/60 p-4 shadow-[0_24px_60px_-32px_rgba(24,16,11,0.6)] backdrop-blur-md sm:inset-x-5 sm:bottom-5 sm:p-5">
-              <div>
-                <p className="text-muted-foreground text-xs font-medium tracking-[0.24em] uppercase">
-                  {activeVariants.length
-                    ? t("product.variantTitle")
-                    : t("shared.total")}
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(28,17,11,0.04),rgba(28,17,11,0.2))]" />
+          </div>
+        </Card>
+
+        <Card className="rounded-[32px] border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_92%,white),color-mix(in_srgb,var(--secondary)_48%,white))]">
+          <CardContent className="space-y-4 p-5 sm:p-7">
+            <div className="space-y-3">
+              <h1 className="font-heading text-4xl leading-none font-semibold tracking-tight sm:text-5xl">
+                {resolvedProduct.name}
+              </h1>
+
+              <div className="flex flex-wrap items-end gap-3">
+                <p className="font-heading text-foreground text-3xl leading-none font-semibold sm:text-[2.35rem]">
+                  {formatCurrency(totalPrice, resolvedProduct.currency, locale)}
                 </p>
-                <p className="font-heading text-foreground mt-2 text-3xl leading-none font-semibold sm:text-[2.15rem]">
+
+                {selectedVariant ? (
+                  <p className="text-muted-foreground text-sm leading-5">
+                    {resolveVariantLabel(resolvedProduct, selectedVariant)}
+                  </p>
+                ) : null}
+              </div>
+
+              {modifiersTotal > 0 ? (
+                <p className="text-muted-foreground text-sm leading-5">
+                  {t("product.modifiersTotal")}:{" "}
                   {formatCurrency(
-                    selectedUnitPrice,
+                    modifiersTotal,
                     resolvedProduct.currency,
                     locale,
                   )}
                 </p>
-              </div>
-
-              {selectedVariant ? (
-                <p className="text-foreground max-w-[14rem] text-right text-sm leading-5">
-                  {resolveVariantLabel(resolvedProduct, selectedVariant)}
-                </p>
               ) : null}
             </div>
-          </div>
+
+            {resolvedProduct.description ? (
+              <p className="text-muted-foreground max-w-2xl text-sm leading-6 sm:text-base">
+                {resolvedProduct.description}
+              </p>
+            ) : null}
+          </CardContent>
         </Card>
       </div>
 
       <div className="space-y-4">
         {isDetailsLoading ? (
           <>
-            <Card className="rounded-[30px]">
-              <CardContent className="space-y-4 p-5 sm:p-6">
-                <Skeleton className="h-5 w-24 rounded-full" />
-                <Skeleton className="h-10 w-40 rounded-2xl" />
-                <Skeleton className="h-20 rounded-[24px]" />
-              </CardContent>
-            </Card>
-
             <Card className="rounded-[30px]">
               <CardContent className="space-y-3 p-5 sm:p-6">
                 <Skeleton className="h-6 w-40 rounded-full" />
@@ -287,44 +361,6 @@ export function ProductDetailsPage({
           </Card>
         ) : (
           <>
-            <Card className="rounded-[30px] border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--secondary)_52%,white),color-mix(in_srgb,var(--card)_92%,white))]">
-              <CardContent className="space-y-4 p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-muted-foreground text-xs font-medium tracking-[0.24em] uppercase">
-                      {t("shared.total")}
-                    </p>
-                    <p className="font-heading text-foreground mt-2 text-3xl leading-none font-semibold">
-                      {formatCurrency(
-                        totalPrice,
-                        resolvedProduct.currency,
-                        locale,
-                      )}
-                    </p>
-                  </div>
-
-                  {modifiersTotal > 0 ? (
-                    <Badge variant="secondary">
-                      {t("product.modifiersTotal")}:{" "}
-                      {formatCurrency(
-                        modifiersTotal,
-                        resolvedProduct.currency,
-                        locale,
-                      )}
-                    </Badge>
-                  ) : null}
-                </div>
-
-                <p className="text-muted-foreground text-sm leading-6">
-                  {selectedSummary.length
-                    ? selectedSummary.join(" · ")
-                    : selectedVariant
-                      ? resolveVariantLabel(resolvedProduct, selectedVariant)
-                      : resolvedProduct.description}
-                </p>
-              </CardContent>
-            </Card>
-
             {activeVariants.length ? (
               <Card className="rounded-[30px]">
                 <CardContent className="space-y-4 p-5 sm:p-6">
@@ -491,74 +527,88 @@ export function ProductDetailsPage({
               );
             })}
 
-            <Card className="rounded-[30px]">
-              <CardContent className="space-y-4 p-5 sm:p-6">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-muted-foreground text-sm">
-                      {t("shared.total")}
-                    </p>
-                    <p className="font-heading text-foreground mt-1 text-3xl leading-none font-semibold">
-                      {formatCurrency(
-                        totalPrice,
-                        resolvedProduct.currency,
-                        locale,
-                      )}
-                    </p>
-                  </div>
-
-                  {selectedSummary.length ? (
-                    <p className="text-muted-foreground max-w-[13rem] text-right text-sm leading-5">
-                      {selectedSummary.join(" · ")}
-                    </p>
-                  ) : null}
-                </div>
-
-                <Button
-                  className="h-12 w-full rounded-2xl text-base"
-                  disabled={isSubmitDisabled}
-                  onClick={() => {
-                    const hadItems = (storefrontCart?.itemsCount ?? 0) > 0;
-
-                    addCartItemMutation.mutate(
-                      {
-                        countStep: resolvedProduct.countStep,
-                        modifiers: selectedModifierOptions,
-                        productId: resolvedProduct.id,
-                        title: configuredTitle,
-                        unit: resolvedProduct.unit,
-                        unitPrice: selectedUnitPrice,
-                        variantId:
-                          selectedVariant?.id ??
-                          resolvedProduct.defaultVariantId ??
-                          null,
-                      },
-                      {
-                        onSuccess: () => {
-                          toast.success(t("toast.itemAddedTitle"), {
-                            description: t("toast.itemAddedDescription", {
-                              name: configuredTitle,
-                            }),
-                          });
-
-                          if (!hadItems) {
-                            openCartSidebar();
-                          }
-                        },
-                      },
-                    );
-                  }}
-                  size="lg"
-                >
-                  <ShoppingBag className="h-4 w-4" />
-                  {resolvedProduct.isAvailable
-                    ? t("product.addToCart")
-                    : t("product.unavailable")}
-                </Button>
-              </CardContent>
-            </Card>
+            {!hasCustomizations ? (
+              <Card className="rounded-[30px]">
+                <CardContent className="space-y-2 p-5 sm:p-6">
+                  <h2 className="font-heading text-foreground text-2xl font-semibold">
+                    {t("product.readyToOrder")}
+                  </h2>
+                  <p className="text-muted-foreground text-sm leading-6">
+                    {t("product.noCustomization")}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : null}
           </>
         )}
+      </div>
+
+      <div className="fixed inset-x-4 bottom-4 z-40 sm:inset-x-auto sm:right-6 sm:w-[min(26rem,calc(100vw-3rem))]">
+        <div className="bg-background/92 flex items-center justify-between gap-3 rounded-[30px] border border-white/70 p-3 shadow-[0_28px_80px_-30px_rgba(22,15,11,0.6)] backdrop-blur-xl sm:p-3.5">
+          <div className="min-w-0 flex-1 px-1">
+            <p className="text-muted-foreground text-[0.68rem] font-medium tracking-[0.24em] uppercase">
+              {t("shared.total")}
+            </p>
+            <p className="font-heading text-foreground mt-1 text-2xl leading-none font-semibold">
+              {formatCurrency(totalPrice, resolvedProduct.currency, locale)}
+            </p>
+
+            {selectedVariant ? (
+              <p className="text-muted-foreground mt-1 truncate text-xs leading-5 sm:text-sm">
+                {resolveVariantLabel(resolvedProduct, selectedVariant)}
+              </p>
+            ) : selectedSummary.length ? (
+              <p className="text-muted-foreground mt-1 truncate text-xs leading-5 sm:text-sm">
+                {selectedSummary.join(" · ")}
+              </p>
+            ) : null}
+          </div>
+
+          {primaryCartItem && quantityLabel ? (
+            <div className="bg-secondary/70 flex shrink-0 items-center gap-2 rounded-[24px] p-1">
+              <Button
+                aria-label={t("product.decreaseQuantity")}
+                className="h-10 w-10 shrink-0 rounded-[18px]"
+                disabled={isActionPending}
+                onClick={decrementConfiguredProduct}
+                size="icon"
+                type="button"
+                variant="secondary"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+
+              <div className="text-foreground min-w-[4.5rem] text-center text-sm font-semibold sm:min-w-[5rem]">
+                {quantityLabel}
+              </div>
+
+              <Button
+                aria-label={t("product.increaseQuantity")}
+                className="h-10 w-10 shrink-0 rounded-[18px]"
+                disabled={isActionPending || isSubmitDisabled}
+                onClick={() => addConfiguredProduct({ showToast: false })}
+                size="icon"
+                type="button"
+                variant="secondary"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              className="h-12 shrink-0 rounded-[22px] px-4 text-sm sm:px-5"
+              disabled={isSubmitDisabled}
+              onClick={() => addConfiguredProduct({ showToast: true })}
+              size="lg"
+              type="button"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {resolvedProduct.isAvailable
+                ? t("product.addToCart")
+                : t("product.unavailable")}
+            </Button>
+          )}
+        </div>
       </div>
     </section>
   );

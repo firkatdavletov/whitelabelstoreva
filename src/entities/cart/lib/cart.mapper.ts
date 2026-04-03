@@ -68,11 +68,18 @@ function mapCartItemDto(dto: CartItemResponseDto): StorefrontCartItem {
     countStep: dto.countStep,
     id: dto.id,
     lineTotal: dto.lineTotalMinor / 100,
+    modifiers: dto.modifiers.map((modifier) => ({
+      modifierGroupId: modifier.modifierGroupId,
+      modifierOptionId: modifier.modifierOptionId,
+      optionName: modifier.optionName,
+      quantity: modifier.quantity,
+    })),
     modifierNames: dto.modifiers.map((modifier) => modifier.optionName),
     productId: dto.productId,
     quantity: dto.quantity,
     title: dto.title,
     unit: dto.unit,
+    variantId: dto.variantId ?? null,
   };
 }
 

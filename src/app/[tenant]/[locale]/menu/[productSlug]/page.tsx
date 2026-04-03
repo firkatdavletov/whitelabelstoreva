@@ -103,7 +103,6 @@ export default async function ProductPage({
   return (
     <ProductDetailsPage
       backHref={backHref}
-      categoryName={data.productCategory?.name ?? null}
       locale={data.localeContext.locale}
       product={data.product}
     />
