@@ -3,6 +3,7 @@ import type { components } from "@/shared/api/generated/schema";
 export type StorefrontCartItem = {
   id: string;
   lineTotal: number;
+  modifierNames: string[];
   productId: string;
   quantity: number;
   title: string;

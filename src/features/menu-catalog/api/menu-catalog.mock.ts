@@ -1,3 +1,4 @@
+import type { ProductDetailsDto } from "@/entities/product";
 import type { RestaurantDto } from "@/entities/restaurant";
 
 import type {
@@ -289,6 +290,369 @@ export function createMockCatalogProductsDto(
     title: product.name,
     unit: "PIECE",
   }));
+}
+
+function createBaseMockProductDetailsDto(
+  tenantSlug: string,
+  productId: string,
+): ProductDetailsDto {
+  const product = createMockMenuCatalogDto(tenantSlug).products.find(
+    (candidate) => candidate.id === productId,
+  );
+
+  if (!product) {
+    throw new Error(
+      `Mock product details not found for ${tenantSlug}:${productId}`,
+    );
+  }
+
+  return {
+    categoryId: product.category_id,
+    countStep: 1,
+    defaultVariantId: null,
+    description: product.description,
+    id: product.id,
+    imageUrls: [],
+    isActive: product.is_available,
+    modifierGroups: [],
+    oldPriceMinor: null,
+    optionGroups: [],
+    priceMinor: product.price_minor,
+    sku: null,
+    slug: product.slug,
+    title: product.name,
+    unit: "PIECE",
+    variants: [],
+  };
+}
+
+export function createMockCatalogProductDetailsDto(
+  tenantSlug: string,
+  productId: string,
+): ProductDetailsDto {
+  const baseProduct = createBaseMockProductDetailsDto(tenantSlug, productId);
+
+  if (tenantSlug === "storeva-street" && productId === "prod-city-smash") {
+    return {
+      ...baseProduct,
+      defaultVariantId: "variant-city-smash-double",
+      modifierGroups: [
+        {
+          code: "sauces",
+          id: "group-city-smash-sauces",
+          isActive: true,
+          isRequired: false,
+          maxSelected: 1,
+          minSelected: 0,
+          name: "Соус",
+          options: [
+            {
+              applicationScope: "PER_ITEM",
+              code: "signature",
+              description: "Фирменный соус Storeva",
+              id: "option-city-smash-signature",
+              isActive: true,
+              isDefault: true,
+              name: "Фирменный",
+              price: 0,
+              priceType: "FREE",
+              sortOrder: 1,
+            },
+            {
+              applicationScope: "PER_ITEM",
+              code: "bbq",
+              description: "Классический дымный BBQ",
+              id: "option-city-smash-bbq",
+              isActive: true,
+              isDefault: false,
+              name: "BBQ",
+              price: 49,
+              priceType: "FIXED",
+              sortOrder: 2,
+            },
+            {
+              applicationScope: "PER_ITEM",
+              code: "mustard",
+              description: "Сладкая медовая горчица",
+              id: "option-city-smash-mustard",
+              isActive: true,
+              isDefault: false,
+              name: "Медовая горчица",
+              price: 39,
+              priceType: "FIXED",
+              sortOrder: 3,
+            },
+          ],
+          sortOrder: 1,
+        },
+        {
+          code: "extras",
+          id: "group-city-smash-extras",
+          isActive: true,
+          isRequired: false,
+          maxSelected: 3,
+          minSelected: 0,
+          name: "Добавки",
+          options: [
+            {
+              applicationScope: "PER_ITEM",
+              code: "cheese",
+              description: "Плавленый чеддер",
+              id: "option-city-smash-cheese",
+              isActive: true,
+              isDefault: false,
+              name: "Доп. сыр",
+              price: 59,
+              priceType: "FIXED",
+              sortOrder: 1,
+            },
+            {
+              applicationScope: "PER_ITEM",
+              code: "bacon",
+              description: "Хрустящий бекон",
+              id: "option-city-smash-bacon",
+              isActive: true,
+              isDefault: false,
+              name: "Бекон",
+              price: 89,
+              priceType: "FIXED",
+              sortOrder: 2,
+            },
+            {
+              applicationScope: "PER_ITEM",
+              code: "jalapeno",
+              description: "Маринованный халапеньо",
+              id: "option-city-smash-jalapeno",
+              isActive: true,
+              isDefault: false,
+              name: "Халапеньо",
+              price: 39,
+              priceType: "FIXED",
+              sortOrder: 3,
+            },
+          ],
+          sortOrder: 2,
+        },
+      ],
+      optionGroups: [
+        {
+          code: "size",
+          id: "group-city-smash-size",
+          sortOrder: 1,
+          title: "Размер",
+          values: [
+            {
+              code: "single",
+              id: "value-city-smash-single",
+              sortOrder: 1,
+              title: "Single",
+            },
+            {
+              code: "double",
+              id: "value-city-smash-double",
+              sortOrder: 2,
+              title: "Double",
+            },
+            {
+              code: "triple",
+              id: "value-city-smash-triple",
+              sortOrder: 3,
+              title: "Triple",
+            },
+          ],
+        },
+      ],
+      variants: [
+        {
+          externalId: null,
+          id: "variant-city-smash-single",
+          imageUrls: [],
+          isActive: true,
+          oldPriceMinor: null,
+          optionValueIds: ["value-city-smash-single"],
+          priceMinor: 1290,
+          sku: "city-smash-single",
+          sortOrder: 1,
+          title: "Single",
+        },
+        {
+          externalId: null,
+          id: "variant-city-smash-double",
+          imageUrls: [],
+          isActive: true,
+          oldPriceMinor: null,
+          optionValueIds: ["value-city-smash-double"],
+          priceMinor: 1490,
+          sku: "city-smash-double",
+          sortOrder: 2,
+          title: "Double",
+        },
+        {
+          externalId: null,
+          id: "variant-city-smash-triple",
+          imageUrls: [],
+          isActive: true,
+          oldPriceMinor: null,
+          optionValueIds: ["value-city-smash-triple"],
+          priceMinor: 1790,
+          sku: "city-smash-triple",
+          sortOrder: 3,
+          title: "Triple",
+        },
+      ],
+    };
+  }
+
+  if (tenantSlug === "storeva-street" && productId === "prod-hot-honey") {
+    return {
+      ...baseProduct,
+      defaultVariantId: "variant-hot-honey-classic",
+      modifierGroups: [
+        {
+          code: "spice",
+          id: "group-hot-honey-spice",
+          isActive: true,
+          isRequired: true,
+          maxSelected: 1,
+          minSelected: 1,
+          name: "Острота",
+          options: [
+            {
+              applicationScope: "PER_ITEM",
+              code: "mild",
+              description: "Мягкий уровень без лишней остроты",
+              id: "option-hot-honey-mild",
+              isActive: true,
+              isDefault: true,
+              name: "Мягкая",
+              price: 0,
+              priceType: "FREE",
+              sortOrder: 1,
+            },
+            {
+              applicationScope: "PER_ITEM",
+              code: "medium",
+              description: "Баланс сладости и остроты",
+              id: "option-hot-honey-medium",
+              isActive: true,
+              isDefault: false,
+              name: "Средняя",
+              price: 0,
+              priceType: "FREE",
+              sortOrder: 2,
+            },
+            {
+              applicationScope: "PER_ITEM",
+              code: "hot",
+              description: "Яркий акцент чили",
+              id: "option-hot-honey-hot",
+              isActive: true,
+              isDefault: false,
+              name: "Острая",
+              price: 0,
+              priceType: "FREE",
+              sortOrder: 3,
+            },
+          ],
+          sortOrder: 1,
+        },
+      ],
+      optionGroups: [
+        {
+          code: "combo",
+          id: "group-hot-honey-combo",
+          sortOrder: 1,
+          title: "Формат",
+          values: [
+            {
+              code: "classic",
+              id: "value-hot-honey-classic",
+              sortOrder: 1,
+              title: "Бургер",
+            },
+            {
+              code: "combo",
+              id: "value-hot-honey-combo",
+              sortOrder: 2,
+              title: "Комбо",
+            },
+          ],
+        },
+      ],
+      variants: [
+        {
+          externalId: null,
+          id: "variant-hot-honey-classic",
+          imageUrls: [],
+          isActive: true,
+          oldPriceMinor: null,
+          optionValueIds: ["value-hot-honey-classic"],
+          priceMinor: 1360,
+          sku: "hot-honey-classic",
+          sortOrder: 1,
+          title: "Бургер",
+        },
+        {
+          externalId: null,
+          id: "variant-hot-honey-combo",
+          imageUrls: [],
+          isActive: true,
+          oldPriceMinor: null,
+          optionValueIds: ["value-hot-honey-combo"],
+          priceMinor: 1690,
+          sku: "hot-honey-combo",
+          sortOrder: 2,
+          title: "Комбо + картофель",
+        },
+      ],
+    };
+  }
+
+  if (tenantSlug === "storeva-street" && productId === "prod-loaded-fries") {
+    return {
+      ...baseProduct,
+      modifierGroups: [
+        {
+          code: "toppings",
+          id: "group-loaded-fries-toppings",
+          isActive: true,
+          isRequired: false,
+          maxSelected: 2,
+          minSelected: 0,
+          name: "Топпинги",
+          options: [
+            {
+              applicationScope: "PER_ITEM",
+              code: "parmesan",
+              description: "Тёртый пармезан",
+              id: "option-loaded-fries-parmesan",
+              isActive: true,
+              isDefault: false,
+              name: "Пармезан",
+              price: 49,
+              priceType: "FIXED",
+              sortOrder: 1,
+            },
+            {
+              applicationScope: "PER_ITEM",
+              code: "truffle",
+              description: "Трюфельный соус",
+              id: "option-loaded-fries-truffle",
+              isActive: true,
+              isDefault: false,
+              name: "Трюфельный соус",
+              price: 69,
+              priceType: "FIXED",
+              sortOrder: 2,
+            },
+          ],
+          sortOrder: 1,
+        },
+      ],
+    };
+  }
+
+  return baseProduct;
 }
 
 export function createMockCatalogRestaurantDto(

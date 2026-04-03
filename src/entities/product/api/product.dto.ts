@@ -1,3 +1,4 @@
+import type { components } from "@/shared/api/generated/schema";
 import type { CurrencyCode } from "@/shared/types/common";
 
 export type ProductDto = {
@@ -12,3 +13,5 @@ export type ProductDto = {
   tags: string[];
   visual_hint: string;
 };
+
+export type ProductDetailsDto = components["schemas"]["ProductDetailsResponse"];

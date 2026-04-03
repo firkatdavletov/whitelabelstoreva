@@ -2,8 +2,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import type { Product } from "@/entities/product";
 import {
+  type AddStorefrontCartItemInput,
   addStorefrontCartItem,
   changeStorefrontCartItemQuantity,
   clearStorefrontCart,
@@ -17,15 +17,8 @@ export function useAddStorefrontCartItemMutation(tenantSlug: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (product: Product) =>
-      addStorefrontCartItem(
-        {
-          productId: product.id,
-          title: product.name,
-          unitPrice: product.price,
-        },
-        tenantSlug,
-      ),
+    mutationFn: (input: AddStorefrontCartItemInput) =>
+      addStorefrontCartItem(input, tenantSlug),
     onSuccess: (cart) => {
       queryClient.setQueryData(getStorefrontCartQueryKey(tenantSlug), cart);
     },

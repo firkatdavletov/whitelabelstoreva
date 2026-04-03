@@ -145,8 +145,18 @@ export const ruMessages = {
     title: "Отслеживание заказа",
   },
   product: {
-    addToCart: "Добавить",
+    addToCart: "Добавить в корзину",
+    choose: "Выбрать",
+    chooseAtLeast: "Минимум {{count}}",
+    chooseUpTo: "До {{count}} опций",
+    included: "Входит в цену",
+    modifiersTotal: "Дополнительно",
+    optional: "Опционально",
     preview: "Подробнее",
+    required: "Обязательно",
+    selectOne: "Выберите один вариант",
+    unavailable: "Нет в наличии",
+    variantTitle: "Вариант товара",
   },
   search: {
     cardDescription:

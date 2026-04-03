@@ -87,6 +87,11 @@ export function CartSummaryCard({
             >
               <div className="min-w-0">
                 <p className="font-medium">{item.title}</p>
+                {item.modifierNames.length ? (
+                  <p className="text-muted-foreground text-sm">
+                    {item.modifierNames.join(", ")}
+                  </p>
+                ) : null}
                 <p className="text-muted-foreground text-sm">
                   {t("shared.quantity")}: {item.quantity}
                 </p>

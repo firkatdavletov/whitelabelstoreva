@@ -8,11 +8,22 @@ import { mapCartDtoToStorefrontCart } from "@/entities/cart";
 import { apiRequest } from "@/shared/api";
 import { env } from "@/shared/config/env";
 
-type AddStorefrontCartItemInput = {
+export type StorefrontCartItemModifierInput = {
+  groupName: string;
+  modifierGroupId: string;
+  modifierOptionId: string;
+  optionName: string;
+  price: number;
+  quantity: number;
+};
+
+export type AddStorefrontCartItemInput = {
+  modifiers?: StorefrontCartItemModifierInput[];
   productId: string;
   quantity?: number;
   title?: string;
   unitPrice?: number;
+  variantId?: string | null;
 };
 
 type ChangeStorefrontCartItemQuantityInput = {
@@ -127,6 +138,27 @@ function syncMockCartTotal(cart: CartResponseDto) {
   };
 }
 
+function createCartConfigurationKey(input: AddStorefrontCartItemInput) {
+  const modifierKey = (input.modifiers ?? [])
+    .slice()
+    .sort((left, right) =>
+      `${left.modifierGroupId}:${left.modifierOptionId}`.localeCompare(
+        `${right.modifierGroupId}:${right.modifierOptionId}`,
+      ),
+    )
+    .map(
+      (modifier) =>
+        `${modifier.modifierGroupId}:${modifier.modifierOptionId}:${modifier.quantity}`,
+    )
+    .join("|");
+
+  return [input.productId, input.variantId ?? "base", modifierKey].join("::");
+}
+
+function resolveCartLineTitle(input: AddStorefrontCartItemInput) {
+  return input.title ?? input.productId;
+}
+
 function resolveMockPickupPointMeta(pickupPointId: string | null | undefined) {
   const pickupPointById: Record<string, { address: string; name: string }> = {
     "7ef13ed2-4c3f-4f8d-94c7-e28ea7d5e5d2": {
@@ -199,14 +231,26 @@ export async function addStorefrontCartItem(
   if (env.apiMocksEnabled) {
     const cart = getMockCart(tenantSlug);
     const quantity = input.quantity ?? 1;
+    const configurationKey = createCartConfigurationKey(input);
+    const modifiers = input.modifiers ?? [];
+    const modifierTotalMinor = modifiers.reduce(
+      (total, modifier) =>
+        total + Math.round(modifier.price * 100) * modifier.quantity,
+      0,
+    );
     const unitPriceMinor = Math.round((input.unitPrice ?? 0) * 100);
+    const unitTotalMinor = unitPriceMinor + modifierTotalMinor;
     const existingItem = cart.items.find(
-      (item) => item.productId === input.productId,
+      (item) =>
+        item.id === `mock-item-${configurationKey}` &&
+        item.productId === input.productId,
     );
 
     if (existingItem) {
       const nextQuantity = existingItem.quantity + quantity;
-      const lineTotalMinor = existingItem.unitPriceMinor * nextQuantity;
+      const lineTotalMinor =
+        (existingItem.unitPriceMinor + existingItem.modifiersTotalMinor) *
+        nextQuantity;
 
       return setMockCart(tenantSlug, {
         ...cart,
@@ -229,17 +273,27 @@ export async function addStorefrontCartItem(
         ...cart.items,
         {
           countStep: 1,
-          id: `mock-item-${input.productId}`,
-          lineTotalMinor: unitPriceMinor * quantity,
-          modifiers: [],
-          modifiersTotalMinor: 0,
-          priceMinor: unitPriceMinor * quantity,
+          id: `mock-item-${configurationKey}`,
+          lineTotalMinor: unitTotalMinor * quantity,
+          modifiers: modifiers.map((modifier) => ({
+            applicationScope: "PER_ITEM",
+            groupCode: modifier.modifierGroupId,
+            groupName: modifier.groupName,
+            modifierGroupId: modifier.modifierGroupId,
+            modifierOptionId: modifier.modifierOptionId,
+            optionCode: modifier.modifierOptionId,
+            optionName: modifier.optionName,
+            priceMinor: Math.round(modifier.price * 100),
+            quantity: modifier.quantity,
+          })),
+          modifiersTotalMinor: modifierTotalMinor,
+          priceMinor: unitTotalMinor * quantity,
           productId: input.productId,
           quantity,
-          title: input.title ?? input.productId,
+          title: resolveCartLineTitle(input),
           unit: "PIECE",
           unitPriceMinor,
-          variantId: null,
+          variantId: input.variantId ?? null,
         },
       ],
     });
@@ -249,10 +303,14 @@ export async function addStorefrontCartItem(
     "/v1/cart/items",
     {
       body: {
-        modifiers: [],
+        modifiers: (input.modifiers ?? []).map((modifier) => ({
+          modifierGroupId: modifier.modifierGroupId,
+          modifierOptionId: modifier.modifierOptionId,
+          quantity: modifier.quantity,
+        })),
         productId: input.productId,
         quantity: input.quantity ?? 1,
-        variantId: null,
+        variantId: input.variantId ?? null,
       },
       method: "POST",
     },
@@ -275,10 +333,7 @@ export async function changeStorefrontCartItemQuantity(
           return item;
         }
 
-        const unitPriceMinor =
-          item.quantity > 0
-            ? Math.round(item.lineTotalMinor / item.quantity)
-            : 0;
+        const unitPriceMinor = item.unitPriceMinor + item.modifiersTotalMinor;
 
         return {
           ...item,

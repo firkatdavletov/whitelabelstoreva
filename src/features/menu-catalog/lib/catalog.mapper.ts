@@ -25,13 +25,18 @@ export function mapCatalogProductDtoToProduct(
   return {
     categoryId: dto.categoryId,
     currency,
+    defaultVariantId: null,
     description: dto.description ?? "",
     id: dto.id,
+    imageUrl: dto.imageUrls[0] ?? null,
     isAvailable: dto.isActive,
+    modifierGroups: [],
     name: dto.title,
+    optionGroups: [],
     price: dto.priceMinor / 100,
     slug: dto.slug,
     tags: dto.brand ? [dto.brand] : [],
+    variants: [],
     visual: dto.title.trim().charAt(0).toUpperCase() || "?",
   };
 }

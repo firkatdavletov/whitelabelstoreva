@@ -67,6 +67,7 @@ function mapCartItemDto(dto: CartItemResponseDto): StorefrontCartItem {
   return {
     id: dto.id,
     lineTotal: dto.lineTotalMinor / 100,
+    modifierNames: dto.modifiers.map((modifier) => modifier.optionName),
     productId: dto.productId,
     quantity: dto.quantity,
     title: dto.title,

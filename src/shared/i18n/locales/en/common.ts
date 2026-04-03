@@ -70,7 +70,8 @@ export const enMessages = {
     methodsEmpty: "The backend did not return any delivery methods yet.",
     methodsError: "Failed to load delivery methods.",
     retry: "Retry",
-    quoteUnavailableFallback: "Delivery is unavailable for the selected address.",
+    quoteUnavailableFallback:
+      "Delivery is unavailable for the selected address.",
     saveErrorDescription:
       "Check the selected address and try saving it one more time.",
     saveErrorTitle: "Failed to save address",
@@ -145,7 +146,17 @@ export const enMessages = {
   },
   product: {
     addToCart: "Add to cart",
+    choose: "Choose",
+    chooseAtLeast: "Select at least {{count}}",
+    chooseUpTo: "Up to {{count}} options",
+    included: "Included",
+    modifiersTotal: "Extras",
+    optional: "Optional",
     preview: "Preview",
+    required: "Required",
+    selectOne: "Select one option",
+    unavailable: "Unavailable",
+    variantTitle: "Product option",
   },
   search: {
     cardDescription:

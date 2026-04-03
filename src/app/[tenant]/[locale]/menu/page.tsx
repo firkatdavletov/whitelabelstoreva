@@ -45,7 +45,9 @@ export default async function MenuPage({
     notFound();
   }
 
-  const menuCatalog = await getMenuCatalog(tenant);
+  const menuCatalog = await getMenuCatalog(tenant, {
+    includeProductDetails: true,
+  });
   const requestedCategory = normalizeMenuCategoryParam(
     (await searchParams).category,
   );
