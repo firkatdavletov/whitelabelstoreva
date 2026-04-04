@@ -10,6 +10,7 @@ export const ruMessages = {
   },
   cart: {
     back: "Назад",
+    checkoutSubtitle: "Проверьте состав заказа перед подтверждением.",
     checkout: "Перейти к оформлению",
     continue: "Открыть меню",
     empty: "Корзина пока пустая. Добавьте несколько блюд, чтобы начать заказ.",
@@ -23,12 +24,21 @@ export const ruMessages = {
   checkout: {
     address: "Адрес доставки",
     comment: "Комментарий курьеру",
+    deliveryMethod: "Способ доставки",
+    emptyCart: "В корзине пока нет позиций для оформления заказа.",
     fullName: "Имя и фамилия",
+    goToCart: "Вернуться в корзину",
+    goToDelivery: "Выбрать адрес",
+    missingDelivery:
+      "Для оформления заказа сначала выберите адрес и способ доставки.",
     paymentMethod: "Способ оплаты",
+    paymentMethodOffline: "При получении",
+    paymentMethodOnline: "Онлайн",
+    paymentMethodsEmpty:
+      "Для выбранного способа доставки backend пока не вернул активные способы оплаты.",
+    paymentMethodsError: "Не удалось загрузить способы оплаты.",
     phone: "Телефон",
-    submit: "Создать заказ-заглушку",
-    subtitle:
-      "Форма валидируется на клиенте и готова к POST-запросу в Spring Boot backend.",
+    submit: "Оформить заказ",
     title: "Оформление заказа",
   },
   deliveryAddress: {
@@ -188,9 +198,13 @@ export const ruMessages = {
     total: "Итого",
   },
   toast: {
+    checkoutErrorTitle: "Не удалось оформить заказ",
     checkoutReadyDescription:
       "Форма успешно провалидирована. Следующий шаг — POST в Spring Boot checkout endpoint.",
     checkoutReadyTitle: "Payload готов",
+    checkoutSuccessDescription:
+      "Заказ {{orderNumber}} создан. Открываем страницу статуса.",
+    checkoutSuccessTitle: "Заказ создан",
     itemAddedDescription: "{{name}} добавлен в корзину.",
     itemAddedTitle: "Позиция добавлена",
   },

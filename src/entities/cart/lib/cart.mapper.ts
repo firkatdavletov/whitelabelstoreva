@@ -57,6 +57,8 @@ function mapCartDeliveryDto(
     address: mapDeliveryAddressDto(dto.address),
     deliveryMethod: dto.deliveryMethod ?? null,
     pickupPointAddress: dto.pickupPointAddress ?? null,
+    pickupPointExternalId: dto.pickupPointExternalId ?? null,
+    pickupPointId: dto.pickupPointId ?? null,
     pickupPointName: dto.pickupPointName ?? null,
     quote: mapDeliveryQuoteDto(dto.quote),
     quoteExpired: dto.quoteExpired,

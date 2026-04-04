@@ -21,10 +21,12 @@ import {
 import { Skeleton } from "@/shared/ui/skeleton";
 
 type CartSummaryCardProps = {
+  editable?: boolean;
   showCheckoutCta?: boolean;
 };
 
 export function CartSummaryCard({
+  editable = true,
   showCheckoutCta = true,
 }: CartSummaryCardProps) {
   const { href, locale, tenantSlug } = useStorefrontRoute();
@@ -34,6 +36,9 @@ export function CartSummaryCard({
   const removeCartItemMutation =
     useRemoveStorefrontCartItemMutation(tenantSlug);
   const { t } = useTranslation();
+  const summaryDescription = editable
+    ? t("cart.subtitle")
+    : t("cart.checkoutSubtitle");
 
   if (isLoading && !storefrontCart) {
     return (
@@ -55,7 +60,7 @@ export function CartSummaryCard({
       <Card>
         <CardHeader>
           <CardTitle>{t("cart.title")}</CardTitle>
-          <CardDescription>{t("cart.subtitle")}</CardDescription>
+          <CardDescription>{summaryDescription}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground text-sm">{t("cart.empty")}</p>
@@ -73,7 +78,7 @@ export function CartSummaryCard({
         <div className="flex items-center justify-between gap-3">
           <div>
             <CardTitle>{t("cart.summary")}</CardTitle>
-            <CardDescription>{t("cart.subtitle")}</CardDescription>
+            <CardDescription>{summaryDescription}</CardDescription>
           </div>
           <Badge>{storefrontCart.itemsCount}</Badge>
         </div>
@@ -104,15 +109,17 @@ export function CartSummaryCard({
                     locale,
                   )}
                 </p>
-                <Button
-                  aria-label={`Remove ${item.title}`}
-                  disabled={removeCartItemMutation.isPending}
-                  onClick={() => removeCartItemMutation.mutate(item.id)}
-                  size="icon"
-                  variant="ghost"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {editable ? (
+                  <Button
+                    aria-label={`Remove ${item.title}`}
+                    disabled={removeCartItemMutation.isPending}
+                    onClick={() => removeCartItemMutation.mutate(item.id)}
+                    size="icon"
+                    variant="ghost"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                ) : null}
               </div>
             </div>
           ))}

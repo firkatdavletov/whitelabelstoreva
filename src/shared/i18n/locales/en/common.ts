@@ -10,6 +10,7 @@ export const enMessages = {
   },
   cart: {
     back: "Back",
+    checkoutSubtitle: "Review your order before submitting it.",
     checkout: "Proceed to checkout",
     continue: "Browse menu",
     empty: "Your cart is empty. Add a few dishes to start an order.",
@@ -22,11 +23,21 @@ export const enMessages = {
   checkout: {
     address: "Delivery address",
     comment: "Courier note",
+    deliveryMethod: "Delivery method",
+    emptyCart: "There are no items in the cart to submit yet.",
     fullName: "Full name",
+    goToCart: "Back to cart",
+    goToDelivery: "Choose address",
+    missingDelivery:
+      "Select the delivery address and fulfillment method before checkout.",
     paymentMethod: "Payment method",
+    paymentMethodOffline: "Pay on delivery",
+    paymentMethodOnline: "Online",
+    paymentMethodsEmpty:
+      "The backend did not return any active payment methods for this delivery option.",
+    paymentMethodsError: "Failed to load payment methods.",
     phone: "Phone number",
-    submit: "Create placeholder order",
-    subtitle: "Validated client-side form ready to POST into Spring Boot.",
+    submit: "Place order",
     title: "Checkout",
   },
   deliveryAddress: {
@@ -187,9 +198,13 @@ export const enMessages = {
     total: "Total",
   },
   toast: {
+    checkoutErrorTitle: "Couldn't place the order",
     checkoutReadyDescription:
       "The form is validated. Next step: POST it to the Spring Boot checkout endpoint.",
     checkoutReadyTitle: "Payload ready",
+    checkoutSuccessDescription:
+      "Order {{orderNumber}} is created. Opening the live status page.",
+    checkoutSuccessTitle: "Order created",
     itemAddedDescription: "{{name}} is now in the basket.",
     itemAddedTitle: "Added to cart",
   },

@@ -44,6 +44,8 @@ export type StorefrontCartDelivery = {
   address: StorefrontCartDeliveryAddress | null;
   deliveryMethod: StorefrontCartDeliveryMethod | null;
   pickupPointAddress: string | null;
+  pickupPointExternalId?: string | null;
+  pickupPointId?: string | null;
   pickupPointName: string | null;
   quote: StorefrontCartDeliveryQuote | null;
   quoteExpired: boolean;
