@@ -13,8 +13,6 @@ import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storef
 import { useTenantTheme } from "@/features/tenant-theme";
 import { formatCurrency } from "@/shared/lib/currency";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
-import { cn } from "@/shared/lib/styles";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
   HeaderActionLink,
@@ -96,9 +94,8 @@ export function Header() {
   const deliveryAddress =
     formatDeliveryAddress(storefrontCart?.delivery) ??
     t("header.addressPending");
-  const cartCount = storefrontCart?.itemsCount ?? 0;
   const cartTotal = storefrontCart?.totalPrice ?? 0;
-  const hasCartItems = cartCount > 0;
+  const hasCartItems = (storefrontCart?.itemsCount ?? 0) > 0;
   const etaLabel = formatDeliveryEtaLabel(
     storefrontCart?.delivery?.quote && !storefrontCart.delivery.quoteExpired
       ? resolveDeliveryQuoteEta(storefrontCart.delivery.quote)
@@ -152,32 +149,25 @@ export function Header() {
               label={t("header.login")}
               labelClassName="lg:inline"
             />
-            <Button
-              aria-label={cartButtonLabel}
-              asChild
-              className={cn(
-                "relative h-10 w-10 rounded-full px-0 shadow-sm sm:w-auto sm:px-4",
-                !hasCartItems && "bg-card/82 border-border/70 hover:bg-card",
-              )}
-              size="lg"
-              variant={hasCartItems ? "default" : "outline"}
-            >
-              <Link href={href("/cart")}>
-                <ShoppingBag className="h-4 w-4 shrink-0" />
-                <span className="sr-only">{cartButtonLabel}</span>
-                <span className="hidden text-sm font-medium sm:inline xl:hidden">
-                  {t("navigation.cart")}
-                </span>
-                <span className="hidden text-sm font-medium xl:inline">
-                  {cartButtonLabel}
-                </span>
-                {hasCartItems ? (
-                  <Badge className="absolute -top-1 -right-1 min-w-5 justify-center px-1.5 py-0.5 sm:static sm:ml-1">
-                    {cartCount}
-                  </Badge>
-                ) : null}
-              </Link>
-            </Button>
+            {hasCartItems ? (
+              <Button
+                aria-label={cartButtonLabel}
+                asChild
+                className="relative h-10 w-10 rounded-full px-0 shadow-sm sm:w-auto sm:px-4"
+                size="lg"
+              >
+                <Link href={href("/cart")}>
+                  <ShoppingBag className="h-4 w-4 shrink-0" />
+                  <span className="sr-only">{cartButtonLabel}</span>
+                  <span className="hidden text-sm font-medium sm:inline xl:hidden">
+                    {t("navigation.cart")}
+                  </span>
+                  <span className="hidden text-sm font-medium xl:inline">
+                    {cartButtonLabel}
+                  </span>
+                </Link>
+              </Button>
+            ) : null}
           </div>
         </div>
 

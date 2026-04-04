@@ -22,6 +22,7 @@ export type TenantTheme = {
 };
 
 export type TenantConfig = {
+  allowGuestCheckout: boolean;
   currency: CurrencyCode;
   description: string;
   heroCopy: string;

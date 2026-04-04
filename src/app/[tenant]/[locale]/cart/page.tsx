@@ -4,6 +4,7 @@ import { CartPageContent } from "@/features/cart-summary";
 import { getMenuCatalog } from "@/features/menu-catalog";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
+import { buildServerRequestContext } from "@/shared/api/server-auth";
 import type { RouteParams } from "@/shared/types/common";
 
 type CartPageProps = {
@@ -22,10 +23,12 @@ export default async function CartPage({ params }: CartPageProps) {
     notFound();
   }
 
+  const { accessToken } = await buildServerRequestContext();
   const menuCatalog = await getMenuCatalog(tenant);
 
   return (
     <CartPageContent
+      isAuthorized={Boolean(accessToken)}
       locale={localeContext.locale}
       products={menuCatalog.products.map((product) => ({
         id: product.id,

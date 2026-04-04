@@ -2,6 +2,7 @@ import type { TenantConfig } from "@/entities/tenant/model/tenant.types";
 
 export const tenantConfigMap = {
   "storeva-mass": {
+    allowGuestCheckout: true,
     currency: "RUB",
     description:
       "Storeva — удобный сервис заказа еды на каждый день с акцентом на быстрый выбор, понятные категории, заметные акции и комфортный мобильный сценарий.",
@@ -36,6 +37,7 @@ export const tenantConfigMap = {
   },
 
   "storeva-premium": {
+    allowGuestCheckout: true,
     currency: "RUB",
     description:
       "Storeva Food Hall — премиальный сервис заказа еды с акцентом на визуально чистую витрину, качественную подачу блюд и ощущение современного гастрономического бренда.",
@@ -70,6 +72,7 @@ export const tenantConfigMap = {
   },
 
   "storeva-street": {
+    allowGuestCheckout: true,
     currency: "RUB",
     description:
       "Storeva Street — яркий сервис заказа стритфуда и dark kitchen форматов с акцентом на сочные акценты, быстрый выбор хитов и энергичный мобильный интерфейс.",

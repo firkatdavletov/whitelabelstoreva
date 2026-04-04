@@ -11,12 +11,12 @@ import {
   useRemoveStorefrontCartItemMutation,
 } from "@/features/cart-summary/hooks/use-storefront-cart-mutations";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
+import { resolveCartCheckoutTarget } from "@/features/cart-summary/lib/cart-checkout-target";
 import { useTenantTheme } from "@/features/tenant-theme";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { formatCurrency } from "@/shared/lib/currency";
 import { formatProductQuantity } from "@/shared/lib/product-quantity";
 import type { Locale } from "@/shared/types/common";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 
@@ -28,6 +28,7 @@ type CartProductPreview = {
 };
 
 type CartPageContentProps = {
+  isAuthorized: boolean;
   locale: Locale;
   products: CartProductPreview[];
 };
@@ -40,7 +41,6 @@ function CartPageSkeleton() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
         <div className="space-y-4">
           <div className="space-y-3">
-            <Skeleton className="h-5 w-28 rounded-full" />
             <Skeleton className="h-12 w-56 rounded-3xl" />
             <Skeleton className="h-5 w-full max-w-xl rounded-full" />
           </div>
@@ -56,7 +56,11 @@ function CartPageSkeleton() {
   );
 }
 
-export function CartPageContent({ locale, products }: CartPageContentProps) {
+export function CartPageContent({
+  isAuthorized,
+  locale,
+  products,
+}: CartPageContentProps) {
   const { href, tenantSlug } = useStorefrontRoute();
   const tenantConfig = useTenantTheme();
   const { data: storefrontCart, isLoading } =
@@ -73,6 +77,14 @@ export function CartPageContent({ locale, products }: CartPageContentProps) {
   const isActionPending =
     changeCartItemQuantityMutation.isPending ||
     removeCartItemMutation.isPending;
+  const checkoutHref = resolveCartCheckoutTarget({
+    allowGuestCheckout: tenantConfig.allowGuestCheckout,
+    authHref: href("/account"),
+    checkoutHref: href("/checkout"),
+    deliveryHref: href("/delivery"),
+    isAuthorized,
+    storefrontCart,
+  });
 
   if (isLoading && !storefrontCart) {
     return <CartPageSkeleton />;
@@ -100,9 +112,6 @@ export function CartPageContent({ locale, products }: CartPageContentProps) {
             </div>
 
             <div className="space-y-3">
-              <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
-                {t("cart.summary")}
-              </p>
               <h1 className="font-heading text-4xl font-semibold tracking-tight sm:text-5xl">
                 {t("cart.title")}
               </h1>
@@ -118,18 +127,13 @@ export function CartPageContent({ locale, products }: CartPageContentProps) {
 
           <aside className="xl:sticky xl:top-24">
             <div className="rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_93%,white),color-mix(in_srgb,var(--background)_72%,white))] p-5 shadow-[0_22px_60px_-38px_rgba(24,19,15,0.4)] sm:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-2">
-                  <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
-                    {t("shared.total")}
-                  </p>
-                  <p className="font-heading text-3xl font-semibold tracking-tight">
-                    {formatCurrency(0, tenantConfig.currency, locale)}
-                  </p>
-                </div>
-                <Badge className="min-w-10 justify-center rounded-full px-3 py-1.5">
-                  0
-                </Badge>
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
+                  {t("shared.total")}
+                </p>
+                <p className="font-heading text-3xl font-semibold tracking-tight">
+                  {formatCurrency(0, tenantConfig.currency, locale)}
+                </p>
               </div>
 
               <p className="text-muted-foreground mt-4 text-sm leading-6">
@@ -144,7 +148,7 @@ export function CartPageContent({ locale, products }: CartPageContentProps) {
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button
           asChild
           className="w-fit rounded-full px-4"
@@ -156,18 +160,11 @@ export function CartPageContent({ locale, products }: CartPageContentProps) {
             {t("cart.back")}
           </Link>
         </Button>
-
-        <Badge className="min-w-10 justify-center rounded-full px-3 py-1.5">
-          {storefrontCart.itemsCount}
-        </Badge>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
         <div className="space-y-4">
           <div className="space-y-3">
-            <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
-              {t("cart.summary")}
-            </p>
             <h1 className="font-heading text-4xl font-semibold tracking-tight sm:text-5xl">
               {t("cart.title")}
             </h1>
@@ -221,7 +218,9 @@ export function CartPageContent({ locale, products }: CartPageContentProps) {
                         ) : null}
                         <p className="text-muted-foreground text-sm">
                           {formatCurrency(
-                            item.lineTotal,
+                            item.quantity > 0
+                              ? item.lineTotal / item.quantity
+                              : item.lineTotal,
                             tenantConfig.currency,
                             locale,
                           )}
@@ -298,25 +297,17 @@ export function CartPageContent({ locale, products }: CartPageContentProps) {
 
         <aside className="xl:sticky xl:top-24">
           <div className="rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_93%,white),color-mix(in_srgb,var(--secondary)_48%,white))] p-5 shadow-[0_24px_70px_-40px_rgba(24,19,15,0.42)] sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
-                  {t("shared.total")}
-                </p>
-                <p className="font-heading text-3xl font-semibold tracking-tight">
-                  {formatCurrency(
-                    storefrontCart.totalPrice,
-                    tenantConfig.currency,
-                    locale,
-                  )}
-                </p>
-              </div>
-              <Badge
-                className="min-w-10 justify-center rounded-full px-3 py-1.5"
-                variant="outline"
-              >
-                {storefrontCart.itemsCount}
-              </Badge>
+            <div className="space-y-2">
+              <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
+                {t("shared.total")}
+              </p>
+              <p className="font-heading text-3xl font-semibold tracking-tight">
+                {formatCurrency(
+                  storefrontCart.totalPrice,
+                  tenantConfig.currency,
+                  locale,
+                )}
+              </p>
             </div>
 
             <p className="text-muted-foreground mt-4 text-sm leading-6">
@@ -335,7 +326,7 @@ export function CartPageContent({ locale, products }: CartPageContentProps) {
             </div>
 
             <Button asChild className="mt-6 w-full rounded-2xl" size="lg">
-              <Link href={href("/checkout")}>{t("cart.checkout")}</Link>
+              <Link href={checkoutHref}>{t("cart.checkout")}</Link>
             </Button>
           </div>
         </aside>
