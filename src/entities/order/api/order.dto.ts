@@ -1,16 +1,15 @@
-import type { OrderStatus } from "@/entities/order/model/order.types";
+import type { components, paths } from "@/shared/api/generated/schema";
 
-export type OrderTimelineDto = {
-  status: OrderStatus;
-  timestamp: string;
-};
+export type OrderDto = components["schemas"]["OrderResponse"];
 
-export type OrderDto = {
-  eta_minutes: number;
-  id: string;
-  items_count: number;
-  restaurant_name: string;
-  status: OrderStatus;
-  tenant_slug: string;
-  timeline: OrderTimelineDto[];
-};
+export type CurrentOrderListDto =
+  paths["/api/v1/orders/current"]["get"]["responses"][200]["content"]["application/json"];
+
+export type OrderListDto =
+  paths["/api/v1/orders/my"]["get"]["responses"][200]["content"]["application/json"];
+
+export type OrderDeliveryMethod = components["schemas"]["DeliveryMethodType"];
+
+export type OrderStateType = components["schemas"]["OrderStateType"];
+
+export type OrderStatusSummaryDto = components["schemas"]["OrderStatusSummaryResponse"];

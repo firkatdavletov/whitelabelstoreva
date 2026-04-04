@@ -148,13 +148,64 @@ export const enMessages = {
     orders: "Orders",
   },
   order: {
+    activeSubtitle:
+      "This page shows the latest order state, delivery details, and items after checkout.",
+    address: "Address",
+    backendDataTitle: "Backend additions required",
+    courierTrackingMissing:
+      "For live courier tracking, the backend should return courier coordinates, contact details, and the next location refresh time.",
+    createdAt: "Created",
+    currentOrder: "Current order",
+    currentOrderSubtitle:
+      "If an order is still in progress, you can reopen tracking directly from the home screen.",
     currentStatus: "Current status",
     eta: "ETA",
+    etaConfirmed: "Estimate came from the backend",
+    etaPending: "Waiting for an exact ETA",
+    items: "Items",
+    itemsCount_one: "{{count}} item",
+    itemsCount_other: "{{count}} items",
+    itemsPending:
+      "The backend has not returned order line items in this response yet.",
+    done: "Done",
+    live: "Live",
     loading: "Refreshing live order status...",
+    missingAddress:
+      "The backend has not returned a customer-facing delivery address yet.",
+    missingEta:
+      "The backend has not returned an ETA yet. Add `estimatedArrivalAt` or a live `estimatesMinutes` value.",
+    orderNumber: "Order #{{number}}",
+    payment: "Payment",
+    pickupPoint: "Pickup point",
     subtitle:
-      "TanStack Query handles client-side status polling and cache lifecycle.",
+      "The page polls for the latest order state and shows what the API already exposes.",
+    summary: "Order summary",
+    timelineDescription:
+      "The milestones are derived from the current `stateType` until the backend returns a real status history.",
+    timelineDerived:
+      "The timeline is currently derived on the frontend from the current state.",
     timeline: "Progress timeline",
+    trackingError: "The order could not be loaded. Check the link and try again.",
+    trackingFallbackEta:
+      "Add an exact ETA to the order response, for example `estimatedArrivalAt` or an updated `estimatesMinutes`.",
+    trackingFallbackTimeline:
+      "Add a `statusHistory[]` array on the backend with status code, label, and timestamp for every transition.",
+    trackOrder: "Open tracking",
+    total: "Total",
     title: "Order tracking",
+    statusUpdated: "Status updated",
+    deliveryMethod: "Fulfillment method",
+    states: {
+      AWAITING_CONFIRMATION: "Awaiting confirmation",
+      CANCELED: "Canceled",
+      COMPLETED: "Completed",
+      CONFIRMED: "Confirmed",
+      CREATED: "Created",
+      ON_HOLD: "On hold",
+      OUT_FOR_DELIVERY: "Out for delivery",
+      PREPARING: "Preparing",
+      READY_FOR_PICKUP: "Ready for pickup",
+    },
   },
   product: {
     add: "Add",

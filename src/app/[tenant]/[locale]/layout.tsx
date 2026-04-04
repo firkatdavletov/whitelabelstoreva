@@ -10,6 +10,8 @@ import type { RouteParams } from "@/shared/types/common";
 import { Footer } from "@/widgets/footer";
 import { StorefrontHeader } from "@/widgets/header";
 
+export const dynamic = "force-dynamic";
+
 type StorefrontLayoutProps = {
   children: React.ReactNode;
   params: RouteParams<{

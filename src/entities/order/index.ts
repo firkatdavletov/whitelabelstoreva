@@ -1,3 +1,14 @@
-export type { OrderDto } from "@/entities/order/api/order.dto";
-export { mapOrderDtoToOrder } from "@/entities/order/lib/order.mapper";
-export type { Order, OrderStatus } from "@/entities/order/model/order.types";
+export type {
+  CurrentOrderListDto,
+  OrderDeliveryMethod,
+  OrderDto,
+  OrderListDto,
+  OrderStateType,
+  OrderStatusSummaryDto,
+} from "@/entities/order/api/order.dto";
+export {
+  isActiveOrderDto,
+  mapOrderDtoToOrder,
+  selectCurrentOrderDto,
+} from "@/entities/order/lib/order.mapper";
+export type { Order, OrderItem, OrderTimelineStep } from "@/entities/order/model/order.types";

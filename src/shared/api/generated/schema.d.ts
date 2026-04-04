@@ -66,7 +66,7 @@ export interface paths {
         put?: never;
         /**
          * Start a virtual try-on session
-         * @description Requires either a bearer token for an authenticated user or `X-Install-Id` for a guest installation.
+         * @description Requires either a bearer token for an authenticated user or `X-Device-Id` for a guest installation.
          *     The backend resolves the garment image from the active product or variant and submits the request to FASHN.
          *     The response includes websocket connection details for real-time status updates.
          */
@@ -86,7 +86,7 @@ export interface paths {
         };
         /**
          * Get a virtual try-on session
-         * @description Requires either a bearer token for an authenticated user or `X-Install-Id` for a guest installation.
+         * @description Requires either a bearer token for an authenticated user or `X-Device-Id` for a guest installation.
          *     Only the owner of the session can access it.
          */
         get: operations["getVirtualTryOnSession"];
@@ -109,7 +109,7 @@ export interface paths {
         put?: never;
         /**
          * Force sync of a pending virtual try-on session with FASHN status API
-         * @description Requires either a bearer token for an authenticated user or `X-Install-Id` for a guest installation.
+         * @description Requires either a bearer token for an authenticated user or `X-Device-Id` for a guest installation.
          *     If the session is still pending, the backend fetches the latest state from FASHN and pushes any update to websocket subscribers.
          */
         post: operations["syncVirtualTryOnSession"];
@@ -588,6 +588,26 @@ export interface paths {
         put?: never;
         /** Create guest order from provided items */
         post: operations["guestCheckout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List current orders of current actor
+         * @description Returns non-final orders of the current actor.
+         */
+        get: operations["getCurrentOrders"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1082,6 +1102,18 @@ export interface components {
             /** Format: int32 */
             quantity: number;
         };
+        OrderStatusSummaryResponse: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: string;
+            stateType: components["schemas"]["OrderStateType"];
+            color?: string | null;
+            icon?: string | null;
+            isFinal: boolean;
+            isCancellable: boolean;
+            visibleToCustomer: boolean;
+        };
         OrderResponse: {
             /** Format: uuid */
             id: string;
@@ -1093,7 +1125,10 @@ export interface components {
             customerName?: string | null;
             customerPhone?: string | null;
             customerEmail?: string | null;
-            status: components["schemas"]["OrderStatus"];
+            status: string;
+            statusName: string;
+            stateType: components["schemas"]["OrderStateType"];
+            currentStatus: components["schemas"]["OrderStatusSummaryResponse"];
             payment?: components["schemas"]["OrderPaymentResponse"] | null;
             deliveryMethod: components["schemas"]["DeliveryMethodType"];
             delivery: components["schemas"]["OrderDeliveryResponse"];
@@ -1105,6 +1140,8 @@ export interface components {
             deliveryFeeMinor: number;
             /** Format: int64 */
             totalMinor: number;
+            /** Format: date-time */
+            statusChangedAt: string;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -1223,7 +1260,7 @@ export interface components {
         /** @enum {string} */
         OrderCustomerType: "USER" | "GUEST";
         /** @enum {string} */
-        OrderStatus: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+        OrderStateType: "CREATED" | "AWAITING_CONFIRMATION" | "CONFIRMED" | "PREPARING" | "READY_FOR_PICKUP" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELED" | "ON_HOLD";
         CreateVirtualTryOnSessionRequest: {
             /** Format: uuid */
             productId: string;
@@ -1444,8 +1481,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Guest installation identifier used when no bearer token is provided. */
-                "X-Install-Id"?: string;
+                /** @description Guest device identifier used when no bearer token is provided. Legacy `X-Install-Id` is also accepted. */
+                "X-Device-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -1475,8 +1512,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Guest installation identifier used when no bearer token is provided. */
-                "X-Install-Id"?: string;
+                /** @description Guest device identifier used when no bearer token is provided. Legacy `X-Install-Id` is also accepted. */
+                "X-Device-Id"?: string;
             };
             path: {
                 sessionId: string;
@@ -1503,8 +1540,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Guest installation identifier used when no bearer token is provided. */
-                "X-Install-Id"?: string;
+                /** @description Guest device identifier used when no bearer token is provided. Legacy `X-Install-Id` is also accepted. */
+                "X-Device-Id"?: string;
             };
             path: {
                 sessionId: string;
@@ -2268,8 +2305,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Optional guest installation id saved into order (`guestInstallId`). */
-                "X-Install-Id"?: string;
+                /** @description Optional guest device id saved into order (`guestInstallId`). Legacy `X-Install-Id` is also accepted. */
+                "X-Device-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -2291,6 +2328,28 @@ export interface operations {
             };
             400: components["responses"]["BadRequestError"];
             404: components["responses"]["NotFoundError"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    getCurrentOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current actor orders */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderResponse"][];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
             500: components["responses"]["InternalServerError"];
         };
     };

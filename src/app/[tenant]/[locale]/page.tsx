@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 
+import { CurrentOrderCard, getCurrentOrder } from "@/features/order-tracking";
 import { getMenuCatalog } from "@/features/menu-catalog";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
+import { buildServerRequestContext } from "@/shared/api/server-auth";
 import { buildStorefrontPath } from "@/shared/config/routing";
 import type { RouteParams } from "@/shared/types/common";
 import {
@@ -28,7 +30,11 @@ export default async function HomePage({ params }: HomePageProps) {
     notFound();
   }
 
-  const menuCatalog = await getMenuCatalog(tenant);
+  const requestContext = await buildServerRequestContext();
+  const [menuCatalog, currentOrder] = await Promise.all([
+    getMenuCatalog(tenant),
+    getCurrentOrder(tenant, requestContext).catch(() => null),
+  ]);
   const menuHref = buildStorefrontPath({
     locale: localeContext.locale,
     pathname: "/menu",
@@ -42,6 +48,8 @@ export default async function HomePage({ params }: HomePageProps) {
         nextLabel={localeContext.dictionary.home.bannerNext}
         previousLabel={localeContext.dictionary.home.bannerPrevious}
       />
+
+      <CurrentOrderCard initialData={currentOrder} />
 
       <HomeCategoryGrid
         actionHref={menuHref}

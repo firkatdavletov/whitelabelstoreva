@@ -100,9 +100,23 @@ function createMockCheckoutOptionsResponse({
 function createMockCheckoutOrderResponse(
   input: CheckoutRequestDto,
 ): CheckoutOrderResponseDto {
+  const now = new Date();
+  const createdAt = now.toISOString();
+
   return {
     comment: input.comment ?? null,
-    createdAt: new Date().toISOString(),
+    createdAt,
+    currentStatus: {
+      code: "AWAITING_CONFIRMATION",
+      color: "#d65c26",
+      icon: null,
+      id: crypto.randomUUID(),
+      isCancellable: true,
+      isFinal: false,
+      name: "Awaiting confirmation",
+      stateType: "AWAITING_CONFIRMATION",
+      visibleToCustomer: true,
+    },
     customerEmail: input.customerEmail ?? null,
     customerName: input.customerName ?? null,
     customerPhone: input.customerPhone ?? null,
@@ -146,10 +160,13 @@ function createMockCheckoutOrderResponse(
       code: input.paymentMethodCode,
       name: input.paymentMethodCode,
     },
-    status: "PENDING",
+    stateType: "AWAITING_CONFIRMATION",
+    status: "AWAITING_CONFIRMATION",
+    statusChangedAt: createdAt,
+    statusName: "Awaiting confirmation",
     subtotalMinor: 0,
     totalMinor: 0,
-    updatedAt: new Date().toISOString(),
+    updatedAt: createdAt,
     userId: null,
     guestInstallId: null,
   };

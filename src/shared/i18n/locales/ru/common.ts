@@ -148,13 +148,63 @@ export const ruMessages = {
     orders: "Заказы",
   },
   order: {
+    activeSubtitle:
+      "Показываем актуальный статус, детали доставки и состав заказа после оформления.",
+    address: "Адрес",
+    backendDataTitle: "Что нужно добавить на backend",
+    courierTrackingMissing:
+      "Для live-карты курьера backend должен вернуть координаты курьера, его контакт и время следующего обновления.",
+    createdAt: "Создан",
+    currentOrder: "Текущий заказ",
+    currentOrderSubtitle:
+      "Если заказ ещё в работе, отслеживание и ключевые детали доступны прямо с главной страницы.",
     currentStatus: "Текущий статус",
     eta: "ETA",
+    etaConfirmed: "Оценка пришла из backend",
+    etaPending: "Ожидаем точное ETA",
+    items: "Состав",
+    itemsCount_one: "{{count}} позиция",
+    itemsCount_few: "{{count}} позиции",
+    itemsCount_many: "{{count}} позиций",
+    itemsPending: "Backend пока не вернул позиции заказа для этого ответа.",
+    done: "Готово",
+    live: "Сейчас",
     loading: "Обновляем статус заказа...",
+    missingAddress: "Backend пока не вернул полный адрес для отображения клиенту.",
+    missingEta:
+      "Backend пока не вернул ETA. Нужен `estimatedArrivalAt` или актуальный `estimatesMinutes`.",
+    orderNumber: "Заказ №{{number}}",
+    payment: "Оплата",
+    pickupPoint: "Точка выдачи",
     subtitle:
-      "TanStack Query управляет клиентским polling и жизненным циклом кеша.",
+      "Страница обновляет статус заказа через polling и показывает то, что уже доступно из API.",
+    summary: "Сводка по заказу",
+    timelineDescription:
+      "Шаги строятся по текущему `stateType`, пока backend не вернёт историю статусов.",
+    timelineDerived:
+      "Лента пока вычисляется на фронтенде по текущему stateType.",
     timeline: "Лента статусов",
+    trackingError: "Не удалось загрузить заказ. Проверьте ссылку и попробуйте ещё раз.",
+    trackingFallbackEta:
+      "Добавьте в ответ заказа точное ETA, например `estimatedArrivalAt` или обновляемый `estimatesMinutes`.",
+    trackingFallbackTimeline:
+      "Добавьте на backend массив `statusHistory[]` с кодом статуса, названием и timestamp каждого перехода.",
+    trackOrder: "Открыть отслеживание",
+    total: "Итого",
     title: "Отслеживание заказа",
+    statusUpdated: "Статус обновлён",
+    deliveryMethod: "Способ получения",
+    states: {
+      AWAITING_CONFIRMATION: "Ожидает подтверждения",
+      CANCELED: "Заказ отменён",
+      COMPLETED: "Заказ завершён",
+      CONFIRMED: "Заказ подтверждён",
+      CREATED: "Заказ создан",
+      ON_HOLD: "Заказ на паузе",
+      OUT_FOR_DELIVERY: "Передан в доставку",
+      PREPARING: "Заказ готовят",
+      READY_FOR_PICKUP: "Готов к выдаче",
+    },
   },
   product: {
     add: "Добавить",

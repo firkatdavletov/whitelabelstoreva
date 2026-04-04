@@ -18,6 +18,7 @@ import {
   resolveCheckoutPaymentMethods,
   resolveDeliveryMethodFallbackLabel,
 } from "@/features/checkout-form/lib/checkout-form.utils";
+import { rememberTrackedOrderId } from "@/features/order-tracking/lib/tracked-order-storage";
 import type { CheckoutFormValues } from "@/features/checkout-form/model/checkout-form.schema";
 import { createCheckoutFormSchema } from "@/features/checkout-form/model/checkout-form.schema";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
@@ -215,6 +216,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                   }),
                 });
 
+                rememberTrackedOrderId(tenantSlug, order.id);
                 router.push(href(`/orders/${order.id}`));
               } catch (error) {
                 toast.error(t("toast.checkoutErrorTitle"), {
