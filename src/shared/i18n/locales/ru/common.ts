@@ -153,6 +153,7 @@ export const ruMessages = {
     address: "Адрес",
     backendDataTitle: "Что нужно добавить на backend",
     cancelOrder: "Отменить заказ",
+    cancelOrderPending: "Отменяем заказ...",
     courierTrackingMissing:
       "Для live-карты курьера backend должен вернуть координаты курьера, его контакт и время следующего обновления.",
     createdAt: "Создан",
@@ -249,6 +250,10 @@ export const ruMessages = {
     total: "Итого",
   },
   toast: {
+    cancelOrderErrorTitle: "Не удалось отменить заказ",
+    cancelOrderSuccessDescription:
+      "Заказ {{orderNumber}} отменён. Статус на экране обновлён.",
+    cancelOrderSuccessTitle: "Заказ отменён",
     checkoutErrorTitle: "Не удалось оформить заказ",
     checkoutReadyDescription:
       "Форма успешно провалидирована. Следующий шаг — POST в Spring Boot checkout endpoint.",

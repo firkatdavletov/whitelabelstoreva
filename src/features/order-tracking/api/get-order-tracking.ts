@@ -5,8 +5,7 @@ import { env } from "@/shared/config/env";
 
 import { createMockOrderDto } from "@/features/order-tracking/lib/order-mocks";
 import {
-  forgetTrackedOrderId,
-  rememberTrackedOrderId,
+  syncTrackedOrderId,
 } from "@/features/order-tracking/lib/tracked-order-storage";
 import type { OrderDto } from "@/entities/order";
 
@@ -15,19 +14,6 @@ export type OrderRequestContext = {
   cookie?: string;
   installId?: string;
 };
-
-function syncTrackedOrder(tenantSlug: string, orderId: string, isActive: boolean) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  if (isActive) {
-    rememberTrackedOrderId(tenantSlug, orderId);
-    return;
-  }
-
-  forgetTrackedOrderId(tenantSlug, orderId);
-}
 
 export async function getOrderTracking(
   orderId: string,
@@ -46,7 +32,9 @@ export async function getOrderTracking(
   }
 
   const order = mapOrderDtoToOrder(dto);
-  syncTrackedOrder(tenantSlug, order.id, order.isActive);
+  if (typeof window !== "undefined") {
+    syncTrackedOrderId(tenantSlug, order.id, order.isActive);
+  }
 
   return order;
 }

@@ -1,4 +1,5 @@
 export type {
+  CancelOrderRequestDto,
   CurrentOrderListDto,
   OrderDeliveryMethod,
   OrderDto,

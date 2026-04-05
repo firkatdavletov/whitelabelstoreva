@@ -84,3 +84,16 @@ export function forgetTrackedOrderId(tenantSlug: string, orderId: string) {
     [tenantSlug]: nextOrderIds,
   });
 }
+
+export function syncTrackedOrderId(
+  tenantSlug: string,
+  orderId: string,
+  isActive: boolean,
+) {
+  if (isActive) {
+    rememberTrackedOrderId(tenantSlug, orderId);
+    return;
+  }
+
+  forgetTrackedOrderId(tenantSlug, orderId);
+}

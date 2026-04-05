@@ -153,6 +153,7 @@ export const enMessages = {
     address: "Address",
     backendDataTitle: "Backend additions required",
     cancelOrder: "Cancel order",
+    cancelOrderPending: "Canceling order...",
     courierTrackingMissing:
       "For live courier tracking, the backend should return courier coordinates, contact details, and the next location refresh time.",
     createdAt: "Created",
@@ -248,6 +249,10 @@ export const enMessages = {
     total: "Total",
   },
   toast: {
+    cancelOrderErrorTitle: "Couldn't cancel the order",
+    cancelOrderSuccessDescription:
+      "Order {{orderNumber}} is canceled. The tracking view is updated.",
+    cancelOrderSuccessTitle: "Order canceled",
     checkoutErrorTitle: "Couldn't place the order",
     checkoutReadyDescription:
       "The form is validated. Next step: POST it to the Spring Boot checkout endpoint.",

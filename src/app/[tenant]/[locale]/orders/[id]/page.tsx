@@ -40,7 +40,6 @@ export default async function OrderPage({ params }: OrderPageProps) {
     <OrderStatusCard
       initialData={initialOrder}
       orderId={id}
-      supportEmail={tenantConfig.supportEmail}
       tenantSlug={tenant}
     />
   );

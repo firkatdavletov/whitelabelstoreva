@@ -2,8 +2,10 @@
 
 import { CheckCircle2, Clock3, Package2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import type { Order, OrderTimelineStep } from "@/entities/order";
+import { useCancelOrderMutation } from "@/features/order-tracking/hooks/use-cancel-order-mutation";
 import { useOrderTrackingQuery } from "@/features/order-tracking/hooks/use-order-tracking-query";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { formatCurrency } from "@/shared/lib/currency";
@@ -16,7 +18,6 @@ import { Skeleton } from "@/shared/ui/skeleton";
 type OrderStatusCardProps = {
   initialData?: Order | null;
   orderId: string;
-  supportEmail?: string;
   tenantSlug: string;
 };
 
@@ -98,19 +99,6 @@ function resolveStepLabel(
   return translated !== translationKey ? translated : (step.label ?? step.code);
 }
 
-function buildCancelOrderHref(
-  order: Order,
-  supportEmail: string,
-  subjectLabel: string,
-) {
-  const subject = encodeURIComponent(`${subjectLabel}: ${order.orderNumber}`);
-  const body = encodeURIComponent(
-    `Order number: ${order.orderNumber}\nOrder ID: ${order.id}\n`,
-  );
-
-  return `mailto:${supportEmail}?subject=${subject}&body=${body}`;
-}
-
 function OrderDetailRow({ hint, label, value }: OrderDetailRowProps) {
   return (
     <div className="border-border/65 bg-background/72 space-y-1.5 rounded-[1.4rem] border p-4">
@@ -144,7 +132,6 @@ function StepStatusBadge({
 export function OrderStatusCard({
   initialData,
   orderId,
-  supportEmail,
   tenantSlug,
 }: OrderStatusCardProps) {
   const { data, error, isLoading, refetch } = useOrderTrackingQuery(
@@ -152,8 +139,28 @@ export function OrderStatusCard({
     tenantSlug,
     initialData,
   );
+  const cancelOrderMutation = useCancelOrderMutation(orderId, tenantSlug);
   const { locale } = useStorefrontRoute();
   const { t } = useTranslation();
+
+  async function handleCancelOrder() {
+    try {
+      const canceledOrder = await cancelOrderMutation.mutateAsync(undefined);
+
+      toast.success(t("toast.cancelOrderSuccessTitle"), {
+        description: t("toast.cancelOrderSuccessDescription", {
+          orderNumber: canceledOrder.orderNumber,
+        }),
+      });
+    } catch (mutationError) {
+      toast.error(t("toast.cancelOrderErrorTitle"), {
+        description:
+          mutationError instanceof Error
+            ? mutationError.message
+            : t("order.trackingError"),
+      });
+    }
+  }
 
   if (isLoading && !data) {
     return <TrackingPageSkeleton />;
@@ -175,10 +182,6 @@ export function OrderStatusCard({
   }
 
   const orderAddress = data.pickupPointAddress ?? data.deliveryAddress;
-  const cancelOrderHref =
-    data.isCancellable && supportEmail
-      ? buildCancelOrderHref(data, supportEmail, t("order.cancelOrder"))
-      : null;
 
   return (
     <Card className="border-border/70 overflow-hidden rounded-[2.5rem] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_96%,white),color-mix(in_srgb,var(--secondary)_24%,white)_48%,color-mix(in_srgb,var(--background)_92%,white))] shadow-[0_36px_110px_-56px_rgba(31,26,23,0.42)]">
@@ -248,14 +251,20 @@ export function OrderStatusCard({
                       </p>
                     </div>
 
-                    {cancelOrderHref ? (
+                    {data.isCancellable ? (
                       <Button
-                        asChild
                         className="border-destructive/18 bg-background/84 text-foreground hover:border-destructive/36 hover:bg-destructive/6 h-11 rounded-full"
+                        disabled={cancelOrderMutation.isPending}
+                        onClick={() => {
+                          void handleCancelOrder();
+                        }}
                         size="lg"
+                        type="button"
                         variant="outline"
                       >
-                        <a href={cancelOrderHref}>{t("order.cancelOrder")}</a>
+                        {cancelOrderMutation.isPending
+                          ? t("order.cancelOrderPending")
+                          : t("order.cancelOrder")}
                       </Button>
                     ) : null}
                   </div>
