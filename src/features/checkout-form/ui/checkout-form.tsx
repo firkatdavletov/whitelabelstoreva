@@ -13,23 +13,17 @@ import { useCheckoutMutation } from "@/features/checkout-form/hooks/use-checkout
 import { useCheckoutOptionsQuery } from "@/features/checkout-form/hooks/use-checkout-options-query";
 import {
   buildCheckoutRequest,
-  findCheckoutDeliveryOption,
   formatCheckoutDeliveryAddress,
+  isPickupCheckoutDelivery,
   resolveCheckoutPaymentMethods,
-  resolveDeliveryMethodFallbackLabel,
 } from "@/features/checkout-form/lib/checkout-form.utils";
-import { rememberTrackedOrderId } from "@/features/order-tracking/lib/tracked-order-storage";
 import type { CheckoutFormValues } from "@/features/checkout-form/model/checkout-form.schema";
 import { createCheckoutFormSchema } from "@/features/checkout-form/model/checkout-form.schema";
+import { rememberTrackedOrderId } from "@/features/order-tracking/lib/tracked-order-storage";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   Form,
   FormControl,
@@ -44,22 +38,6 @@ import { Skeleton } from "@/shared/ui/skeleton";
 type CheckoutFormProps = {
   isAuthorized: boolean;
 };
-
-type CheckoutInfoRowProps = {
-  label: string;
-  value: string;
-};
-
-function CheckoutInfoRow({ label, value }: CheckoutInfoRowProps) {
-  return (
-    <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-      <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">
-        {label}
-      </p>
-      <p className="mt-2 text-sm font-medium sm:text-base">{value}</p>
-    </div>
-  );
-}
 
 function CheckoutFormSkeleton() {
   return (
@@ -95,8 +73,12 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
 
   const form = useForm<CheckoutFormValues>({
     defaultValues: {
+      apartment: "",
       comment: "",
+      entrance: "",
+      floor: "",
       fullName: "",
+      intercom: "",
       paymentMethodCode: "",
       phone: "",
     },
@@ -107,19 +89,14 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     ),
   });
 
-  const deliveryOption = findCheckoutDeliveryOption(
-    checkoutOptionsQuery.data?.options,
-    delivery?.deliveryMethod,
-  );
   const paymentMethods = resolveCheckoutPaymentMethods(
     checkoutOptionsQuery.data?.options,
     delivery?.deliveryMethod,
   );
+  const deliveryAddress = delivery?.address;
+  const isPickupDelivery = isPickupCheckoutDelivery(delivery?.deliveryMethod);
+  const isCourierDelivery = delivery?.deliveryMethod === "COURIER";
   const selectedAddressLabel = formatCheckoutDeliveryAddress(delivery);
-  const selectedDeliveryMethodLabel =
-    deliveryOption?.name ??
-    resolveDeliveryMethodFallbackLabel(delivery?.deliveryMethod) ??
-    "—";
 
   useEffect(() => {
     const currentPaymentMethod = form.getValues("paymentMethodCode");
@@ -133,9 +110,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
       return;
     }
 
-    if (
-      paymentMethods.some((method) => method.code === currentPaymentMethod)
-    ) {
+    if (paymentMethods.some((method) => method.code === currentPaymentMethod)) {
       return;
     }
 
@@ -143,6 +118,35 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
       shouldDirty: false,
     });
   }, [form, paymentMethods]);
+
+  useEffect(() => {
+    if (!isCourierDelivery || !deliveryAddress) {
+      return;
+    }
+
+    const draftFields: Array<
+      [
+        "apartment" | "comment" | "entrance" | "floor" | "intercom",
+        string | null | undefined,
+      ]
+    > = [
+      ["apartment", deliveryAddress.apartment],
+      ["entrance", deliveryAddress.entrance],
+      ["intercom", deliveryAddress.intercom],
+      ["floor", deliveryAddress.floor],
+      ["comment", deliveryAddress.comment],
+    ];
+
+    draftFields.forEach(([fieldName, value]) => {
+      if (!value?.trim() || form.getValues(fieldName)?.trim()) {
+        return;
+      }
+
+      form.setValue(fieldName, value, {
+        shouldDirty: false,
+      });
+    });
+  }, [deliveryAddress, form, isCourierDelivery]);
 
   if (isLoading && !storefrontCart) {
     return <CheckoutFormSkeleton />;
@@ -155,7 +159,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
           <CardTitle>{t("checkout.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {t("checkout.emptyCart")}
           </p>
           <Button asChild className="w-full sm:w-fit">
@@ -173,7 +177,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
           <CardTitle>{t("checkout.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {t("checkout.missingDelivery")}
           </p>
           <Button asChild className="w-full sm:w-fit">
@@ -190,24 +194,45 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
         <CardTitle>{t("checkout.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <CheckoutInfoRow
-            label={t("checkout.deliveryMethod")}
-            value={selectedDeliveryMethodLabel}
-          />
-          <CheckoutInfoRow
-            label={t("checkout.address")}
-            value={selectedAddressLabel ?? "—"}
-          />
+        <div className="border-border/70 rounded-[28px] border bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(246,239,228,0.92))] p-5 shadow-[0_22px_55px_-42px_rgba(31,26,23,0.45)]">
+          <p className="text-muted-foreground text-xs font-semibold tracking-[0.22em] uppercase">
+            {t(
+              isPickupDelivery
+                ? "checkout.pickupLocation"
+                : "checkout.deliveryLocation",
+            )}
+          </p>
+          <p className="mt-3 text-base font-semibold sm:text-lg">
+            {selectedAddressLabel ?? "—"}
+          </p>
         </div>
 
         <Form {...form}>
           <form
             className="grid gap-5"
             onSubmit={form.handleSubmit(async (values) => {
+              const additionalCommentParts = isCourierDelivery
+                ? [
+                    values.apartment
+                      ? `${t("checkout.apartment")}: ${values.apartment.trim()}`
+                      : null,
+                    values.entrance
+                      ? `${t("checkout.entrance")}: ${values.entrance.trim()}`
+                      : null,
+                    values.intercom
+                      ? `${t("checkout.intercom")}: ${values.intercom.trim()}`
+                      : null,
+                    values.floor
+                      ? `${t("checkout.floor")}: ${values.floor.trim()}`
+                      : null,
+                  ]
+                : [];
+
               try {
                 const order = await checkoutMutation.mutateAsync(
-                  buildCheckoutRequest(values),
+                  buildCheckoutRequest(values, {
+                    additionalCommentParts,
+                  }),
                 );
 
                 toast.success(t("toast.checkoutSuccessTitle"), {
@@ -237,7 +262,11 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                     <FormItem>
                       <FormLabel>{t("checkout.fullName")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Алексей Иванов" {...field} />
+                        <Input
+                          placeholder="Алексей Иванов"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -250,13 +279,90 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                     <FormItem>
                       <FormLabel>{t("checkout.phone")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="+7 (999) 123-45-67" {...field} />
+                        <Input
+                          placeholder="+7 (999) 123-45-67"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </>
+            ) : null}
+
+            {isCourierDelivery ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="apartment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("checkout.apartment")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="12"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="entrance"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("checkout.entrance")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="3"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="intercom"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("checkout.intercom")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="45"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="floor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("checkout.floor")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="7"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             ) : null}
 
             <FormField
@@ -267,14 +373,15 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                   <FormLabel>{t("checkout.paymentMethod")}</FormLabel>
                   <FormControl>
                     <div className="grid gap-3">
-                      {checkoutOptionsQuery.isLoading && !checkoutOptionsQuery.data ? (
+                      {checkoutOptionsQuery.isLoading &&
+                      !checkoutOptionsQuery.data ? (
                         <>
                           <Skeleton className="h-20 rounded-2xl" />
                           <Skeleton className="h-20 rounded-2xl" />
                         </>
                       ) : checkoutOptionsQuery.isError ? (
-                        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="border-destructive/20 bg-destructive/5 rounded-2xl border p-4">
+                          <p className="text-muted-foreground text-sm">
                             {t("checkout.paymentMethodsError")}
                           </p>
                           <Button
@@ -293,10 +400,11 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
 
                           return (
                             <button
-                              className={`rounded-2xl border p-4 text-left transition-colors ${
+                              aria-pressed={isSelected}
+                              className={`rounded-2xl border p-4 text-left transition-all ${
                                 isSelected
-                                  ? "border-primary bg-primary/5"
-                                  : "border-border/70 bg-background/70 hover:border-primary/40"
+                                  ? "border-primary bg-primary text-primary-foreground shadow-[0_20px_38px_-26px_rgba(216,90,30,0.85)]"
+                                  : "border-border/70 bg-background/70 hover:border-primary/40 hover:bg-background"
                               }`}
                               key={method.code}
                               onClick={() => field.onChange(method.code)}
@@ -306,27 +414,61 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                                 <div className="space-y-1">
                                   <p className="font-medium">{method.name}</p>
                                   {method.description ? (
-                                    <p className="text-sm text-muted-foreground">
+                                    <p
+                                      className={`text-sm ${
+                                        isSelected
+                                          ? "text-primary-foreground/82"
+                                          : "text-muted-foreground"
+                                      }`}
+                                    >
                                       {method.description}
                                     </p>
                                   ) : null}
                                 </div>
-                                <Badge
-                                  variant={method.isOnline ? "default" : "secondary"}
-                                >
-                                  {t(
-                                    method.isOnline
-                                      ? "checkout.paymentMethodOnline"
-                                      : "checkout.paymentMethodOffline",
-                                  )}
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    className={
+                                      isSelected
+                                        ? "border-primary-foreground/18 bg-primary-foreground/12 text-primary-foreground"
+                                        : undefined
+                                    }
+                                    variant={
+                                      isSelected
+                                        ? "outline"
+                                        : method.isOnline
+                                          ? "default"
+                                          : "secondary"
+                                    }
+                                  >
+                                    {t(
+                                      method.isOnline
+                                        ? "checkout.paymentMethodOnline"
+                                        : "checkout.paymentMethodOffline",
+                                    )}
+                                  </Badge>
+                                  <span
+                                    className={`flex h-5 w-5 items-center justify-center rounded-full border transition-colors ${
+                                      isSelected
+                                        ? "border-primary-foreground/40 bg-primary-foreground/14"
+                                        : "border-border bg-background/80"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                                        isSelected
+                                          ? "bg-primary-foreground"
+                                          : "bg-transparent"
+                                      }`}
+                                    />
+                                  </span>
+                                </div>
                               </div>
                             </button>
                           );
                         })
                       ) : (
-                        <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="border-border/70 bg-background/70 rounded-2xl border p-4">
+                          <p className="text-muted-foreground text-sm">
                             {t("checkout.paymentMethodsEmpty")}
                           </p>
                         </div>

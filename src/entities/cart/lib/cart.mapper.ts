@@ -23,7 +23,14 @@ function mapDeliveryAddressDto(
   return {
     apartment: dto.apartment ?? null,
     city: dto.city ?? null,
+    comment: dto.comment ?? null,
+    country: dto.country ?? null,
+    entrance: dto.entrance ?? null,
+    floor: dto.floor ?? null,
     house: dto.house ?? null,
+    intercom: dto.intercom ?? null,
+    postalCode: dto.postalCode ?? null,
+    region: dto.region ?? null,
     street: dto.street ?? null,
   };
 }

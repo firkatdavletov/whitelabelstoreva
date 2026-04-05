@@ -422,7 +422,9 @@ export function YandexMapPicker({
       ) : null}
 
       {status === "ready" ? (
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        <div
+          className="absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col gap-2 sm:right-5"
+        >
           <button
             aria-label={t("deliveryAddress.locateMe")}
             className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-background/90 text-foreground shadow-lg backdrop-blur-sm transition hover:bg-background disabled:cursor-wait disabled:opacity-70"

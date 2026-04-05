@@ -1,8 +1,12 @@
 import { z } from "zod";
 
 export type CheckoutFormValues = {
+  apartment: string;
   comment: string;
+  entrance: string;
+  floor: string;
   fullName: string;
+  intercom: string;
   paymentMethodCode: string;
   phone: string;
 };
@@ -31,19 +35,27 @@ function createOptionalPhoneSchema() {
     );
 }
 
+function createOptionalMetaFieldSchema() {
+  return z.string().trim().max(40, "Keep this field under 40 characters.");
+}
+
 export function createCheckoutFormSchema({
   requiresContactDetails,
 }: {
   requiresContactDetails: boolean;
 }) {
   return z.object({
+    apartment: createOptionalMetaFieldSchema(),
     comment: z
       .string()
       .trim()
-      .max(120, "Keep the courier note under 120 characters."),
+      .max(200, "Keep the courier note under 200 characters."),
+    entrance: createOptionalMetaFieldSchema(),
+    floor: createOptionalMetaFieldSchema(),
     fullName: requiresContactDetails
       ? z.string().trim().min(2, "Enter your full name.")
       : createOptionalContactFieldSchema("Enter your full name."),
+    intercom: createOptionalMetaFieldSchema(),
     paymentMethodCode: z.string().min(1, "Choose a payment method."),
     phone: requiresContactDetails
       ? z

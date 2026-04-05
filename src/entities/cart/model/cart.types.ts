@@ -26,7 +26,14 @@ export type StorefrontCartDeliveryMethod =
 export type StorefrontCartDeliveryAddress = {
   apartment: string | null;
   city: string | null;
+  comment?: string | null;
+  country?: string | null;
+  entrance?: string | null;
+  floor?: string | null;
   house: string | null;
+  intercom?: string | null;
+  postalCode?: string | null;
+  region?: string | null;
   street: string | null;
 };
 
