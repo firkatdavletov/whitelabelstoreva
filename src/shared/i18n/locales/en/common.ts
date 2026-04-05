@@ -152,6 +152,7 @@ export const enMessages = {
       "This page shows the latest order state, delivery details, and items after checkout.",
     address: "Address",
     backendDataTitle: "Backend additions required",
+    cancelOrder: "Cancel order",
     courierTrackingMissing:
       "For live courier tracking, the backend should return courier coordinates, contact details, and the next location refresh time.",
     createdAt: "Created",
@@ -165,15 +166,12 @@ export const enMessages = {
     items: "Items",
     itemsCount_one: "{{count}} item",
     itemsCount_other: "{{count}} items",
-    itemsPending:
-      "The backend has not returned order line items in this response yet.",
+    itemsPending: "Order items are updating.",
     done: "Done",
     live: "Live",
     loading: "Refreshing live order status...",
-    missingAddress:
-      "The backend has not returned a customer-facing delivery address yet.",
-    missingEta:
-      "The backend has not returned an ETA yet. Add `estimatedArrivalAt` or a live `estimatesMinutes` value.",
+    missingAddress: "Address details are being updated.",
+    missingEta: "Delivery time is being updated.",
     orderNumber: "Order #{{number}}",
     payment: "Payment",
     pickupPoint: "Pickup point",
@@ -185,7 +183,8 @@ export const enMessages = {
     timelineDerived:
       "The timeline is currently derived on the frontend from the current state.",
     timeline: "Progress timeline",
-    trackingError: "The order could not be loaded. Check the link and try again.",
+    trackingError:
+      "The order could not be loaded. Check the link and try again.",
     trackingFallbackEta:
       "Add an exact ETA to the order response, for example `estimatedArrivalAt` or an updated `estimatesMinutes`.",
     trackingFallbackTimeline:

@@ -41,6 +41,9 @@ describe("mapOrderDtoToOrder", () => {
     const order = mapOrderDtoToOrder(dto);
 
     expect(order.trackingMeta.timelineSource).toBe("backend");
+    expect(order.deliveryAddress).toBe(
+      "Lenina Ave, дом 15, кв. 12, Yekaterinburg",
+    );
     expect(
       order.timeline.map((step) => ({
         code: step.code,
@@ -107,6 +110,8 @@ describe("mapOrderDtoToOrder", () => {
       "OUT_FOR_DELIVERY",
       "COMPLETED",
     ]);
-    expect(order.timeline.find((step) => step.isCurrent)?.code).toBe("PREPARING");
+    expect(order.timeline.find((step) => step.isCurrent)?.code).toBe(
+      "PREPARING",
+    );
   });
 });

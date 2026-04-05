@@ -152,6 +152,7 @@ export const ruMessages = {
       "Показываем актуальный статус, детали доставки и состав заказа после оформления.",
     address: "Адрес",
     backendDataTitle: "Что нужно добавить на backend",
+    cancelOrder: "Отменить заказ",
     courierTrackingMissing:
       "Для live-карты курьера backend должен вернуть координаты курьера, его контакт и время следующего обновления.",
     createdAt: "Создан",
@@ -166,13 +167,12 @@ export const ruMessages = {
     itemsCount_one: "{{count}} позиция",
     itemsCount_few: "{{count}} позиции",
     itemsCount_many: "{{count}} позиций",
-    itemsPending: "Backend пока не вернул позиции заказа для этого ответа.",
+    itemsPending: "Состав заказа обновляется.",
     done: "Готово",
     live: "Сейчас",
     loading: "Обновляем статус заказа...",
-    missingAddress: "Backend пока не вернул полный адрес для отображения клиенту.",
-    missingEta:
-      "Backend пока не вернул ETA. Нужен `estimatedArrivalAt` или актуальный `estimatesMinutes`.",
+    missingAddress: "Адрес уточняется.",
+    missingEta: "Время доставки уточняется.",
     orderNumber: "Заказ №{{number}}",
     payment: "Оплата",
     pickupPoint: "Точка выдачи",
@@ -184,7 +184,8 @@ export const ruMessages = {
     timelineDerived:
       "Лента пока вычисляется на фронтенде по текущему stateType.",
     timeline: "Лента статусов",
-    trackingError: "Не удалось загрузить заказ. Проверьте ссылку и попробуйте ещё раз.",
+    trackingError:
+      "Не удалось загрузить заказ. Проверьте ссылку и попробуйте ещё раз.",
     trackingFallbackEta:
       "Добавьте в ответ заказа точное ETA, например `estimatedArrivalAt` или обновляемый `estimatesMinutes`.",
     trackingFallbackTimeline:

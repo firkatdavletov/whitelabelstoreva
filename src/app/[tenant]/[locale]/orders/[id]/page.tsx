@@ -18,10 +18,9 @@ type OrderPageProps = {
 
 export default async function OrderPage({ params }: OrderPageProps) {
   const { id, locale, tenant } = await params;
-  const localeContext = await bootstrapLocale(locale);
   const tenantConfig = resolveTenant(tenant);
 
-  if (!localeContext || !tenantConfig) {
+  if (!(await bootstrapLocale(locale)) || !tenantConfig) {
     notFound();
   }
 
@@ -38,20 +37,11 @@ export default async function OrderPage({ params }: OrderPageProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <h1 className="font-heading text-4xl font-semibold">
-          {localeContext.dictionary.order.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {localeContext.dictionary.order.subtitle}
-        </p>
-      </div>
-      <OrderStatusCard
-        initialData={initialOrder}
-        orderId={id}
-        tenantSlug={tenant}
-      />
-    </div>
+    <OrderStatusCard
+      initialData={initialOrder}
+      orderId={id}
+      supportEmail={tenantConfig.supportEmail}
+      tenantSlug={tenant}
+    />
   );
 }

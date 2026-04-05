@@ -3,7 +3,10 @@ import type {
   OrderDto,
   OrderStateType,
 } from "@/entities/order/api/order.dto";
-import type { Order, OrderTimelineStep } from "@/entities/order/model/order.types";
+import type {
+  Order,
+  OrderTimelineStep,
+} from "@/entities/order/model/order.types";
 
 const DEFAULT_ORDER_FLOW: OrderStateType[] = [
   "CREATED",
@@ -41,19 +44,22 @@ const DELIVERY_ORDER_FLOWS: Record<OrderDeliveryMethod, OrderStateType[]> = {
 };
 
 function buildAddressLine(parts: Array<string | null | undefined>) {
-  return parts.filter((part): part is string => Boolean(part?.trim())).join(", ");
+  return parts
+    .filter((part): part is string => Boolean(part?.trim()))
+    .join(", ");
 }
 
 function formatDeliveryAddress(dto: OrderDto) {
   if (dto.delivery.address) {
     const primaryLine = buildAddressLine([
       dto.delivery.address.street,
-      dto.delivery.address.house,
+      dto.delivery.address.house ? `дом ${dto.delivery.address.house}` : null,
     ]);
     const secondaryLine = buildAddressLine([
-      dto.delivery.address.apartment ? `#${dto.delivery.address.apartment}` : null,
+      dto.delivery.address.apartment
+        ? `кв. ${dto.delivery.address.apartment}`
+        : null,
       dto.delivery.address.city,
-      dto.delivery.address.region,
     ]);
 
     return buildAddressLine([primaryLine, secondaryLine]) || null;
@@ -85,7 +91,8 @@ function insertAfter(
 }
 
 function resolveTimelineFlow(dto: OrderDto): OrderStateType[] {
-  const baseFlow = DELIVERY_ORDER_FLOWS[dto.deliveryMethod] ?? DEFAULT_ORDER_FLOW;
+  const baseFlow =
+    DELIVERY_ORDER_FLOWS[dto.deliveryMethod] ?? DEFAULT_ORDER_FLOW;
 
   if (dto.stateType === "CANCELED") {
     return [...baseFlow.filter((state) => state !== "COMPLETED"), "CANCELED"];
@@ -126,7 +133,10 @@ function buildDerivedTimeline(dto: OrderDto): Order["timeline"] {
   }));
 }
 
-type TimelineSeed = Pick<OrderTimelineStep, "code" | "id" | "label" | "timestamp">;
+type TimelineSeed = Pick<
+  OrderTimelineStep,
+  "code" | "id" | "label" | "timestamp"
+>;
 
 function resolveTimestampOrder(value: string | null | undefined) {
   if (!value) {
