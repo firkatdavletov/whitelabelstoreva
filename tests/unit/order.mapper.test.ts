@@ -114,4 +114,34 @@ describe("mapOrderDtoToOrder", () => {
       "PREPARING",
     );
   });
+
+  it("does not duplicate the current step when history uses backend status codes", () => {
+    const dto = createMockOrderDto({
+      orderId: "order-3",
+      stateType: "AWAITING_CONFIRMATION",
+    });
+
+    dto.status = "PENDING";
+    dto.statusHistory = [
+      {
+        code: "PENDING",
+        name: "Ожидает подтверждения",
+        timestamp: "2026-04-05T16:43:18.516669Z",
+      },
+    ];
+    dto.currentStatus.code = "PENDING";
+    dto.currentStatus.name = "Ожидает подтверждения";
+
+    const order = mapOrderDtoToOrder(dto);
+
+    expect(order.timeline.find((step) => step.isCurrent)?.code).toBe("PENDING");
+    expect(order.timeline.some((step) => step.code === "AWAITING_CONFIRMATION")).toBe(false);
+    expect(order.timeline.map((step) => step.code)).toEqual([
+      "PENDING",
+      "CONFIRMED",
+      "PREPARING",
+      "OUT_FOR_DELIVERY",
+      "COMPLETED",
+    ]);
+  });
 });

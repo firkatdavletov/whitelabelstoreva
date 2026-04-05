@@ -159,6 +159,20 @@ function findLastTimelineIndex(
   return -1;
 }
 
+function resolveCurrentTimelineCodes(dto: OrderDto) {
+  return [
+    dto.currentStatus.code,
+    dto.status,
+    dto.stateType,
+  ].filter((code, index, codes): code is string =>
+    Boolean(code) && codes.indexOf(code) === index,
+  );
+}
+
+function matchesCurrentTimelineStep(stepCode: string, dto: OrderDto) {
+  return resolveCurrentTimelineCodes(dto).includes(stepCode);
+}
+
 function normalizeStatusHistory(dto: OrderDto): TimelineSeed[] {
   const history = [...(dto.statusHistory ?? [])]
     .map((entry, index) => ({
@@ -196,7 +210,7 @@ function normalizeStatusHistory(dto: OrderDto): TimelineSeed[] {
 
   const currentStepIndex = findLastTimelineIndex(
     history,
-    (step) => step.code === dto.stateType,
+    (step) => matchesCurrentTimelineStep(step.code, dto),
   );
 
   if (currentStepIndex > -1) {
@@ -206,8 +220,8 @@ function normalizeStatusHistory(dto: OrderDto): TimelineSeed[] {
   return [
     ...history,
     {
-      code: dto.stateType,
-      id: `history-current-${dto.stateType}-${dto.statusChangedAt}`,
+      code: dto.currentStatus.code || dto.status || dto.stateType,
+      id: `history-current-${dto.currentStatus.code || dto.status || dto.stateType}-${dto.statusChangedAt}`,
       label: dto.currentStatus.name || dto.statusName || null,
       timestamp: dto.statusChangedAt,
     },
@@ -236,7 +250,7 @@ function buildBackendTimeline(dto: OrderDto): Order["timeline"] | null {
 
   const currentIndex = findLastTimelineIndex(
     history,
-    (step) => step.code === dto.stateType,
+    (step) => matchesCurrentTimelineStep(step.code, dto),
   );
   const timeline = history.map((step, index) =>
     createTimelineStep(step, currentIndex, index),
