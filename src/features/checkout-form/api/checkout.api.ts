@@ -102,6 +102,7 @@ function createMockCheckoutOrderResponse(
 ): CheckoutOrderResponseDto {
   const now = new Date();
   const createdAt = now.toISOString();
+  const address = input.address ?? null;
 
   return {
     comment: input.comment ?? null,
@@ -124,19 +125,19 @@ function createMockCheckoutOrderResponse(
       input.customerName || input.customerPhone ? "GUEST" : "USER",
     delivery: {
       address: {
-        apartment: "12",
-        city: "Екатеринбург",
-        comment: null,
-        country: "Россия",
-        entrance: null,
-        floor: null,
-        house: "15",
-        intercom: null,
+        apartment: address?.apartment ?? "12",
+        city: address?.city ?? "Екатеринбург",
+        comment: address?.comment ?? null,
+        country: address?.country ?? "Россия",
+        entrance: address?.entrance ?? null,
+        floor: address?.floor ?? null,
+        house: address?.house ?? "15",
+        intercom: address?.intercom ?? null,
         latitude: 56.838011,
         longitude: 60.597465,
-        postalCode: null,
-        region: "Свердловская область",
-        street: "ул. Ленина",
+        postalCode: address?.postalCode ?? null,
+        region: address?.region ?? "Свердловская область",
+        street: address?.street ?? "ул. Ленина",
       },
       currency: "RUB",
       estimatedDays: 0,

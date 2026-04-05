@@ -100,6 +100,7 @@ describe("checkout form utils", () => {
         phone: "  +7 (999) 123-45-67  ",
       }),
     ).toEqual({
+      address: null,
       comment: "Позвоните за 5 минут",
       customerName: "Алексей Иванов",
       customerPhone: "+7 (999) 123-45-67",
@@ -118,6 +119,7 @@ describe("checkout form utils", () => {
         phone: "",
       }),
     ).toEqual({
+      address: null,
       comment: null,
       customerName: null,
       customerPhone: null,
@@ -125,7 +127,7 @@ describe("checkout form utils", () => {
     });
   });
 
-  it("appends courier meta fields to the checkout comment", () => {
+  it("sends courier meta fields in the checkout address payload", () => {
     expect(
       buildCheckoutRequest(
         {
@@ -139,17 +141,39 @@ describe("checkout form utils", () => {
           phone: "",
         },
         {
-          additionalCommentParts: [
-            "Квартира: 12",
-            "Подъезд: 3",
-            "Домофон: 45",
-            "Этаж: 7",
-          ],
+          deliveryAddress: {
+            apartment: null,
+            city: "Екатеринбург",
+            comment: null,
+            country: "Россия",
+            entrance: null,
+            floor: null,
+            house: "15",
+            intercom: null,
+            postalCode: "620014",
+            region: "Свердловская область",
+            street: "ул. Ленина",
+          },
         },
       ),
-    ).toMatchObject({
-      comment:
-        "Квартира: 12. Подъезд: 3. Домофон: 45. Этаж: 7. Позвоните за 5 минут",
+    ).toEqual({
+      address: {
+        apartment: "12",
+        city: "Екатеринбург",
+        comment: "Позвоните за 5 минут",
+        country: "Россия",
+        entrance: "3",
+        floor: "7",
+        house: "15",
+        intercom: "45",
+        postalCode: "620014",
+        region: "Свердловская область",
+        street: "ул. Ленина",
+      },
+      comment: "Позвоните за 5 минут",
+      customerName: null,
+      customerPhone: null,
+      paymentMethodCode: "CARD_ON_DELIVERY",
     });
   });
 

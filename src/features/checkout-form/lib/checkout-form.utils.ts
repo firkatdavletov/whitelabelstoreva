@@ -33,6 +33,12 @@ function normalizeAddressString(address: string | null | undefined) {
   return normalizedParts.join(", ") || null;
 }
 
+function normalizeCheckoutField(value: string | null | undefined) {
+  const normalized = value?.trim();
+
+  return normalized ? normalized : null;
+}
+
 export function isPickupCheckoutDelivery(
   deliveryMethod: StorefrontCartDeliveryMethod | null | undefined,
 ) {
@@ -93,23 +99,34 @@ export function resolveCheckoutPaymentMethods(
 export function buildCheckoutRequest(
   values: CheckoutFormValues,
   options?: {
-    additionalCommentParts?: Array<string | null | undefined>;
+    deliveryAddress?: NonNullable<StorefrontCart["delivery"]>["address"] | null;
   },
 ): CheckoutRequestDto {
-  const customerName = values.fullName?.trim();
-  const customerPhone = values.phone?.trim();
-  const comment = [
-    ...(options?.additionalCommentParts ?? []),
-    values.comment?.trim(),
-  ]
-    .map((part) => part?.trim())
-    .filter((part): part is string => Boolean(part))
-    .join(". ");
+  const customerName = normalizeCheckoutField(values.fullName);
+  const customerPhone = normalizeCheckoutField(values.phone);
+  const comment = normalizeCheckoutField(values.comment);
+  const deliveryAddress = options?.deliveryAddress;
+  const address = deliveryAddress
+    ? {
+        apartment: normalizeCheckoutField(values.apartment),
+        city: normalizeCheckoutField(deliveryAddress.city),
+        comment,
+        country: normalizeCheckoutField(deliveryAddress.country),
+        entrance: normalizeCheckoutField(values.entrance),
+        floor: normalizeCheckoutField(values.floor),
+        house: normalizeCheckoutField(deliveryAddress.house),
+        intercom: normalizeCheckoutField(values.intercom),
+        postalCode: normalizeCheckoutField(deliveryAddress.postalCode),
+        region: normalizeCheckoutField(deliveryAddress.region),
+        street: normalizeCheckoutField(deliveryAddress.street),
+      }
+    : null;
 
   return {
-    comment: comment || null,
-    customerName: customerName || null,
-    customerPhone: customerPhone || null,
+    address,
+    comment,
+    customerName,
+    customerPhone,
     paymentMethodCode:
       values.paymentMethodCode as CheckoutRequestDto["paymentMethodCode"],
   };

@@ -1100,6 +1100,7 @@ export interface components {
             customerName?: string | null;
             customerPhone?: string | null;
             customerEmail?: string | null;
+            address?: components["schemas"]["DeliveryAddressRequest"] | null;
             comment?: string | null;
         };
         CancelOrderRequest: {

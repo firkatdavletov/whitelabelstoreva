@@ -211,27 +211,10 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
           <form
             className="grid gap-5"
             onSubmit={form.handleSubmit(async (values) => {
-              const additionalCommentParts = isCourierDelivery
-                ? [
-                    values.apartment
-                      ? `${t("checkout.apartment")}: ${values.apartment.trim()}`
-                      : null,
-                    values.entrance
-                      ? `${t("checkout.entrance")}: ${values.entrance.trim()}`
-                      : null,
-                    values.intercom
-                      ? `${t("checkout.intercom")}: ${values.intercom.trim()}`
-                      : null,
-                    values.floor
-                      ? `${t("checkout.floor")}: ${values.floor.trim()}`
-                      : null,
-                  ]
-                : [];
-
               try {
                 const order = await checkoutMutation.mutateAsync(
                   buildCheckoutRequest(values, {
-                    additionalCommentParts,
+                    deliveryAddress: isCourierDelivery ? deliveryAddress : null,
                   }),
                 );
 
