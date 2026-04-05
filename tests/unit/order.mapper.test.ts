@@ -1,0 +1,112 @@
+import { describe, expect, it } from "vitest";
+
+import { mapOrderDtoToOrder } from "@/entities/order";
+import { createMockOrderDto } from "@/features/order-tracking/lib/order-mocks";
+
+describe("mapOrderDtoToOrder", () => {
+  it("uses backend status history for the timeline and keeps upcoming milestones", () => {
+    const dto = createMockOrderDto({
+      orderId: "order-1",
+      stateType: "OUT_FOR_DELIVERY",
+    });
+
+    dto.statusHistory = [
+      {
+        code: "CREATED",
+        name: "Created",
+        timestamp: "2026-04-05T08:00:00.000Z",
+      },
+      {
+        code: "AWAITING_CONFIRMATION",
+        name: "Awaiting confirmation",
+        timestamp: "2026-04-05T08:05:00.000Z",
+      },
+      {
+        code: "CONFIRMED",
+        name: "Confirmed",
+        timestamp: "2026-04-05T08:10:00.000Z",
+      },
+      {
+        code: "PREPARING",
+        name: "Preparing",
+        timestamp: "2026-04-05T08:20:00.000Z",
+      },
+      {
+        code: "OUT_FOR_DELIVERY",
+        name: "Out for delivery",
+        timestamp: "2026-04-05T08:35:00.000Z",
+      },
+    ];
+
+    const order = mapOrderDtoToOrder(dto);
+
+    expect(order.trackingMeta.timelineSource).toBe("backend");
+    expect(
+      order.timeline.map((step) => ({
+        code: step.code,
+        isCompleted: step.isCompleted,
+        isCurrent: step.isCurrent,
+        timestamp: step.timestamp,
+      })),
+    ).toEqual([
+      {
+        code: "CREATED",
+        isCompleted: true,
+        isCurrent: false,
+        timestamp: "2026-04-05T08:00:00.000Z",
+      },
+      {
+        code: "AWAITING_CONFIRMATION",
+        isCompleted: true,
+        isCurrent: false,
+        timestamp: "2026-04-05T08:05:00.000Z",
+      },
+      {
+        code: "CONFIRMED",
+        isCompleted: true,
+        isCurrent: false,
+        timestamp: "2026-04-05T08:10:00.000Z",
+      },
+      {
+        code: "PREPARING",
+        isCompleted: true,
+        isCurrent: false,
+        timestamp: "2026-04-05T08:20:00.000Z",
+      },
+      {
+        code: "OUT_FOR_DELIVERY",
+        isCompleted: false,
+        isCurrent: true,
+        timestamp: "2026-04-05T08:35:00.000Z",
+      },
+      {
+        code: "COMPLETED",
+        isCompleted: false,
+        isCurrent: false,
+        timestamp: null,
+      },
+    ]);
+  });
+
+  it("falls back to a derived timeline when backend history is missing", () => {
+    const dto = createMockOrderDto({
+      orderId: "order-2",
+      stateType: "PREPARING",
+    });
+
+    dto.statusHistory = [];
+
+    const order = mapOrderDtoToOrder(dto);
+
+    expect(order.trackingMeta.timelineSource).toBe("derived");
+    expect(order.timeline.map((step) => step.code)).toEqual([
+      "CREATED",
+      "AWAITING_CONFIRMATION",
+      "CONFIRMED",
+      "PREPARING",
+      "OUT_FOR_DELIVERY",
+      "COMPLETED",
+    ]);
+    expect(order.timeline.find((step) => step.isCurrent)?.code).toBe("PREPARING");
+  });
+});

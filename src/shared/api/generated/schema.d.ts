@@ -1134,6 +1134,7 @@ export interface components {
             delivery: components["schemas"]["OrderDeliveryResponse"];
             comment?: string | null;
             items: components["schemas"]["OrderItemResponse"][];
+            statusHistory: components["schemas"]["OrderStatusHistoryEntryResponse"][];
             /** Format: int64 */
             subtotalMinor: number;
             /** Format: int64 */
@@ -1146,6 +1147,12 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+        };
+        OrderStatusHistoryEntryResponse: {
+            code: string;
+            name: string;
+            /** Format: date-time */
+            timestamp: string;
         };
         OrderItemResponse: {
             /** Format: uuid */

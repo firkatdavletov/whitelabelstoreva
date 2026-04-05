@@ -3,7 +3,7 @@ import type {
   OrderDto,
   OrderStateType,
 } from "@/entities/order/api/order.dto";
-import type { Order } from "@/entities/order/model/order.types";
+import type { Order, OrderTimelineStep } from "@/entities/order/model/order.types";
 
 const DEFAULT_ORDER_FLOW: OrderStateType[] = [
   "CREATED",
@@ -102,15 +102,21 @@ function resolveTimelineFlow(dto: OrderDto): OrderStateType[] {
   return baseFlow;
 }
 
-function buildTimeline(dto: OrderDto): Order["timeline"] {
+function isIssueState(code: string) {
+  return code === "CANCELED" || code === "ON_HOLD";
+}
+
+function buildDerivedTimeline(dto: OrderDto): Order["timeline"] {
   const flow = resolveTimelineFlow(dto);
   const currentIndex = flow.indexOf(dto.stateType);
 
   return flow.map((code, index) => ({
     code,
+    id: `derived-${code}-${index}`,
     isCompleted: currentIndex > -1 ? index < currentIndex : false,
     isCurrent: index === currentIndex,
-    isIssue: code === "CANCELED" || code === "ON_HOLD",
+    isIssue: isIssueState(code),
+    label: null,
     timestamp:
       code === "CREATED"
         ? dto.createdAt
@@ -118,6 +124,142 @@ function buildTimeline(dto: OrderDto): Order["timeline"] {
           ? dto.statusChangedAt
           : null,
   }));
+}
+
+type TimelineSeed = Pick<OrderTimelineStep, "code" | "id" | "label" | "timestamp">;
+
+function resolveTimestampOrder(value: string | null | undefined) {
+  if (!value) {
+    return Number.NaN;
+  }
+
+  return Date.parse(value);
+}
+
+function findLastTimelineIndex(
+  timeline: TimelineSeed[],
+  predicate: (step: TimelineSeed) => boolean,
+) {
+  for (let index = timeline.length - 1; index >= 0; index -= 1) {
+    if (predicate(timeline[index])) {
+      return index;
+    }
+  }
+
+  return -1;
+}
+
+function normalizeStatusHistory(dto: OrderDto): TimelineSeed[] {
+  const history = [...(dto.statusHistory ?? [])]
+    .map((entry, index) => ({
+      code: entry.code,
+      id: `history-${index}-${entry.code}-${entry.timestamp}`,
+      label: entry.name || null,
+      originalIndex: index,
+      timestamp: entry.timestamp ?? null,
+    }))
+    .filter((entry) => entry.code)
+    .sort((left, right) => {
+      const leftTimestamp = resolveTimestampOrder(left.timestamp);
+      const rightTimestamp = resolveTimestampOrder(right.timestamp);
+
+      if (Number.isNaN(leftTimestamp) || Number.isNaN(rightTimestamp)) {
+        return left.originalIndex - right.originalIndex;
+      }
+
+      if (leftTimestamp === rightTimestamp) {
+        return left.originalIndex - right.originalIndex;
+      }
+
+      return leftTimestamp - rightTimestamp;
+    })
+    .map(({ code, id, label, timestamp }) => ({
+      code,
+      id,
+      label,
+      timestamp,
+    }));
+
+  if (!history.length) {
+    return history;
+  }
+
+  const currentStepIndex = findLastTimelineIndex(
+    history,
+    (step) => step.code === dto.stateType,
+  );
+
+  if (currentStepIndex > -1) {
+    return history;
+  }
+
+  return [
+    ...history,
+    {
+      code: dto.stateType,
+      id: `history-current-${dto.stateType}-${dto.statusChangedAt}`,
+      label: dto.currentStatus.name || dto.statusName || null,
+      timestamp: dto.statusChangedAt,
+    },
+  ];
+}
+
+function createTimelineStep(
+  step: TimelineSeed,
+  currentIndex: number,
+  index: number,
+): OrderTimelineStep {
+  return {
+    ...step,
+    isCompleted: index < currentIndex,
+    isCurrent: index === currentIndex,
+    isIssue: isIssueState(step.code),
+  };
+}
+
+function buildBackendTimeline(dto: OrderDto): Order["timeline"] | null {
+  const history = normalizeStatusHistory(dto);
+
+  if (!history.length) {
+    return null;
+  }
+
+  const currentIndex = findLastTimelineIndex(
+    history,
+    (step) => step.code === dto.stateType,
+  );
+  const timeline = history.map((step, index) =>
+    createTimelineStep(step, currentIndex, index),
+  );
+  const flow = resolveTimelineFlow(dto);
+  const currentFlowIndex = flow.indexOf(dto.stateType);
+
+  if (currentFlowIndex === -1) {
+    return timeline;
+  }
+
+  const seenCodes = new Set(history.map((step) => step.code));
+  const upcomingSteps = flow
+    .slice(currentFlowIndex + 1)
+    .filter((code) => !seenCodes.has(code))
+    .map((code, index) =>
+      createTimelineStep(
+        {
+          code,
+          id: `predicted-${code}-${index}`,
+          label: null,
+          timestamp: null,
+        },
+        -1,
+        index,
+      ),
+    );
+
+  return [...timeline, ...upcomingSteps];
+}
+
+function buildTimeline(dto: OrderDto): Order["timeline"] {
+  return buildBackendTimeline(dto) ?? buildDerivedTimeline(dto);
 }
 
 function formatModifierLabel(
@@ -176,7 +318,7 @@ export function mapOrderDtoToOrder(dto: OrderDto): Order {
     trackingMeta: {
       courierTrackingAvailable: false,
       etaSource: dto.delivery.estimatesMinutes != null ? "backend" : "missing",
-      timelineSource: "derived",
+      timelineSource: dto.statusHistory?.length ? "backend" : "derived",
     },
     updatedAt: dto.updatedAt,
   };

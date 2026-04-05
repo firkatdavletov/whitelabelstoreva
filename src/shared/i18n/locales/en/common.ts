@@ -181,7 +181,7 @@ export const enMessages = {
       "The page polls for the latest order state and shows what the API already exposes.",
     summary: "Order summary",
     timelineDescription:
-      "The milestones are derived from the current `stateType` until the backend returns a real status history.",
+      "The timeline uses backend status history and fills in the upcoming steps while the order is still in progress.",
     timelineDerived:
       "The timeline is currently derived on the frontend from the current state.",
     timeline: "Progress timeline",

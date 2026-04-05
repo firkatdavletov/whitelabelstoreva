@@ -160,6 +160,13 @@ function createMockCheckoutOrderResponse(
       code: input.paymentMethodCode,
       name: input.paymentMethodCode,
     },
+    statusHistory: [
+      {
+        code: "AWAITING_CONFIRMATION",
+        name: "Awaiting confirmation",
+        timestamp: createdAt,
+      },
+    ],
     stateType: "AWAITING_CONFIRMATION",
     status: "AWAITING_CONFIRMATION",
     statusChangedAt: createdAt,

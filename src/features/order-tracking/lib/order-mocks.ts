@@ -6,6 +6,15 @@ type CreateMockOrderDtoOptions = {
   stateType?: OrderStateType;
 };
 
+const MOCK_ORDER_FLOW: OrderStateType[] = [
+  "CREATED",
+  "AWAITING_CONFIRMATION",
+  "CONFIRMED",
+  "PREPARING",
+  "OUT_FOR_DELIVERY",
+  "COMPLETED",
+];
+
 const MOCK_ORDER_STATUS_CONFIG: Record<
   OrderStateType,
   {
@@ -71,6 +80,24 @@ const MOCK_ORDER_STATUS_CONFIG: Record<
   },
 };
 
+function resolveMockHistoryStates(stateType: OrderStateType): OrderStateType[] {
+  if (stateType === "CANCELED") {
+    return ["CREATED", "AWAITING_CONFIRMATION", "CANCELED"];
+  }
+
+  if (stateType === "ON_HOLD") {
+    return ["CREATED", "AWAITING_CONFIRMATION", "CONFIRMED", "ON_HOLD"];
+  }
+
+  const currentIndex = MOCK_ORDER_FLOW.indexOf(stateType);
+
+  if (currentIndex === -1) {
+    return [...MOCK_ORDER_FLOW.slice(0, 4), stateType];
+  }
+
+  return MOCK_ORDER_FLOW.slice(0, currentIndex + 1);
+}
+
 export function createMockOrderDto({
   orderId,
   orderNumber = `WL-${orderId.slice(-6).toUpperCase()}`,
@@ -80,6 +107,21 @@ export function createMockOrderDto({
   const now = new Date();
   const createdAt = new Date(now.getTime() - 36 * 60 * 1000).toISOString();
   const statusChangedAt = new Date(now.getTime() - 8 * 60 * 1000).toISOString();
+  const statusHistoryStates = resolveMockHistoryStates(stateType);
+  const statusHistory = statusHistoryStates.map((code, index) => {
+    const entryDate =
+      index === 0
+        ? createdAt
+        : index === statusHistoryStates.length - 1
+          ? statusChangedAt
+          : new Date(now.getTime() - (30 - index * 6) * 60 * 1000).toISOString();
+
+    return {
+      code,
+      name: MOCK_ORDER_STATUS_CONFIG[code]?.name ?? code,
+      timestamp: entryDate,
+    };
+  });
 
   return {
     comment: "Leave the order at the door.",
@@ -166,6 +208,7 @@ export function createMockOrderDto({
       code: "CARD_ONLINE",
       name: "Online card",
     },
+    statusHistory,
     stateType,
     status: currentStatus.code,
     statusChangedAt,

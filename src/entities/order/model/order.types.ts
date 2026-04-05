@@ -4,10 +4,12 @@ import type {
 } from "@/entities/order/api/order.dto";
 
 export type OrderTimelineStep = {
-  code: OrderStateType;
+  code: string;
+  id: string;
   isCompleted: boolean;
   isCurrent: boolean;
   isIssue: boolean;
+  label: string | null;
   timestamp: string | null;
 };
 

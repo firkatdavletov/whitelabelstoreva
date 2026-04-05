@@ -119,7 +119,10 @@ function resolveStepLabel(
   step: OrderTimelineStep,
   t: ReturnType<typeof useTranslation>["t"],
 ) {
-  return t(`order.states.${step.code}`);
+  const translationKey = `order.states.${step.code}`;
+  const translated = t(translationKey);
+
+  return translated !== translationKey ? translated : (step.label ?? step.code);
 }
 
 function StepStatusBadge({
@@ -302,7 +305,7 @@ export function OrderStatusCard({
                         ? "border-border/60 bg-card/60"
                         : "border-border/70 bg-background/80",
                   )}
-                  key={step.code}
+                  key={step.id}
                 >
                   <div className="flex items-start gap-3">
                     <div
