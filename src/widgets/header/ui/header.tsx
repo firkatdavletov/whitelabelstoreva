@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search, ShoppingBag, UserRound } from "lucide-react";
+import { Search, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import type {
@@ -143,26 +143,20 @@ export function Header() {
               label={t("header.search")}
               labelClassName="xl:inline"
             />
-            <HeaderActionLink
-              href={href("/account")}
-              icon={<UserRound className="h-4 w-4" />}
-              label={t("header.login")}
-              labelClassName="lg:inline"
-            />
             {hasCartItems ? (
               <Button
                 aria-label={cartButtonLabel}
                 asChild
-                className="text-primary-foreground hover:text-primary-foreground relative h-10 w-10 rounded-full px-0 shadow-sm [&_span]:text-primary-foreground [&_svg]:text-primary-foreground sm:w-auto sm:px-4"
+                className="text-primary-foreground hover:text-primary-foreground [&_span]:text-primary-foreground [&_svg]:text-primary-foreground relative h-10 w-10 rounded-full px-0 shadow-sm sm:w-auto sm:px-4"
                 size="lg"
               >
                 <Link href={href("/cart")}>
-                  <ShoppingBag className="h-4 w-4 shrink-0 text-primary-foreground" />
+                  <ShoppingBag className="text-primary-foreground h-4 w-4 shrink-0" />
                   <span className="sr-only">{cartButtonLabel}</span>
-                  <span className="hidden text-sm font-medium text-primary-foreground sm:inline xl:hidden">
+                  <span className="text-primary-foreground hidden text-sm font-medium sm:inline xl:hidden">
                     {t("navigation.cart")}
                   </span>
-                  <span className="hidden text-sm font-medium text-primary-foreground xl:inline">
+                  <span className="text-primary-foreground hidden text-sm font-medium xl:inline">
                     {cartButtonLabel}
                   </span>
                 </Link>

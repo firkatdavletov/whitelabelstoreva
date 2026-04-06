@@ -110,4 +110,21 @@ describe("Header", () => {
     );
     expect(screen.queryByText(/^3$/)).not.toBeInTheDocument();
   });
+
+  it("does not render the profile action while the account page is hidden", () => {
+    mocks.useStorefrontCartQuery.mockReturnValue({
+      data: {
+        delivery: null,
+        id: "cart-1",
+        items: [],
+        itemsCount: 0,
+        totalPrice: 0,
+      },
+    });
+
+    render(React.createElement(Header));
+
+    expect(screen.queryByRole("link", { name: /Войти/i })).toBeNull();
+    expect(screen.queryByRole("link", { name: /account/i })).toBeNull();
+  });
 });
