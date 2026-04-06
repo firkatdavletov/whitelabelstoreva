@@ -27,15 +27,17 @@ export default async function CartPage({ params }: CartPageProps) {
   const menuCatalog = await getMenuCatalog(tenant);
 
   return (
-    <CartPageContent
-      isAuthorized={Boolean(accessToken)}
-      locale={localeContext.locale}
-      products={menuCatalog.products.map((product) => ({
-        id: product.id,
-        imageUrl: product.imageUrl,
-        slug: product.slug,
-        visual: product.visual,
-      }))}
-    />
+    <div className="flex min-h-[calc(100dvh-11rem)] flex-col lg:min-h-[calc(100dvh-9.5rem)]">
+      <CartPageContent
+        isAuthorized={Boolean(accessToken)}
+        locale={localeContext.locale}
+        products={menuCatalog.products.map((product) => ({
+          id: product.id,
+          imageUrl: product.imageUrl,
+          slug: product.slug,
+          visual: product.visual,
+        }))}
+      />
+    </div>
   );
 }

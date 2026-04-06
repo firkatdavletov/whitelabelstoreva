@@ -53,18 +53,20 @@ export default async function SearchPage({
       : [];
 
   return (
-    <CatalogSearchShell
-      initialError={searchError}
-      initialProducts={initialProducts}
-      initialQuery={normalizedSearchQuery}
-      locale={localeContext.locale}
-      menuHref={buildStorefrontPath({
-        locale: localeContext.locale,
-        pathname: "/menu",
-        tenantSlug: tenantConfig.slug,
-      })}
-      searchMessages={localeContext.dictionary.search}
-      tenantSlug={tenantConfig.slug}
-    />
+    <div className="flex min-h-[calc(100dvh-11rem)] flex-col lg:min-h-[calc(100dvh-9.5rem)]">
+      <CatalogSearchShell
+        initialError={searchError}
+        initialProducts={initialProducts}
+        initialQuery={normalizedSearchQuery}
+        locale={localeContext.locale}
+        menuHref={buildStorefrontPath({
+          locale: localeContext.locale,
+          pathname: "/menu",
+          tenantSlug: tenantConfig.slug,
+        })}
+        searchMessages={localeContext.dictionary.search}
+        tenantSlug={tenantConfig.slug}
+      />
+    </div>
   );
 }

@@ -190,6 +190,15 @@ const baseProduct: Product = {
   visual: "P",
 };
 
+const plainProduct: Product = {
+  ...baseProduct,
+  defaultVariantId: null,
+  isConfigured: false,
+  modifierGroups: [],
+  optionGroups: [],
+  variants: [],
+};
+
 function renderProductDetails() {
   return render(
     React.createElement(ProductDetailsPage, {
@@ -352,5 +361,31 @@ describe("ProductDetailsPage", () => {
     expect(
       screen.queryByRole("button", { name: "Увеличить количество" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("does not render the ready-to-order info block for products without customizations", () => {
+    mocks.useMenuProductDetailsQuery.mockReturnValue({
+      data: plainProduct,
+      error: null,
+      isError: false,
+      isPending: false,
+      refetch: mocks.productDetailsRefetch,
+    });
+
+    render(
+      React.createElement(ProductDetailsPage, {
+        backHref: "/menu",
+        locale: "ru",
+        product: plainProduct,
+      }),
+    );
+
+    expect(screen.queryByText("Можно заказывать")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Без дополнительных настроек."),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Добавить в корзину" }),
+    ).toBeInTheDocument();
   });
 });

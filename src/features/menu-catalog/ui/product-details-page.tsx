@@ -199,8 +199,6 @@ export function ProductDetailsPage({
     !resolvedProduct.isAvailable ||
     missingRequiredGroups.length > 0 ||
     addCartItemMutation.isPending;
-  const hasCustomizations =
-    activeVariants.length > 0 || modifierGroups.length > 0;
 
   function addConfiguredProduct({ showToast }: { showToast: boolean }) {
     addCartItemMutation.mutate(
@@ -526,19 +524,6 @@ export function ProductDetailsPage({
                 </Card>
               );
             })}
-
-            {!hasCustomizations ? (
-              <Card className="rounded-[30px]">
-                <CardContent className="space-y-2 p-5 sm:p-6">
-                  <h2 className="font-heading text-foreground text-2xl font-semibold">
-                    {t("product.readyToOrder")}
-                  </h2>
-                  <p className="text-muted-foreground text-sm leading-6">
-                    {t("product.noCustomization")}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : null}
           </>
         )}
       </div>

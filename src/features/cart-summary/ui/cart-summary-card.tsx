@@ -109,7 +109,10 @@ export function CartSummaryCard({
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground text-sm">{t("cart.empty")}</p>
-          <Button asChild className="w-full">
+          <Button
+            asChild
+            className="text-primary-foreground hover:text-primary-foreground w-full"
+          >
             <Link href={href("/menu")}>{t("cart.continue")}</Link>
           </Button>
         </CardContent>
@@ -202,7 +205,11 @@ export function CartSummaryCard({
           </div>
         </div>
         {showCheckoutCta ? (
-          <Button asChild className="w-full" size="lg">
+          <Button
+            asChild
+            className="text-primary-foreground hover:text-primary-foreground w-full"
+            size="lg"
+          >
             <Link href={href("/checkout")}>{t("cart.checkout")}</Link>
           </Button>
         ) : null}

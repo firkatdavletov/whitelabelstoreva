@@ -236,9 +236,8 @@ export function CatalogSearchShell({
 
             <Button
               asChild
-              className="rounded-full px-5"
+              className="text-primary-foreground hover:text-primary-foreground rounded-full px-5"
               size="sm"
-              variant="outline"
             >
               <Link href={menuHref}>{searchMessages.openMenu}</Link>
             </Button>

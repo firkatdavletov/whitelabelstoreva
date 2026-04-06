@@ -153,16 +153,16 @@ export function Header() {
               <Button
                 aria-label={cartButtonLabel}
                 asChild
-                className="relative h-10 w-10 rounded-full px-0 shadow-sm sm:w-auto sm:px-4"
+                className="text-primary-foreground hover:text-primary-foreground relative h-10 w-10 rounded-full px-0 shadow-sm [&_span]:text-primary-foreground [&_svg]:text-primary-foreground sm:w-auto sm:px-4"
                 size="lg"
               >
                 <Link href={href("/cart")}>
-                  <ShoppingBag className="h-4 w-4 shrink-0" />
+                  <ShoppingBag className="h-4 w-4 shrink-0 text-primary-foreground" />
                   <span className="sr-only">{cartButtonLabel}</span>
-                  <span className="hidden text-sm font-medium sm:inline xl:hidden">
+                  <span className="hidden text-sm font-medium text-primary-foreground sm:inline xl:hidden">
                     {t("navigation.cart")}
                   </span>
-                  <span className="hidden text-sm font-medium xl:inline">
+                  <span className="hidden text-sm font-medium text-primary-foreground xl:inline">
                     {cartButtonLabel}
                   </span>
                 </Link>

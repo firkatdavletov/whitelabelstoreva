@@ -120,7 +120,11 @@ export function CartPageContent({
               </p>
             </div>
 
-            <Button asChild className="mt-8 rounded-full px-5" size="lg">
+            <Button
+              asChild
+              className="text-primary-foreground hover:text-primary-foreground mt-8 rounded-full px-5"
+              size="lg"
+            >
               <Link href={href("/menu")}>{t("cart.continue")}</Link>
             </Button>
           </div>
@@ -325,8 +329,18 @@ export function CartPageContent({
               </span>
             </div>
 
-            <Button asChild className="mt-6 w-full rounded-2xl" size="lg">
-              <Link href={checkoutHref}>{t("cart.checkout")}</Link>
+            <Button
+              asChild
+              className="!text-primary-foreground hover:!text-primary-foreground mt-6 w-full rounded-2xl"
+              size="lg"
+            >
+              <Link
+                className="!text-primary-foreground"
+                href={checkoutHref}
+                style={{ color: "var(--primary-foreground)" }}
+              >
+                {t("cart.checkout")}
+              </Link>
             </Button>
           </div>
         </aside>

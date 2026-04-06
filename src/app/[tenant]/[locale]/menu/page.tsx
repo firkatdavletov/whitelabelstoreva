@@ -55,12 +55,14 @@ export default async function MenuPage({
   );
 
   return (
-    <MenuGrid
-      activeCategorySlug={activeCategory?.slug ?? null}
-      categories={menuCatalog.categories}
-      emptyLabel={localeContext.dictionary.menu.empty}
-      locale={localeContext.locale}
-      products={menuCatalog.products}
-    />
+    <div className="flex min-h-[calc(100dvh-11rem)] flex-col lg:min-h-[calc(100dvh-9.5rem)]">
+      <MenuGrid
+        activeCategorySlug={activeCategory?.slug ?? null}
+        categories={menuCatalog.categories}
+        emptyLabel={localeContext.dictionary.menu.empty}
+        locale={localeContext.locale}
+        products={menuCatalog.products}
+      />
+    </div>
   );
 }

@@ -52,8 +52,18 @@ export function HomeCategoryGrid({
       </div>
 
       <div className="flex justify-center">
-        <Button asChild size="lg">
-          <Link href={actionHref}>{actionLabel}</Link>
+        <Button
+          asChild
+          className="!text-primary-foreground hover:!text-primary-foreground"
+          size="lg"
+        >
+          <Link
+            className="!text-primary-foreground"
+            href={actionHref}
+            style={{ color: "var(--primary-foreground)" }}
+          >
+            {actionLabel}
+          </Link>
         </Button>
       </div>
     </section>
