@@ -3,14 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  Check,
-  ChevronLeft,
-  Minus,
-  Plus,
-  RefreshCw,
-  ShoppingBag,
-} from "lucide-react";
+import { ChevronLeft, Minus, Plus, RefreshCw, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -43,6 +36,10 @@ import type { Locale } from "@/shared/types/common";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
+import {
+  SelectableCard,
+  SelectableCardIndicator,
+} from "@/shared/ui/selectable-card";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 type ProductDetailsPageProps = {
@@ -376,17 +373,10 @@ export function ProductDetailsPage({
                       const isSelected = variant.id === selectedVariantId;
 
                       return (
-                        <button
-                          aria-pressed={isSelected}
-                          className={cn(
-                            "focus-visible:ring-ring flex items-center justify-between gap-3 rounded-[22px] border px-4 py-3 text-left transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-                            isSelected
-                              ? "border-primary bg-primary/6 shadow-[0_18px_30px_-24px_rgba(214,92,38,0.55)]"
-                              : "border-border/70 bg-card hover:border-foreground/20 hover:bg-background",
-                          )}
+                        <SelectableCard
                           key={variant.id}
                           onClick={() => setSelectedVariantId(variant.id)}
-                          type="button"
+                          selected={isSelected}
                         >
                           <div className="min-w-0">
                             <p className="text-foreground font-medium">
@@ -402,18 +392,12 @@ export function ProductDetailsPage({
                                 locale,
                               )}
                             </span>
-                            <span
-                              className={cn(
-                                "flex h-6 w-6 items-center justify-center rounded-full border",
-                                isSelected
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-border/80 bg-background text-transparent",
-                              )}
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                            </span>
+                            <SelectableCardIndicator
+                              selected={isSelected}
+                              size="md"
+                            />
                           </div>
-                        </button>
+                        </SelectableCard>
                       );
                     })}
                   </div>
@@ -462,14 +446,7 @@ export function ProductDetailsPage({
                         const isSelected = selectedIds.includes(option.id);
 
                         return (
-                          <button
-                            aria-pressed={isSelected}
-                            className={cn(
-                              "focus-visible:ring-ring flex items-center justify-between gap-3 rounded-[22px] border px-4 py-3 text-left transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-                              isSelected
-                                ? "border-primary bg-primary/6 shadow-[0_18px_30px_-24px_rgba(214,92,38,0.55)]"
-                                : "border-border/70 bg-card hover:border-foreground/20 hover:bg-background",
-                            )}
+                          <SelectableCard
                             key={option.id}
                             onClick={() =>
                               setSelectedModifierIdsByGroup((currentState) => ({
@@ -481,23 +458,16 @@ export function ProductDetailsPage({
                                 ),
                               }))
                             }
-                            type="button"
+                            selected={isSelected}
                           >
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
                                 <span className="text-foreground font-medium">
                                   {option.name}
                                 </span>
-                                <span
-                                  className={cn(
-                                    "flex h-5 w-5 items-center justify-center rounded-full border",
-                                    isSelected
-                                      ? "border-primary bg-primary text-primary-foreground"
-                                      : "border-border/80 bg-background text-transparent",
-                                  )}
-                                >
-                                  <Check className="h-3 w-3" />
-                                </span>
+                                <SelectableCardIndicator
+                                  selected={isSelected}
+                                />
                               </div>
 
                               {option.description ? (
@@ -516,7 +486,7 @@ export function ProductDetailsPage({
                                   )}`
                                 : t("product.included")}
                             </span>
-                          </button>
+                          </SelectableCard>
                         );
                       })}
                     </div>

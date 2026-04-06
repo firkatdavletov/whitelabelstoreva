@@ -165,11 +165,31 @@ describe("CheckoutForm", () => {
     expect(screen.getByText("Этаж")).toBeInTheDocument();
     expect(screen.getByText("Домофон")).toBeInTheDocument();
 
-    await user.click(screen.getByLabelText("Частный дом"));
+    await user.click(screen.getByRole("button", { name: "Частный дом" }));
 
     expect(screen.queryByText("Квартира")).not.toBeInTheDocument();
     expect(screen.queryByText("Подъезд")).not.toBeInTheDocument();
     expect(screen.queryByText("Этаж")).not.toBeInTheDocument();
     expect(screen.queryByText("Домофон")).not.toBeInTheDocument();
+  });
+
+  it("renders checkout inputs without placeholders", () => {
+    render(React.createElement(CheckoutForm, { isAuthorized: false }));
+
+    expect(screen.getByLabelText("checkout.fullName")).not.toHaveAttribute(
+      "placeholder",
+    );
+    expect(screen.getByLabelText("checkout.phone")).not.toHaveAttribute(
+      "placeholder",
+    );
+    expect(screen.getByLabelText("Квартира")).not.toHaveAttribute(
+      "placeholder",
+    );
+    expect(screen.getByLabelText("Подъезд")).not.toHaveAttribute("placeholder");
+    expect(screen.getByLabelText("Домофон")).not.toHaveAttribute("placeholder");
+    expect(screen.getByLabelText("Этаж")).not.toHaveAttribute("placeholder");
+    expect(screen.getByLabelText("Комментарий курьеру")).not.toHaveAttribute(
+      "placeholder",
+    );
   });
 });
