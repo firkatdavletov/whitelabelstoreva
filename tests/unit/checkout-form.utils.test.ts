@@ -96,6 +96,7 @@ describe("checkout form utils", () => {
         entrance: "",
         floor: "",
         fullName: "  Алексей Иванов  ",
+        isPrivateHouse: false,
         intercom: "",
         paymentMethodCode: "CARD_ON_DELIVERY",
         phone: "  +7 (999) 123-45-67  ",
@@ -115,6 +116,7 @@ describe("checkout form utils", () => {
         entrance: "",
         floor: "",
         fullName: "",
+        isPrivateHouse: false,
         intercom: "",
         paymentMethodCode: "CASH",
         phone: "",
@@ -137,6 +139,7 @@ describe("checkout form utils", () => {
           entrance: "3",
           floor: "7",
           fullName: "",
+          isPrivateHouse: false,
           intercom: "45",
           paymentMethodCode: "CARD_ON_DELIVERY",
           phone: "",
@@ -178,6 +181,57 @@ describe("checkout form utils", () => {
     });
   });
 
+  it("omits apartment metadata in the checkout address payload for private houses", () => {
+    expect(
+      buildCheckoutRequest(
+        {
+          apartment: "12",
+          comment: "Позвоните у ворот",
+          entrance: "3",
+          floor: "7",
+          fullName: "",
+          isPrivateHouse: true,
+          intercom: "45",
+          paymentMethodCode: "CARD_ON_DELIVERY",
+          phone: "",
+        },
+        {
+          deliveryAddress: {
+            apartment: null,
+            city: "Екатеринбург",
+            comment: null,
+            country: "Россия",
+            entrance: null,
+            floor: null,
+            house: "15",
+            intercom: null,
+            postalCode: "620014",
+            region: "Свердловская область",
+            street: "ул. Ленина",
+          },
+        },
+      ),
+    ).toEqual({
+      address: {
+        apartment: null,
+        city: "Екатеринбург",
+        comment: "Позвоните у ворот",
+        country: "Россия",
+        entrance: null,
+        floor: null,
+        house: "15",
+        intercom: null,
+        postalCode: "620014",
+        region: "Свердловская область",
+        street: "ул. Ленина",
+      },
+      comment: "Позвоните у ворот",
+      customerName: null,
+      customerPhone: null,
+      paymentMethodCode: "CARD_ON_DELIVERY",
+    });
+  });
+
   it("detects pickup checkout delivery methods", () => {
     expect(isPickupCheckoutDelivery("PICKUP")).toBe(true);
     expect(isPickupCheckoutDelivery("YANDEX_PICKUP_POINT")).toBe(true);
@@ -201,6 +255,7 @@ describe("checkout form utils", () => {
         entrance: "",
         floor: "",
         fullName: "",
+        isPrivateHouse: false,
         intercom: "",
         paymentMethodCode: "CARD_ON_DELIVERY",
         phone: "",
@@ -214,6 +269,28 @@ describe("checkout form utils", () => {
         entrance: "",
         floor: "",
         fullName: "",
+        isPrivateHouse: false,
+        intercom: "",
+        paymentMethodCode: "CARD_ON_DELIVERY",
+        phone: "",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("does not require apartment for courier checkout when private house is selected", () => {
+    const courierSchema = createCheckoutFormSchema({
+      requiresApartment: true,
+      requiresContactDetails: false,
+    });
+
+    expect(
+      courierSchema.safeParse({
+        apartment: "",
+        comment: "",
+        entrance: "",
+        floor: "",
+        fullName: "",
+        isPrivateHouse: true,
         intercom: "",
         paymentMethodCode: "CARD_ON_DELIVERY",
         phone: "",

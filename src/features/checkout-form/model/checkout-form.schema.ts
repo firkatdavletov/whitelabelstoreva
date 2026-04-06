@@ -6,6 +6,7 @@ export type CheckoutFormValues = {
   entrance: string;
   floor: string;
   fullName: string;
+  isPrivateHouse: boolean;
   intercom: string;
   paymentMethodCode: string;
   phone: string;
@@ -51,30 +52,39 @@ export function createCheckoutFormSchema({
   requiresContactDetails: boolean;
   requiresApartment?: boolean;
 }) {
-  return z.object({
-    apartment: createMetaFieldSchema(
-      requiresApartment ? "Enter apartment number." : undefined,
-    ),
-    comment: z
-      .string()
-      .trim()
-      .max(200, "Keep the courier note under 200 characters."),
-    entrance: createMetaFieldSchema(),
-    floor: createMetaFieldSchema(),
-    fullName: requiresContactDetails
-      ? z.string().trim().min(2, "Enter your full name.")
-      : createOptionalContactFieldSchema("Enter your full name."),
-    intercom: createMetaFieldSchema(),
-    paymentMethodCode: z.string().min(1, "Choose a payment method."),
-    phone: requiresContactDetails
-      ? z
-          .string()
-          .trim()
-          .min(8, "Enter a valid phone number.")
-          .regex(
-            phonePattern,
-            "Phone number can contain digits, spaces, and + - ( ).",
-          )
-      : createOptionalPhoneSchema(),
-  });
+  return z
+    .object({
+      apartment: createMetaFieldSchema(),
+      comment: z
+        .string()
+        .trim()
+        .max(200, "Keep the courier note under 200 characters."),
+      entrance: createMetaFieldSchema(),
+      floor: createMetaFieldSchema(),
+      fullName: requiresContactDetails
+        ? z.string().trim().min(2, "Enter your full name.")
+        : createOptionalContactFieldSchema("Enter your full name."),
+      isPrivateHouse: z.boolean(),
+      intercom: createMetaFieldSchema(),
+      paymentMethodCode: z.string().min(1, "Choose a payment method."),
+      phone: requiresContactDetails
+        ? z
+            .string()
+            .trim()
+            .min(8, "Enter a valid phone number.")
+            .regex(
+              phonePattern,
+              "Phone number can contain digits, spaces, and + - ( ).",
+            )
+        : createOptionalPhoneSchema(),
+    })
+    .superRefine((values, context) => {
+      if (requiresApartment && !values.isPrivateHouse && !values.apartment) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Enter apartment number.",
+          path: ["apartment"],
+        });
+      }
+    });
 }

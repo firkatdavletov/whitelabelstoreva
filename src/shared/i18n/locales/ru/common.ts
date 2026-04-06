@@ -44,6 +44,7 @@ export const ruMessages = {
       "Для выбранного способа доставки backend пока не вернул активные способы оплаты.",
     paymentMethodsError: "Не удалось загрузить способы оплаты.",
     phone: "Телефон",
+    privateHouse: "Частный дом",
     pickupLocation: "Откуда забрать",
     submit: "Оформить заказ",
     title: "Оформление заказа",

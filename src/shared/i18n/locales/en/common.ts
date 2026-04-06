@@ -43,6 +43,7 @@ export const enMessages = {
       "The backend did not return any active payment methods for this delivery option.",
     paymentMethodsError: "Failed to load payment methods.",
     phone: "Phone number",
+    privateHouse: "Private house",
     pickupLocation: "Pick up from",
     submit: "Place order",
     title: "Checkout",

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -82,6 +82,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
       entrance: "",
       floor: "",
       fullName: "",
+      isPrivateHouse: false,
       intercom: "",
       paymentMethodCode: "",
       phone: "",
@@ -92,6 +93,10 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
         requiresContactDetails: !isAuthorized,
       }),
     ),
+  });
+  const isPrivateHouse = useWatch({
+    control: form.control,
+    name: "isPrivateHouse",
   });
 
   const paymentMethods = resolveCheckoutPaymentMethods(
@@ -121,7 +126,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
   }, [form, paymentMethods]);
 
   useEffect(() => {
-    if (!isCourierDelivery || !deliveryAddress) {
+    if (!isCourierDelivery || !deliveryAddress || isPrivateHouse) {
       return;
     }
 
@@ -147,7 +152,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
         shouldDirty: false,
       });
     });
-  }, [deliveryAddress, form, isCourierDelivery]);
+  }, [deliveryAddress, form, isCourierDelivery, isPrivateHouse]);
 
   if (isLoading && !storefrontCart) {
     return <CheckoutFormSkeleton />;
@@ -212,14 +217,6 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
           <form
             className="grid gap-5"
             onSubmit={form.handleSubmit(async (values) => {
-              if (isCourierDelivery && !values.apartment.trim()) {
-                form.setError("apartment", {
-                  message: "Enter apartment number.",
-                  type: "required",
-                });
-                return;
-              }
-
               try {
                 const order = await checkoutMutation.mutateAsync(
                   buildCheckoutRequest(values, {
@@ -285,76 +282,121 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
             ) : null}
 
             {isCourierDelivery ? (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4">
                 <FormField
                   control={form.control}
-                  name="apartment"
+                  name="isPrivateHouse"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("checkout.apartment")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="12"
-                          required={isCourierDelivery}
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
+                    <FormItem className="border-border/70 bg-background/70 rounded-2xl border p-4">
+                      <div className="flex items-start gap-3">
+                        <FormControl>
+                          <input
+                            checked={Boolean(field.value)}
+                            className="border-border text-primary focus-visible:ring-ring mt-0.5 h-4 w-4 rounded border bg-background shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2"
+                            onChange={(event) => {
+                              const checked = event.target.checked;
+
+                              field.onChange(checked);
+
+                              if (!checked) {
+                                return;
+                              }
+
+                              (
+                                ["apartment", "entrance", "floor", "intercom"] as const
+                              ).forEach((fieldName) => {
+                                form.setValue(fieldName, "", {
+                                  shouldDirty: true,
+                                  shouldValidate: false,
+                                });
+                                form.clearErrors(fieldName);
+                              });
+                            }}
+                            type="checkbox"
+                          />
+                        </FormControl>
+                        <div className="space-y-1">
+                          <FormLabel className="text-sm leading-5 font-medium">
+                            {t("checkout.privateHouse")}
+                          </FormLabel>
+                        </div>
+                      </div>
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="entrance"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("checkout.entrance")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="3"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="intercom"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("checkout.intercom")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="45"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="floor"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("checkout.floor")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="7"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {!isPrivateHouse ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="apartment"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("checkout.apartment")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="12"
+                              required={isCourierDelivery}
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="entrance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("checkout.entrance")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="3"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="intercom"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("checkout.intercom")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="45"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="floor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("checkout.floor")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="7"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ) : null}
               </div>
             ) : null}
 

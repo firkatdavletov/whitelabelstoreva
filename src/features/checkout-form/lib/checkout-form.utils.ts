@@ -117,14 +117,22 @@ export function buildCheckoutRequest(
   const deliveryAddress = options?.deliveryAddress;
   const address = deliveryAddress
     ? {
-        apartment: normalizeCheckoutField(values.apartment),
+        apartment: values.isPrivateHouse
+          ? null
+          : normalizeCheckoutField(values.apartment),
         city: normalizeCheckoutField(deliveryAddress.city),
         comment,
         country: normalizeCheckoutField(deliveryAddress.country),
-        entrance: normalizeCheckoutField(values.entrance),
-        floor: normalizeCheckoutField(values.floor),
+        entrance: values.isPrivateHouse
+          ? null
+          : normalizeCheckoutField(values.entrance),
+        floor: values.isPrivateHouse
+          ? null
+          : normalizeCheckoutField(values.floor),
         house: normalizeCheckoutField(deliveryAddress.house),
-        intercom: normalizeCheckoutField(values.intercom),
+        intercom: values.isPrivateHouse
+          ? null
+          : normalizeCheckoutField(values.intercom),
         postalCode: normalizeCheckoutField(deliveryAddress.postalCode),
         region: normalizeCheckoutField(deliveryAddress.region),
         street: normalizeCheckoutField(deliveryAddress.street),
