@@ -49,6 +49,40 @@ function buildAddressLine(parts: Array<string | null | undefined>) {
     .join(", ");
 }
 
+function normalizePickupAddress(address: string | null | undefined) {
+  if (!address) {
+    return null;
+  }
+
+  const normalizedParts = address
+    .split(/[,;\n]/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const houseMatch = /^house[\s.:#-]*(.+)$/i.exec(part);
+
+      if (houseMatch) {
+        return `дом ${houseMatch[1].trim()}`;
+      }
+
+      return part;
+    })
+    .filter(
+      (part) =>
+        !/^(?:postal(?:\s*code)?|zip(?:\s*code)?|индекс)?[\s.:#-]*\d{5,6}$/i.test(
+          part,
+        ) &&
+        !/^(россия|российская федерация|russia|russian federation)$/i.test(
+          part,
+        ) &&
+        !/^(?:.*\s)?(область|обл\.|край|республика|region|oblast|province|district)$/i.test(
+          part,
+        ),
+    );
+
+  return normalizedParts.join(", ") || null;
+}
+
 function formatDeliveryAddress(dto: OrderDto) {
   if (dto.delivery.address) {
     const primaryLine = buildAddressLine([
@@ -160,12 +194,9 @@ function findLastTimelineIndex(
 }
 
 function resolveCurrentTimelineCodes(dto: OrderDto) {
-  return [
-    dto.currentStatus.code,
-    dto.status,
-    dto.stateType,
-  ].filter((code, index, codes): code is string =>
-    Boolean(code) && codes.indexOf(code) === index,
+  return [dto.currentStatus.code, dto.status, dto.stateType].filter(
+    (code, index, codes): code is string =>
+      Boolean(code) && codes.indexOf(code) === index,
   );
 }
 
@@ -208,9 +239,8 @@ function normalizeStatusHistory(dto: OrderDto): TimelineSeed[] {
     return history;
   }
 
-  const currentStepIndex = findLastTimelineIndex(
-    history,
-    (step) => matchesCurrentTimelineStep(step.code, dto),
+  const currentStepIndex = findLastTimelineIndex(history, (step) =>
+    matchesCurrentTimelineStep(step.code, dto),
   );
 
   if (currentStepIndex > -1) {
@@ -248,9 +278,8 @@ function buildBackendTimeline(dto: OrderDto): Order["timeline"] | null {
     return null;
   }
 
-  const currentIndex = findLastTimelineIndex(
-    history,
-    (step) => matchesCurrentTimelineStep(step.code, dto),
+  const currentIndex = findLastTimelineIndex(history, (step) =>
+    matchesCurrentTimelineStep(step.code, dto),
   );
   const timeline = history.map((step, index) =>
     createTimelineStep(step, currentIndex, index),
@@ -328,7 +357,7 @@ export function mapOrderDtoToOrder(dto: OrderDto): Order {
     itemsCount: dto.items.reduce((total, item) => total + item.quantity, 0),
     orderNumber: dto.orderNumber,
     paymentMethodName: dto.payment?.name ?? null,
-    pickupPointAddress: dto.delivery.pickupPointAddress ?? null,
+    pickupPointAddress: normalizePickupAddress(dto.delivery.pickupPointAddress),
     pickupPointName: dto.delivery.pickupPointName ?? null,
     stateColor: dto.currentStatus.color ?? null,
     stateIcon: dto.currentStatus.icon ?? null,

@@ -20,7 +20,7 @@ function normalizeAddressString(address: string | null | undefined) {
   }
 
   const normalizedParts = address
-    .split(",")
+    .split(/[,;\n]/)
     .map((part) => part.trim())
     .filter(Boolean)
     .map((part) => {
@@ -34,9 +34,15 @@ function normalizeAddressString(address: string | null | undefined) {
     })
     .filter(
       (part) =>
-        !/^\d{5,6}$/.test(part) &&
-        !/^(россия|russia)$/i.test(part) &&
-        !/(область|обл\.|край|республика|region|oblast)/i.test(part),
+        !/^(?:postal(?:\s*code)?|zip(?:\s*code)?|индекс)?[\s.:#-]*\d{5,6}$/i.test(
+          part,
+        ) &&
+        !/^(россия|российская федерация|russia|russian federation)$/i.test(
+          part,
+        ) &&
+        !/^(?:.*\s)?(область|обл\.|край|республика|region|oblast|province|district)$/i.test(
+          part,
+        ),
     );
 
   return normalizedParts.join(", ") || null;

@@ -46,6 +46,18 @@ describe("checkout form utils", () => {
         quoteExpired: false,
       }),
     ).toBe("Екатеринбург, ул. Ленина, дом 15");
+
+    expect(
+      formatCheckoutDeliveryAddress({
+        address: null,
+        deliveryMethod: "PICKUP",
+        pickupPointAddress:
+          "Russian Federation; Sverdlovsk Region; postal code 620014; Yekaterinburg; Lenina Ave; house 15",
+        pickupPointName: "Storeva Center",
+        quote: null,
+        quoteExpired: false,
+      }),
+    ).toBe("Yekaterinburg, Lenina Ave, дом 15");
   });
 
   it("returns only active payment methods for the selected delivery option", () => {

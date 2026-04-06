@@ -135,7 +135,9 @@ describe("mapOrderDtoToOrder", () => {
     const order = mapOrderDtoToOrder(dto);
 
     expect(order.timeline.find((step) => step.isCurrent)?.code).toBe("PENDING");
-    expect(order.timeline.some((step) => step.code === "AWAITING_CONFIRMATION")).toBe(false);
+    expect(
+      order.timeline.some((step) => step.code === "AWAITING_CONFIRMATION"),
+    ).toBe(false);
     expect(order.timeline.map((step) => step.code)).toEqual([
       "PENDING",
       "CONFIRMED",
@@ -143,5 +145,24 @@ describe("mapOrderDtoToOrder", () => {
       "OUT_FOR_DELIVERY",
       "COMPLETED",
     ]);
+  });
+
+  it("normalizes pickup point address for order tracking", () => {
+    const dto = createMockOrderDto({
+      orderId: "order-4",
+      stateType: "READY_FOR_PICKUP",
+    });
+
+    dto.deliveryMethod = "PICKUP";
+    dto.delivery.method = "PICKUP";
+    dto.delivery.methodName = "Самовывоз";
+    dto.delivery.address = null;
+    dto.delivery.pickupPointAddress =
+      "Россия, Свердловская область, 620014, Екатеринбург, ул. Ленина, house 15";
+    dto.delivery.pickupPointName = "Storeva Центр";
+
+    const order = mapOrderDtoToOrder(dto);
+
+    expect(order.pickupPointAddress).toBe("Екатеринбург, ул. Ленина, дом 15");
   });
 });
