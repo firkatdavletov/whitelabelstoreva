@@ -6,6 +6,7 @@ import {
   isPickupCheckoutDelivery,
   resolveCheckoutPaymentMethods,
 } from "@/features/checkout-form/lib/checkout-form.utils";
+import { createCheckoutFormSchema } from "@/features/checkout-form/model/checkout-form.schema";
 
 describe("checkout form utils", () => {
   it("formats courier address from the selected cart delivery", () => {
@@ -39,12 +40,12 @@ describe("checkout form utils", () => {
         address: null,
         deliveryMethod: "PICKUP",
         pickupPointAddress:
-          "Россия, Свердловская область, 620014, Екатеринбург, ул. Ленина, 15",
+          "Россия, Свердловская область, 620014, Екатеринбург, ул. Ленина, house 15",
         pickupPointName: "Storeva Центр",
         quote: null,
         quoteExpired: false,
       }),
-    ).toBe("Екатеринбург, ул. Ленина, 15");
+    ).toBe("Екатеринбург, ул. Ленина, дом 15");
   });
 
   it("returns only active payment methods for the selected delivery option", () => {
@@ -181,5 +182,42 @@ describe("checkout form utils", () => {
     expect(isPickupCheckoutDelivery("PICKUP")).toBe(true);
     expect(isPickupCheckoutDelivery("YANDEX_PICKUP_POINT")).toBe(true);
     expect(isPickupCheckoutDelivery("COURIER")).toBe(false);
+  });
+
+  it("requires apartment only for courier checkout", () => {
+    const courierSchema = createCheckoutFormSchema({
+      requiresApartment: true,
+      requiresContactDetails: false,
+    });
+    const pickupSchema = createCheckoutFormSchema({
+      requiresApartment: false,
+      requiresContactDetails: false,
+    });
+
+    expect(
+      courierSchema.safeParse({
+        apartment: "",
+        comment: "",
+        entrance: "",
+        floor: "",
+        fullName: "",
+        intercom: "",
+        paymentMethodCode: "CARD_ON_DELIVERY",
+        phone: "",
+      }).success,
+    ).toBe(false);
+
+    expect(
+      pickupSchema.safeParse({
+        apartment: "",
+        comment: "",
+        entrance: "",
+        floor: "",
+        fullName: "",
+        intercom: "",
+        paymentMethodCode: "CARD_ON_DELIVERY",
+        phone: "",
+      }).success,
+    ).toBe(true);
   });
 });

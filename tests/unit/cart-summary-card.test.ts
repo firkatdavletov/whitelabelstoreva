@@ -25,7 +25,7 @@ vi.mock("react-i18next", () => ({
         case "cart.loading":
           return "Обновляем корзину...";
         case "cart.summary":
-          return "Сводка по корзине";
+          return "Состав корзины";
         case "cart.title":
           return "Корзина";
         case "shared.quantity":

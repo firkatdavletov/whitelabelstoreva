@@ -35,27 +35,36 @@ function createOptionalPhoneSchema() {
     );
 }
 
-function createOptionalMetaFieldSchema() {
-  return z.string().trim().max(40, "Keep this field under 40 characters.");
+function createMetaFieldSchema(requiredMessage?: string) {
+  const schema = z
+    .string()
+    .trim()
+    .max(40, "Keep this field under 40 characters.");
+
+  return requiredMessage ? schema.min(1, requiredMessage) : schema;
 }
 
 export function createCheckoutFormSchema({
   requiresContactDetails,
+  requiresApartment = false,
 }: {
   requiresContactDetails: boolean;
+  requiresApartment?: boolean;
 }) {
   return z.object({
-    apartment: createOptionalMetaFieldSchema(),
+    apartment: createMetaFieldSchema(
+      requiresApartment ? "Enter apartment number." : undefined,
+    ),
     comment: z
       .string()
       .trim()
       .max(200, "Keep the courier note under 200 characters."),
-    entrance: createOptionalMetaFieldSchema(),
-    floor: createOptionalMetaFieldSchema(),
+    entrance: createMetaFieldSchema(),
+    floor: createMetaFieldSchema(),
     fullName: requiresContactDetails
       ? z.string().trim().min(2, "Enter your full name.")
       : createOptionalContactFieldSchema("Enter your full name."),
-    intercom: createOptionalMetaFieldSchema(),
+    intercom: createMetaFieldSchema(),
     paymentMethodCode: z.string().min(1, "Choose a payment method."),
     phone: requiresContactDetails
       ? z

@@ -23,6 +23,15 @@ function normalizeAddressString(address: string | null | undefined) {
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean)
+    .map((part) => {
+      const houseMatch = /^house[\s.:#-]*(.+)$/i.exec(part);
+
+      if (houseMatch) {
+        return `дом ${houseMatch[1].trim()}`;
+      }
+
+      return part;
+    })
     .filter(
       (part) =>
         !/^\d{5,6}$/.test(part) &&

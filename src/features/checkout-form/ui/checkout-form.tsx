@@ -70,6 +70,10 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     delivery?.pickupPointId,
   );
   const checkoutMutation = useCheckoutMutation(tenantSlug);
+  const deliveryAddress = delivery?.address;
+  const isPickupDelivery = isPickupCheckoutDelivery(delivery?.deliveryMethod);
+  const isCourierDelivery = delivery?.deliveryMethod === "COURIER";
+  const selectedAddressLabel = formatCheckoutDeliveryAddress(delivery);
 
   const form = useForm<CheckoutFormValues>({
     defaultValues: {
@@ -84,6 +88,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     },
     resolver: zodResolver(
       createCheckoutFormSchema({
+        requiresApartment: isCourierDelivery,
         requiresContactDetails: !isAuthorized,
       }),
     ),
@@ -93,10 +98,6 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     checkoutOptionsQuery.data?.options,
     delivery?.deliveryMethod,
   );
-  const deliveryAddress = delivery?.address;
-  const isPickupDelivery = isPickupCheckoutDelivery(delivery?.deliveryMethod);
-  const isCourierDelivery = delivery?.deliveryMethod === "COURIER";
-  const selectedAddressLabel = formatCheckoutDeliveryAddress(delivery);
 
   useEffect(() => {
     const currentPaymentMethod = form.getValues("paymentMethodCode");
@@ -211,6 +212,14 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
           <form
             className="grid gap-5"
             onSubmit={form.handleSubmit(async (values) => {
+              if (isCourierDelivery && !values.apartment.trim()) {
+                form.setError("apartment", {
+                  message: "Enter apartment number.",
+                  type: "required",
+                });
+                return;
+              }
+
               try {
                 const order = await checkoutMutation.mutateAsync(
                   buildCheckoutRequest(values, {
@@ -286,6 +295,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                       <FormControl>
                         <Input
                           placeholder="12"
+                          required={isCourierDelivery}
                           {...field}
                           value={field.value ?? ""}
                         />

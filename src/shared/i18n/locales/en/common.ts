@@ -17,7 +17,7 @@ export const enMessages = {
     loading: "Refreshing cart...",
     open: "Open cart",
     subtitle: "Review your order and adjust quantities before checkout.",
-    summary: "Cart summary",
+    summary: "Cart contents",
     title: "Cart",
   },
   checkout: {
@@ -239,11 +239,21 @@ export const enMessages = {
   },
   search: {
     cardDescription:
-      "This page is already wired into the header navigation and is ready for catalog search integration.",
-    cardTitle: "Search can now be extended per storefront",
+      "Search queries hit the backend catalog endpoint and return product cards in the same visual language as the menu.",
+    cardTitle: "Find a dish by name",
+    empty: "No items were found for “{{query}}”.",
+    errorDescription:
+      "Try a different query or open the full catalog menu instead.",
+    errorTitle: "Failed to load search results",
+    initialDescription:
+      "Enter a dish or brand name and we will show matching catalog items.",
+    initialTitle: "Start searching the menu",
+    inputPlaceholder: "For example: burger, roll, lemonade",
     openMenu: "Open menu",
+    resultsCount: "Items found: {{count}}",
     subtitle:
-      "A baseline white label search page prepared for dishes, categories, and brand search scenarios.",
+      "Search catalog items through the backend endpoint and jump straight into the product card or add-to-cart flow.",
+    submit: "Search",
     title: "Search menu",
   },
   shared: {
