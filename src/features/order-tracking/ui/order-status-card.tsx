@@ -77,6 +77,10 @@ function formatOrderPrice(value: number, currency: string, locale: string) {
   }
 }
 
+function shouldShowDeliveryPrice(order: Order) {
+  return order.deliveryMethod === "COURIER";
+}
+
 function resolveStatusBadgeVariant(order: Order) {
   if (order.stateType === "CANCELED" || order.stateType === "ON_HOLD") {
     return "outline" as const;
@@ -182,6 +186,8 @@ export function OrderStatusCard({
   }
 
   const orderAddress = data.pickupPointAddress ?? data.deliveryAddress;
+  const showDeliveryPrice = shouldShowDeliveryPrice(data);
+  const isFreeDelivery = showDeliveryPrice && data.deliveryFeePrice === 0;
 
   return (
     <Card className="border-border/70 overflow-hidden rounded-[2.5rem] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_96%,white),color-mix(in_srgb,var(--secondary)_24%,white)_48%,color-mix(in_srgb,var(--background)_92%,white))] shadow-[0_36px_110px_-56px_rgba(31,26,23,0.42)]">
@@ -366,6 +372,28 @@ export function OrderStatusCard({
                 </div>
 
                 <div className="mt-5 space-y-3">
+                  {showDeliveryPrice ? (
+                    <div className="border-border/60 bg-background/76 flex items-center justify-between gap-4 rounded-[1.45rem] border p-4">
+                      {isFreeDelivery ? (
+                        <span className="text-muted-foreground text-sm">
+                          {t("cart.deliveryFree")}
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-muted-foreground text-sm">
+                            {t("cart.delivery")}
+                          </span>
+                          <span className="text-sm font-medium">
+                            {formatOrderPrice(
+                              data.deliveryFeePrice,
+                              data.currency,
+                              locale,
+                            )}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  ) : null}
                   {data.items.length ? (
                     data.items.map((item) => (
                       <div

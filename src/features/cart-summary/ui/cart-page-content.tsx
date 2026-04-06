@@ -56,6 +56,35 @@ function CartPageSkeleton() {
   );
 }
 
+function isPickupDeliveryMethod(deliveryMethod: string | null | undefined) {
+  return (
+    deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
+  );
+}
+
+function formatDeliveryPrice(
+  locale: Locale,
+  priceMinor: number | null | undefined,
+  currency: string | null | undefined,
+) {
+  if (priceMinor == null) {
+    return "—";
+  }
+
+  if (currency === "EUR" || currency === "RUB" || currency === "USD") {
+    return formatCurrency(priceMinor / 100, currency, locale, {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+    });
+  }
+
+  if (!currency) {
+    return `${priceMinor / 100}`;
+  }
+
+  return `${priceMinor / 100} ${currency}`;
+}
+
 export function CartPageContent({
   isAuthorized,
   locale,
@@ -85,6 +114,19 @@ export function CartPageContent({
     isAuthorized,
     storefrontCart,
   });
+  const deliveryMethod = storefrontCart?.delivery?.deliveryMethod;
+  const shouldShowDeliveryPrice =
+    Boolean(deliveryMethod) && !isPickupDeliveryMethod(deliveryMethod);
+  const isFreeDelivery =
+    shouldShowDeliveryPrice &&
+    storefrontCart?.delivery?.quote?.priceMinor === 0;
+  const deliveryPriceLabel = shouldShowDeliveryPrice
+    ? formatDeliveryPrice(
+        locale,
+        storefrontCart?.delivery?.quote?.priceMinor,
+        storefrontCart?.delivery?.quote?.currency,
+      )
+    : null;
 
   if (isLoading && !storefrontCart) {
     return <CartPageSkeleton />;
@@ -318,15 +360,38 @@ export function CartPageContent({
               {t("cart.subtitle")}
             </p>
 
-            <div className="mt-6 flex items-center justify-between border-t border-dashed border-black/10 pt-4 text-sm">
-              <span className="text-muted-foreground">{t("shared.total")}</span>
-              <span className="font-semibold">
-                {formatCurrency(
-                  storefrontCart.totalPrice,
-                  tenantConfig.currency,
-                  locale,
-                )}
-              </span>
+            <div className="mt-6 space-y-4 border-t border-dashed border-black/10 pt-4 text-sm">
+              {shouldShowDeliveryPrice ? (
+                <div className="flex items-center justify-between gap-4">
+                  {isFreeDelivery ? (
+                    <span className="text-muted-foreground">
+                      {t("cart.deliveryFree")}
+                    </span>
+                  ) : (
+                    <>
+                      <span className="text-muted-foreground">
+                        {t("cart.delivery")}
+                      </span>
+                      <span className="font-semibold">
+                        {deliveryPriceLabel}
+                      </span>
+                    </>
+                  )}
+                </div>
+              ) : null}
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">
+                  {t("shared.total")}
+                </span>
+                <span className="font-semibold">
+                  {formatCurrency(
+                    storefrontCart.totalPrice,
+                    tenantConfig.currency,
+                    locale,
+                  )}
+                </span>
+              </div>
             </div>
 
             <Button

@@ -1,9 +1,12 @@
 import * as React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  routerPush: vi.fn(),
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
   useCheckoutMutation: vi.fn(),
   useCheckoutOptionsQuery: vi.fn(),
   useStorefrontCartQuery: vi.fn(),
@@ -16,8 +19,15 @@ vi.mock("next/link", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: mocks.routerPush,
   }),
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: mocks.toastError,
+    success: mocks.toastSuccess,
+  },
 }));
 
 vi.mock("react-i18next", () => ({
@@ -76,11 +86,16 @@ vi.mock("@/features/order-tracking/lib/tracked-order-storage", () => ({
   rememberTrackedOrderId: vi.fn(),
 }));
 
+import {
+  getRememberedGuestCheckoutContact,
+  rememberGuestCheckoutContact,
+} from "@/features/checkout-form/lib/guest-checkout-contact-storage";
 import { CheckoutForm } from "@/features/checkout-form/ui/checkout-form";
 
 describe("CheckoutForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
 
     mocks.useStorefrontCartQuery.mockReturnValue({
       data: {
@@ -191,5 +206,61 @@ describe("CheckoutForm", () => {
     expect(screen.getByLabelText("Комментарий курьеру")).not.toHaveAttribute(
       "placeholder",
     );
+  });
+
+  it("restores guest contact fields from localStorage", async () => {
+    rememberGuestCheckoutContact("storeva-street", {
+      fullName: "Алексей Иванов",
+      phone: "+7 (999) 123-45-67",
+    });
+
+    render(React.createElement(CheckoutForm, { isAuthorized: false }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("checkout.fullName")).toHaveValue(
+        "Алексей Иванов",
+      );
+      expect(screen.getByLabelText("checkout.phone")).toHaveValue(
+        "+7 (999) 123-45-67",
+      );
+    });
+  });
+
+  it("saves guest contact fields after successful checkout", async () => {
+    const user = userEvent.setup();
+
+    mocks.useCheckoutMutation.mockReturnValue({
+      isPending: false,
+      mutateAsync: vi.fn().mockResolvedValue({
+        id: "order-1",
+        orderNumber: "1001",
+      }),
+    });
+
+    render(React.createElement(CheckoutForm, { isAuthorized: false }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Оформить заказ" }),
+      ).toBeEnabled();
+    });
+
+    await user.type(
+      screen.getByLabelText("checkout.fullName"),
+      "Алексей Иванов",
+    );
+    await user.type(
+      screen.getByLabelText("checkout.phone"),
+      "+7 (999) 123-45-67",
+    );
+    await user.type(screen.getByLabelText("Квартира"), "12");
+    await user.click(screen.getByRole("button", { name: "Оформить заказ" }));
+
+    await waitFor(() => {
+      expect(getRememberedGuestCheckoutContact("storeva-street")).toEqual({
+        fullName: "Алексей Иванов",
+        phone: "+7 (999) 123-45-67",
+      });
+    });
   });
 });

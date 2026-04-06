@@ -17,6 +17,10 @@ import {
   isPickupCheckoutDelivery,
   resolveCheckoutPaymentMethods,
 } from "@/features/checkout-form/lib/checkout-form.utils";
+import {
+  getRememberedGuestCheckoutContact,
+  rememberGuestCheckoutContact,
+} from "@/features/checkout-form/lib/guest-checkout-contact-storage";
 import type { CheckoutFormValues } from "@/features/checkout-form/model/checkout-form.schema";
 import { createCheckoutFormSchema } from "@/features/checkout-form/model/checkout-form.schema";
 import { rememberTrackedOrderId } from "@/features/order-tracking/lib/tracked-order-storage";
@@ -107,6 +111,30 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     checkoutOptionsQuery.data?.options,
     delivery?.deliveryMethod,
   );
+
+  useEffect(() => {
+    if (isAuthorized) {
+      return;
+    }
+
+    const rememberedContact = getRememberedGuestCheckoutContact(tenantSlug);
+
+    if (!rememberedContact) {
+      return;
+    }
+
+    if (!form.getValues("fullName").trim()) {
+      form.setValue("fullName", rememberedContact.fullName, {
+        shouldDirty: false,
+      });
+    }
+
+    if (!form.getValues("phone").trim()) {
+      form.setValue("phone", rememberedContact.phone, {
+        shouldDirty: false,
+      });
+    }
+  }, [form, isAuthorized, tenantSlug]);
 
   useEffect(() => {
     const currentPaymentMethod = form.getValues("paymentMethodCode");
@@ -222,11 +250,18 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
             className="grid gap-5"
             onSubmit={form.handleSubmit(async (values) => {
               try {
-                const order = await checkoutMutation.mutateAsync(
-                  buildCheckoutRequest(values, {
-                    deliveryAddress: isCourierDelivery ? deliveryAddress : null,
-                  }),
-                );
+                const checkoutRequest = buildCheckoutRequest(values, {
+                  deliveryAddress: isCourierDelivery ? deliveryAddress : null,
+                });
+                const order =
+                  await checkoutMutation.mutateAsync(checkoutRequest);
+
+                if (!isAuthorized) {
+                  rememberGuestCheckoutContact(tenantSlug, {
+                    fullName: checkoutRequest.customerName,
+                    phone: checkoutRequest.customerPhone,
+                  });
+                }
 
                 toast.success(t("toast.checkoutSuccessTitle"), {
                   description: t("toast.checkoutSuccessDescription", {
