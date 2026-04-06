@@ -44,11 +44,13 @@ function mapDeliveryQuoteDto(
 
   return {
     available: dto.available,
+    currency: dto.currency,
     estimatedDays: dto.estimatedDays ?? null,
     estimatedMinutes: dto.estimatesMinutes ?? null,
     message: dto.message ?? null,
     pickupPointAddress: dto.pickupPointAddress ?? null,
     pickupPointName: dto.pickupPointName ?? null,
+    priceMinor: dto.priceMinor ?? null,
     zoneName: dto.zoneName ?? null,
   };
 }

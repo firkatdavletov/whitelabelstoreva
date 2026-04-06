@@ -92,6 +92,8 @@ describe("mapCartDtoToStorefrontCart", () => {
     });
 
     expect(storefrontCart.delivery?.quote?.estimatedMinutes).toBe(25);
+    expect(storefrontCart.delivery?.quote?.priceMinor).toBe(0);
+    expect(storefrontCart.delivery?.quote?.currency).toBe("RUB");
     expect(storefrontCart.items[0]).toMatchObject({
       countStep: 1,
       quantity: 1,

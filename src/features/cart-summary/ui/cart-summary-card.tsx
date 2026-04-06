@@ -9,6 +9,7 @@ import { useRemoveStorefrontCartItemMutation } from "@/features/cart-summary/hoo
 import { useTenantTheme } from "@/features/tenant-theme";
 import { formatCurrency } from "@/shared/lib/currency";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
+import type { CurrencyCode } from "@/shared/types/common";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {
@@ -25,6 +26,35 @@ type CartSummaryCardProps = {
   showCheckoutCta?: boolean;
 };
 
+function isPickupDeliveryMethod(deliveryMethod: string | null | undefined) {
+  return (
+    deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
+  );
+}
+
+function formatDeliveryPrice(
+  locale: "en" | "ru",
+  priceMinor: number | null | undefined,
+  currency: string | null | undefined,
+) {
+  if (priceMinor == null) {
+    return "—";
+  }
+
+  if (currency === "EUR" || currency === "RUB" || currency === "USD") {
+    return formatCurrency(priceMinor / 100, currency as CurrencyCode, locale, {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+    });
+  }
+
+  if (!currency) {
+    return `${priceMinor / 100}`;
+  }
+
+  return `${priceMinor / 100} ${currency}`;
+}
+
 export function CartSummaryCard({
   editable = true,
   showCheckoutCta = true,
@@ -39,6 +69,21 @@ export function CartSummaryCard({
   const summaryDescription = editable
     ? t("cart.subtitle")
     : t("cart.checkoutSubtitle");
+  const deliveryMethod = storefrontCart?.delivery?.deliveryMethod;
+  const shouldShowDeliveryPrice =
+    !editable &&
+    Boolean(deliveryMethod) &&
+    !isPickupDeliveryMethod(deliveryMethod);
+  const isFreeDelivery =
+    shouldShowDeliveryPrice &&
+    storefrontCart?.delivery?.quote?.priceMinor === 0;
+  const deliveryPriceLabel = shouldShowDeliveryPrice
+    ? formatDeliveryPrice(
+        locale,
+        storefrontCart?.delivery?.quote?.priceMinor,
+        storefrontCart?.delivery?.quote?.currency,
+      )
+    : null;
 
   if (isLoading && !storefrontCart) {
     return (
@@ -124,17 +169,37 @@ export function CartSummaryCard({
             </div>
           ))}
         </div>
-        <div className="border-border flex items-center justify-between border-t border-dashed pt-4">
-          <span className="text-muted-foreground text-sm">
-            {t("shared.total")}
-          </span>
-          <span className="text-xl font-semibold">
-            {formatCurrency(
-              storefrontCart.totalPrice,
-              tenantConfig.currency,
-              locale,
-            )}
-          </span>
+        <div className="border-border space-y-2 border-t border-dashed pt-4">
+          {shouldShowDeliveryPrice ? (
+            <div className="flex items-center justify-between gap-4">
+              {isFreeDelivery ? (
+                <span className="text-muted-foreground text-sm">
+                  {t("cart.deliveryFree")}
+                </span>
+              ) : (
+                <>
+                  <span className="text-muted-foreground text-sm">
+                    {t("cart.delivery")}
+                  </span>
+                  <span className="text-sm font-medium">
+                    {deliveryPriceLabel}
+                  </span>
+                </>
+              )}
+            </div>
+          ) : null}
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground text-sm">
+              {t("shared.total")}
+            </span>
+            <span className="text-xl font-semibold">
+              {formatCurrency(
+                storefrontCart.totalPrice,
+                tenantConfig.currency,
+                locale,
+              )}
+            </span>
+          </div>
         </div>
         {showCheckoutCta ? (
           <Button asChild className="w-full" size="lg">

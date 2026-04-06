@@ -13,6 +13,8 @@ export const enMessages = {
     checkoutSubtitle: "Review your order before submitting it.",
     checkout: "Proceed to checkout",
     continue: "Browse menu",
+    delivery: "Delivery",
+    deliveryFree: "Free delivery",
     empty: "Your cart is empty. Add a few dishes to start an order.",
     loading: "Refreshing cart...",
     open: "Open cart",
