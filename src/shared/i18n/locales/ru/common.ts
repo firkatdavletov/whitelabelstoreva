@@ -242,23 +242,15 @@ export const ruMessages = {
     variantTitle: "Вариант товара",
   },
   search: {
-    cardDescription:
-      "Поиск работает по backend endpoint каталога и возвращает карточки блюд в том же visual language, что и меню.",
-    cardTitle: "Найдите блюдо по названию",
     empty: "По запросу «{{query}}» ничего не найдено.",
     errorDescription:
       "Попробуйте изменить запрос или перейти в полное меню каталога.",
     errorTitle: "Не удалось загрузить результаты поиска",
-    initialDescription:
-      "Введите название блюда или бренда, и мы покажем подходящие позиции из каталога.",
-    initialTitle: "Начните поиск по меню",
     inputPlaceholder: "Например, бургер, ролл или лимонад",
+    loading: "Ищем по каталогу...",
     openMenu: "Открыть меню",
     resultsCount: "Найдено позиций: {{count}}",
-    subtitle:
-      "Ищите блюда по каталогу storefront через backend endpoint и сразу переходите к карточке товара или добавлению в корзину.",
-    submit: "Найти",
-    title: "Поиск по меню",
+    title: "Поиск",
   },
   shared: {
     locale: "Язык",

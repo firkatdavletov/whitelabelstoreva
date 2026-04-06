@@ -241,23 +241,15 @@ export const enMessages = {
     variantTitle: "Product option",
   },
   search: {
-    cardDescription:
-      "Search queries hit the backend catalog endpoint and return product cards in the same visual language as the menu.",
-    cardTitle: "Find a dish by name",
     empty: "No items were found for “{{query}}”.",
     errorDescription:
       "Try a different query or open the full catalog menu instead.",
     errorTitle: "Failed to load search results",
-    initialDescription:
-      "Enter a dish or brand name and we will show matching catalog items.",
-    initialTitle: "Start searching the menu",
     inputPlaceholder: "For example: burger, roll, lemonade",
+    loading: "Searching the catalog...",
     openMenu: "Open menu",
     resultsCount: "Items found: {{count}}",
-    subtitle:
-      "Search catalog items through the backend endpoint and jump straight into the product card or add-to-cart flow.",
-    submit: "Search",
-    title: "Search menu",
+    title: "Search",
   },
   shared: {
     locale: "Language",
