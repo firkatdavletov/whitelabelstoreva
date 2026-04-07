@@ -78,6 +78,7 @@ function createStorefrontCart(
       {
         countStep: 1,
         id: "item-1",
+        imageUrl: null,
         lineTotal: 12.9,
         modifierNames: ["Сыр"],
         modifiers: [],

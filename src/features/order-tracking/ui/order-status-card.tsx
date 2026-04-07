@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { CheckCircle2, Clock3, Package2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -400,24 +401,38 @@ export function OrderStatusCard({
                         className="border-border/60 bg-background/76 rounded-[1.45rem] border p-4"
                         key={item.id}
                       >
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <p className="font-medium">{item.title}</p>
-                            {item.modifiers.length ? (
+                        <div className="flex items-start gap-3">
+                          {item.imageUrl ? (
+                            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[color-mix(in_srgb,var(--secondary)_74%,white)]">
+                              <Image
+                                alt={item.title}
+                                className="object-cover"
+                                fill
+                                sizes="40px"
+                                src={item.imageUrl}
+                                unoptimized
+                              />
+                            </div>
+                          ) : null}
+                          <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
+                            <div>
+                              <p className="font-medium">{item.title}</p>
+                              {item.modifiers.length ? (
+                                <p className="text-muted-foreground mt-1 text-sm">
+                                  {item.modifiers.join(", ")}
+                                </p>
+                              ) : null}
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium">×{item.quantity}</p>
                               <p className="text-muted-foreground mt-1 text-sm">
-                                {item.modifiers.join(", ")}
+                                {formatOrderPrice(
+                                  item.totalPrice,
+                                  data.currency,
+                                  locale,
+                                )}
                               </p>
-                            ) : null}
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">×{item.quantity}</p>
-                            <p className="text-muted-foreground mt-1 text-sm">
-                              {formatOrderPrice(
-                                item.totalPrice,
-                                data.currency,
-                                locale,
-                              )}
-                            </p>
+                            </div>
                           </div>
                         </div>
                       </div>

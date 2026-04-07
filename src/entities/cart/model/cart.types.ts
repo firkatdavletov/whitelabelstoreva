@@ -10,6 +10,7 @@ export type StorefrontCartItemModifier = {
 export type StorefrontCartItem = {
   countStep: number;
   id: string;
+  imageUrl: string | null;
   lineTotal: number;
   modifiers: StorefrontCartItemModifier[];
   modifierNames: string[];

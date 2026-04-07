@@ -349,6 +349,7 @@ export function mapOrderDtoToOrder(dto: OrderDto): Order {
     isVisibleToCustomer: dto.currentStatus.visibleToCustomer,
     items: dto.items.map((item) => ({
       id: item.id,
+      imageUrl: item.imageUrl ?? null,
       modifiers: item.modifiers.map(formatModifierLabel),
       quantity: item.quantity,
       title: item.title,

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -135,39 +136,53 @@ export function CartSummaryCard({
         <div className="space-y-3">
           {storefrontCart.items.map((item) => (
             <div
-              className="border-border/70 bg-background/80 flex items-start justify-between gap-4 rounded-xl border p-3"
+              className="border-border/70 bg-background/80 flex items-start gap-3 rounded-xl border p-3"
               key={item.id}
             >
-              <div className="min-w-0">
-                <p className="font-medium">{item.title}</p>
-                {item.modifierNames.length ? (
+              {item.imageUrl ? (
+                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[color-mix(in_srgb,var(--secondary)_74%,white)]">
+                  <Image
+                    alt={item.title}
+                    className="object-cover"
+                    fill
+                    sizes="40px"
+                    src={item.imageUrl}
+                    unoptimized
+                  />
+                </div>
+              ) : null}
+              <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium">{item.title}</p>
+                  {item.modifierNames.length ? (
+                    <p className="text-muted-foreground text-sm">
+                      {item.modifierNames.join(", ")}
+                    </p>
+                  ) : null}
                   <p className="text-muted-foreground text-sm">
-                    {item.modifierNames.join(", ")}
+                    {t("shared.quantity")}: {item.quantity}
                   </p>
-                ) : null}
-                <p className="text-muted-foreground text-sm">
-                  {t("shared.quantity")}: {item.quantity}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold">
-                  {formatCurrency(
-                    item.lineTotal,
-                    tenantConfig.currency,
-                    locale,
-                  )}
-                </p>
-                {editable ? (
-                  <Button
-                    aria-label={`Remove ${item.title}`}
-                    disabled={removeCartItemMutation.isPending}
-                    onClick={() => removeCartItemMutation.mutate(item.id)}
-                    size="icon"
-                    variant="ghost"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                ) : null}
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold">
+                    {formatCurrency(
+                      item.lineTotal,
+                      tenantConfig.currency,
+                      locale,
+                    )}
+                  </p>
+                  {editable ? (
+                    <Button
+                      aria-label={`Remove ${item.title}`}
+                      disabled={removeCartItemMutation.isPending}
+                      onClick={() => removeCartItemMutation.mutate(item.id)}
+                      size="icon"
+                      variant="ghost"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             </div>
           ))}

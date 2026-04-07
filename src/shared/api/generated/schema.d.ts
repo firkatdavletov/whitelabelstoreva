@@ -866,6 +866,8 @@ export interface components {
             /** Format: uuid */
             variantId?: string | null;
             title: string;
+            /** @description Thumbnail URL of the product image. */
+            imageUrl?: string | null;
             unit: components["schemas"]["ProductUnit"];
             /** Format: int32 */
             countStep: number;
@@ -1188,6 +1190,8 @@ export interface components {
             variantId?: string | null;
             sku?: string | null;
             title: string;
+            /** @description Thumbnail URL of the product image. */
+            imageUrl?: string | null;
             unit: components["schemas"]["ProductUnit"];
             /** Format: int32 */
             quantity: number;

@@ -245,7 +245,7 @@ export function CartPageContent({
                           sizes="80px"
                           src={getProductCardImageSrc(
                             productPreview ?? {
-                              imageUrl: null,
+                              imageUrl: item.imageUrl,
                               visual: item.title,
                             },
                           )}

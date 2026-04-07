@@ -15,6 +15,7 @@ export type OrderTimelineStep = {
 
 export type OrderItem = {
   id: string;
+  imageUrl: string | null;
   modifiers: string[];
   quantity: number;
   title: string;

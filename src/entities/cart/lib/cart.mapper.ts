@@ -78,6 +78,7 @@ function mapCartItemDto(dto: CartItemResponseDto): StorefrontCartItem {
   return {
     countStep: dto.countStep,
     id: dto.id,
+    imageUrl: dto.imageUrl ?? null,
     lineTotal: dto.lineTotalMinor / 100,
     modifiers: dto.modifiers.map((modifier) => ({
       modifierGroupId: modifier.modifierGroupId,
