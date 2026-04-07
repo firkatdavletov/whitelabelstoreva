@@ -292,10 +292,10 @@ export function DeliveryAddressScreen() {
         .filter((marker): marker is MapPickupMarker => marker !== null)
     : [];
 
-  const yandexMapCenter =
-    !pickupMapHasManualCenter &&
-    yandexPickup.selectedPoint?.latitude != null &&
-    yandexPickup.selectedPoint?.longitude != null
+  const yandexMapCenter = pickupMapHasManualCenter
+    ? mapCenter
+    : yandexPickup.selectedPoint?.latitude != null &&
+        yandexPickup.selectedPoint?.longitude != null
       ? {
           latitude: yandexPickup.selectedPoint.latitude,
           longitude: yandexPickup.selectedPoint.longitude,
