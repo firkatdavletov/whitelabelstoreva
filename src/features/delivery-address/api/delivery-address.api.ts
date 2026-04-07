@@ -8,6 +8,10 @@ import type {
   DetectCourierCartDeliveryDraftResponseDto,
   PickupPointDto,
   PickupPointsResponseDto,
+  YandexLocationDetectRequestDto,
+  YandexLocationDetectResponseDto,
+  YandexPickupPointsRequestDto,
+  YandexPickupPointsResponseDto,
 } from "@/features/delivery-address/api/delivery-address.types";
 
 function createMockDeliveryMethodsResponse(): DeliveryMethodsResponseDto {
@@ -25,8 +29,62 @@ function createMockDeliveryMethodsResponse(): DeliveryMethodsResponseDto {
         requiresAddress: false,
         requiresPickupPoint: true,
       },
+      {
+        code: "YANDEX_PICKUP_POINT",
+        name: "ПВЗ Яндекс",
+        requiresAddress: false,
+        requiresPickupPoint: true,
+      },
     ],
     pickupPoints: [],
+  };
+}
+
+function createMockYandexLocationDetectResponse(): YandexLocationDetectResponseDto {
+  return {
+    variants: [
+      { address: "Екатеринбург, Свердловская область", geoId: 54 },
+    ],
+  };
+}
+
+function createMockYandexPickupPointsResponse(): YandexPickupPointsResponseDto {
+  return {
+    points: [
+      {
+        address: "ул. Ленина, 14",
+        fullAddress: "Екатеринбург, ул. Ленина, 14",
+        id: "yandex-pvz-1",
+        instruction: "2 этаж, справа от входа",
+        isYandexBranded: true,
+        latitude: 56.858129,
+        longitude: 60.632941,
+        name: "Яндекс Маркет на Ленина",
+        paymentMethods: ["CARD_ONLINE", "SBP"],
+      },
+      {
+        address: "ул. 8 Марта, 7",
+        fullAddress: "Екатеринбург, ул. 8 Марта, 7",
+        id: "yandex-pvz-2",
+        instruction: "Вход с торца здания",
+        isYandexBranded: false,
+        latitude: 56.851972,
+        longitude: 60.612427,
+        name: "ПВЗ Boxberry / Яндекс",
+        paymentMethods: ["CARD_ONLINE"],
+      },
+      {
+        address: "ул. Малышева, 42",
+        fullAddress: "Екатеринбург, ул. Малышева, 42",
+        id: "yandex-pvz-3",
+        instruction: null,
+        isYandexBranded: true,
+        latitude: 56.84123,
+        longitude: 60.60815,
+        name: "Яндекс Маркет на Малышева",
+        paymentMethods: ["CARD_ONLINE", "SBP"],
+      },
+    ],
   };
 }
 
@@ -161,6 +219,36 @@ export async function detectCourierCartDeliveryDraft(
     DetectCourierCartDeliveryDraftRequestDto
   >("/v1/delivery/courier/draft-detect", {
     body: input,
+    cache: "no-store",
+    method: "POST",
+  });
+}
+
+export async function detectYandexLocations(query: string) {
+  if (env.apiMocksEnabled) {
+    return createMockYandexLocationDetectResponse();
+  }
+
+  return apiRequest<
+    YandexLocationDetectResponseDto,
+    YandexLocationDetectRequestDto
+  >("/v1/delivery/yandex/location-detect", {
+    body: { query },
+    cache: "no-store",
+    method: "POST",
+  });
+}
+
+export async function getYandexPickupPoints(geoId: number) {
+  if (env.apiMocksEnabled) {
+    return createMockYandexPickupPointsResponse();
+  }
+
+  return apiRequest<
+    YandexPickupPointsResponseDto,
+    YandexPickupPointsRequestDto
+  >("/v1/delivery/yandex/pickup-points", {
+    body: { geoId },
     cache: "no-store",
     method: "POST",
   });

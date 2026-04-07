@@ -15,3 +15,21 @@ export type DetectCourierCartDeliveryDraftRequestDto =
 
 export type DetectCourierCartDeliveryDraftResponseDto =
   paths["/api/v1/delivery/courier/draft-detect"]["post"]["responses"][200]["content"]["application/json"];
+
+export type YandexLocationDetectRequestDto =
+  components["schemas"]["YandexLocationDetectRequest"];
+
+export type YandexLocationDetectResponseDto =
+  components["schemas"]["YandexLocationDetectResponse"];
+
+export type YandexLocationVariantDto =
+  components["schemas"]["YandexLocationVariantResponse"];
+
+export type YandexPickupPointsRequestDto =
+  components["schemas"]["YandexPickupPointsRequest"];
+
+export type YandexPickupPointsResponseDto =
+  components["schemas"]["YandexPickupPointsResponse"];
+
+export type YandexPickupPointDto =
+  components["schemas"]["YandexPickupPointResponse"];

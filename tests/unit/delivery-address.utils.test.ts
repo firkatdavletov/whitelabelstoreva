@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildPutCartDeliveryRequest,
+  buildYandexPickupDeliveryRequest,
   formatDeliveryDraftAddress,
 } from "@/features/delivery-address/lib/delivery-address.utils";
 
@@ -111,6 +112,17 @@ describe("delivery address utils", () => {
       deliveryMethod: "PICKUP",
       pickupPointExternalId: null,
       pickupPointId: "7ef13ed2-4c3f-4f8d-94c7-e28ea7d5e5d2",
+    });
+  });
+
+  it("builds cart delivery payload for Yandex pickup point", () => {
+    const payload = buildYandexPickupDeliveryRequest("yandex-pvz-1");
+
+    expect(payload).toEqual({
+      address: null,
+      deliveryMethod: "YANDEX_PICKUP_POINT",
+      pickupPointExternalId: "yandex-pvz-1",
+      pickupPointId: null,
     });
   });
 });

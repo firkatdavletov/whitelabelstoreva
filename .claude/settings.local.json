@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find /Users/firkatdavletov/WebProjects/whitelabelstoreva -name *.env* -type f)",
+      "Bash(npx next:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx vitest:*)"
     ]
   }
 }

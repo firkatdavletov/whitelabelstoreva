@@ -148,7 +148,10 @@ function resolveCartLineTitle(input: AddStorefrontCartItemInput) {
   return input.title ?? input.productId;
 }
 
-function resolveMockPickupPointMeta(pickupPointId: string | null | undefined) {
+function resolveMockPickupPointMeta(
+  pickupPointId: string | null | undefined,
+  pickupPointExternalId: string | null | undefined,
+) {
   const pickupPointById: Record<string, { address: string; name: string }> = {
     "7ef13ed2-4c3f-4f8d-94c7-e28ea7d5e5d2": {
       address: "Екатеринбург, ул. 8 Марта, 7",
@@ -166,9 +169,23 @@ function resolveMockPickupPointMeta(pickupPointId: string | null | undefined) {
       address: "Екатеринбург, ул. Ленина, 14",
       name: "Storeva Парк",
     },
+    "yandex-pvz-1": {
+      address: "Екатеринбург, ул. Ленина, 14",
+      name: "Яндекс Маркет на Ленина",
+    },
+    "yandex-pvz-2": {
+      address: "Екатеринбург, ул. 8 Марта, 7",
+      name: "ПВЗ Boxberry / Яндекс",
+    },
+    "yandex-pvz-3": {
+      address: "Екатеринбург, ул. Малышева, 42",
+      name: "Яндекс Маркет на Малышева",
+    },
   };
 
-  if (!pickupPointId) {
+  const lookupId = pickupPointExternalId ?? pickupPointId;
+
+  if (!lookupId) {
     return {
       address: null,
       name: null,
@@ -176,7 +193,7 @@ function resolveMockPickupPointMeta(pickupPointId: string | null | undefined) {
   }
 
   return (
-    pickupPointById[pickupPointId] ?? {
+    pickupPointById[lookupId] ?? {
       address: null,
       name: null,
     }
@@ -390,7 +407,10 @@ export async function updateStorefrontCartDelivery(
 ) {
   if (env.apiMocksEnabled) {
     const cart = getMockCart(tenantSlug);
-    const pickupPointMeta = resolveMockPickupPointMeta(input.pickupPointId);
+    const pickupPointMeta = resolveMockPickupPointMeta(
+      input.pickupPointId,
+      input.pickupPointExternalId,
+    );
 
     return setMockCart(tenantSlug, {
       ...cart,

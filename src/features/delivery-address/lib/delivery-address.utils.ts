@@ -9,6 +9,13 @@ export type DeliveryMapCenter = {
   longitude: number;
 };
 
+export type MapPickupMarker = {
+  id: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+};
+
 const defaultMapCenters: Record<string, DeliveryMapCenter> = {
   "storeva-mass": {
     latitude: 56.838011,
@@ -92,6 +99,24 @@ export function pickupPointToMapCenter(
   };
 }
 
+export function pickupPointToMapMarker(
+  pickupPoint: PickupPointDto,
+): MapPickupMarker | null {
+  if (
+    pickupPoint.address.latitude == null ||
+    pickupPoint.address.longitude == null
+  ) {
+    return null;
+  }
+
+  return {
+    id: pickupPoint.id,
+    label: pickupPoint.name,
+    latitude: pickupPoint.address.latitude,
+    longitude: pickupPoint.address.longitude,
+  };
+}
+
 export function formatPickupPointAddress(
   pickupPoint: PickupPointDto | null | undefined,
 ) {
@@ -158,5 +183,16 @@ export function buildPutCartDeliveryRequest(
     deliveryMethod,
     pickupPointExternalId: draft.pickupPointExternalId ?? null,
     pickupPointId: draft.pickupPointId ?? pickupPoint?.id ?? null,
+  };
+}
+
+export function buildYandexPickupDeliveryRequest(
+  yandexPickupPointExternalId: string,
+): PutCartDeliveryRequestDto {
+  return {
+    address: null,
+    deliveryMethod: "YANDEX_PICKUP_POINT",
+    pickupPointExternalId: yandexPickupPointExternalId,
+    pickupPointId: null,
   };
 }
