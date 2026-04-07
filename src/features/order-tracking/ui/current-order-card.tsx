@@ -82,7 +82,7 @@ export function CurrentOrderCard({ initialData }: CurrentOrderCardProps) {
 
   return (
     <Link className="group block" href={href(`/orders/${data.id}`)}>
-      <Card className="border-border/60 relative overflow-hidden rounded-[calc(var(--radius)+0.75rem)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--card)_96%,white),color-mix(in_srgb,var(--secondary)_62%,white)_58%,color-mix(in_srgb,var(--background)_84%,white))] shadow-[0_32px_80px_-46px_rgba(31,26,23,0.48)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_40px_96px_-44px_rgba(31,26,23,0.42)]">
+      <Card className="border-border/60 relative overflow-hidden rounded-3xl bg-[linear-gradient(135deg,color-mix(in_srgb,var(--card)_96%,white),color-mix(in_srgb,var(--secondary)_62%,white)_58%,color-mix(in_srgb,var(--background)_84%,white))] shadow-[0_32px_80px_-46px_rgba(31,26,23,0.48)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_40px_96px_-44px_rgba(31,26,23,0.42)]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.92),transparent_34%)]" />
         <div className="bg-primary/10 pointer-events-none absolute top-0 right-0 h-44 w-44 translate-x-1/4 -translate-y-1/4 rounded-full blur-3xl" />
 

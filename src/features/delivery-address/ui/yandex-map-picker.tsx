@@ -374,7 +374,7 @@ export function YandexMapPicker({
   return (
     <div
       className={cn(
-        "relative h-[420px] touch-none overflow-hidden rounded-[calc(var(--radius)+0.2rem)] border border-border/70 bg-muted/30",
+        "relative h-[420px] touch-none overflow-hidden rounded-xl border border-border/70 bg-muted/30",
         className,
       )}
     >

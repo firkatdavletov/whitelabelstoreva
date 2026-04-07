@@ -255,7 +255,7 @@ export function ProductDetailsPage({
           </Link>
         </Button>
 
-        <Card className="overflow-hidden rounded-[32px] border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_90%,white),color-mix(in_srgb,var(--secondary)_58%,white))]">
+        <Card className="overflow-hidden rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_90%,white),color-mix(in_srgb,var(--secondary)_58%,white))]">
           <div className="relative aspect-[4/3] min-h-[280px] overflow-hidden sm:aspect-[16/11]">
             <Image
               alt={resolvedProduct.name}
@@ -269,7 +269,7 @@ export function ProductDetailsPage({
           </div>
         </Card>
 
-        <Card className="rounded-[32px] border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_92%,white),color-mix(in_srgb,var(--secondary)_48%,white))]">
+        <Card className="rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_92%,white),color-mix(in_srgb,var(--secondary)_48%,white))]">
           <CardContent className="space-y-4 p-5 sm:p-7">
             <div className="space-y-3">
               <h1 className="font-heading text-4xl leading-none font-semibold tracking-tight sm:text-5xl">
@@ -312,25 +312,25 @@ export function ProductDetailsPage({
       <div className="space-y-4">
         {isDetailsLoading ? (
           <>
-            <Card className="rounded-[30px]">
+            <Card className="rounded-3xl">
               <CardContent className="space-y-3 p-5 sm:p-6">
                 <Skeleton className="h-6 w-40 rounded-full" />
-                <Skeleton className="h-16 rounded-[22px]" />
-                <Skeleton className="h-16 rounded-[22px]" />
+                <Skeleton className="h-16 rounded-lg" />
+                <Skeleton className="h-16 rounded-lg" />
               </CardContent>
             </Card>
 
-            <Card className="rounded-[30px]">
+            <Card className="rounded-3xl">
               <CardContent className="space-y-3 p-5 sm:p-6">
                 <Skeleton className="h-6 w-36 rounded-full" />
-                <Skeleton className="h-14 rounded-[22px]" />
-                <Skeleton className="h-14 rounded-[22px]" />
-                <Skeleton className="h-14 rounded-[22px]" />
+                <Skeleton className="h-14 rounded-lg" />
+                <Skeleton className="h-14 rounded-lg" />
+                <Skeleton className="h-14 rounded-lg" />
               </CardContent>
             </Card>
           </>
         ) : isDetailsError ? (
-          <Card className="rounded-[30px]">
+          <Card className="rounded-3xl">
             <CardContent className="space-y-5 p-5 sm:p-6">
               <div className="space-y-2">
                 <p className="font-heading text-foreground text-2xl font-semibold">
@@ -357,7 +357,7 @@ export function ProductDetailsPage({
         ) : (
           <>
             {activeVariants.length ? (
-              <Card className="rounded-[30px]">
+              <Card className="rounded-3xl">
                 <CardContent className="space-y-4 p-5 sm:p-6">
                   <div className="space-y-1">
                     <h2 className="font-heading text-foreground text-2xl font-semibold">
@@ -413,7 +413,7 @@ export function ProductDetailsPage({
               );
 
               return (
-                <Card className="rounded-[30px]" key={group.id}>
+                <Card className="rounded-3xl" key={group.id}>
                   <CardContent className="space-y-4 p-5 sm:p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-1">
@@ -499,7 +499,7 @@ export function ProductDetailsPage({
       </div>
 
       <div className="fixed inset-x-4 bottom-4 z-40 sm:inset-x-auto sm:right-6 sm:w-[min(26rem,calc(100vw-3rem))]">
-        <div className="bg-background/92 flex items-center justify-between gap-3 rounded-[30px] border border-white/70 p-3 shadow-[0_28px_80px_-30px_rgba(22,15,11,0.6)] backdrop-blur-xl sm:p-3.5">
+        <div className="bg-background/92 flex items-center justify-between gap-3 rounded-3xl border border-white/70 p-3 shadow-[0_28px_80px_-30px_rgba(22,15,11,0.6)] backdrop-blur-xl sm:p-3.5">
           <div className="min-w-0 flex-1 px-1">
             <p className="text-muted-foreground text-[0.68rem] font-medium tracking-[0.24em] uppercase">
               {t("shared.total")}
@@ -520,10 +520,10 @@ export function ProductDetailsPage({
           </div>
 
           {primaryCartItem && quantityLabel ? (
-            <div className="bg-secondary/70 flex shrink-0 items-center gap-2 rounded-[24px] p-1">
+            <div className="bg-secondary/70 flex shrink-0 items-center gap-2 rounded-xl p-1">
               <Button
                 aria-label={t("product.decreaseQuantity")}
-                className="h-10 w-10 shrink-0 rounded-[18px]"
+                className="h-10 w-10 shrink-0 rounded-md"
                 disabled={isActionPending}
                 onClick={decrementConfiguredProduct}
                 size="icon"
@@ -539,7 +539,7 @@ export function ProductDetailsPage({
 
               <Button
                 aria-label={t("product.increaseQuantity")}
-                className="h-10 w-10 shrink-0 rounded-[18px]"
+                className="h-10 w-10 shrink-0 rounded-md"
                 disabled={isActionPending || isSubmitDisabled}
                 onClick={() => addConfiguredProduct({ showToast: false })}
                 size="icon"
@@ -551,7 +551,7 @@ export function ProductDetailsPage({
             </div>
           ) : (
             <Button
-              className="h-12 shrink-0 rounded-[22px] px-4 text-sm sm:px-5"
+              className="h-12 shrink-0 rounded-lg px-4 text-sm sm:px-5"
               disabled={isSubmitDisabled}
               onClick={() => addConfiguredProduct({ showToast: true })}
               size="lg"

@@ -125,7 +125,7 @@ export function HomeBannerPager({
   return (
     <section
       aria-label="Promotions"
-      className="border-border/60 bg-card/95 relative overflow-hidden rounded-[calc(var(--radius)+0.75rem)] border shadow-[0_32px_72px_-48px_rgba(31,26,23,0.48)]"
+      className="border-border/60 bg-card/95 relative overflow-hidden rounded-3xl border shadow-[0_32px_72px_-48px_rgba(31,26,23,0.48)]"
       onPointerCancel={handlePointerCancel}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}

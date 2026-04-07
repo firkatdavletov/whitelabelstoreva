@@ -193,7 +193,7 @@ export function CatalogSearchShell({
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <Card className="border-border/60 relative overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--card)_94%,white)_0%,color-mix(in_srgb,var(--background)_82%,white)_100%)]">
+      <Card className="border-border/60 relative overflow-hidden rounded-3xl bg-[linear-gradient(135deg,color-mix(in_srgb,var(--card)_94%,white)_0%,color-mix(in_srgb,var(--background)_82%,white)_100%)]">
         <div className="border-border/45 pointer-events-none absolute -top-14 right-6 h-36 w-36 rounded-full border" />
         <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(31,26,23,0.18),transparent)]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.75),transparent_32%)]" />
@@ -246,7 +246,7 @@ export function CatalogSearchShell({
       </Card>
 
       {searchError ? (
-        <Card className="border-border/60 bg-card/75 rounded-[1.75rem] px-5 py-5 sm:px-6">
+        <Card className="border-border/60 bg-card/75 rounded-2xl px-5 py-5 sm:px-6">
           <div className="space-y-1.5">
             <p className="font-heading text-xl font-semibold">
               {searchMessages.errorTitle}

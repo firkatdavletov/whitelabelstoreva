@@ -27,12 +27,6 @@ type CartSummaryCardProps = {
   showCheckoutCta?: boolean;
 };
 
-function isPickupDeliveryMethod(deliveryMethod: string | null | undefined) {
-  return (
-    deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
-  );
-}
-
 function formatDeliveryPrice(
   locale: "en" | "ru",
   priceMinor: number | null | undefined,
@@ -74,7 +68,7 @@ export function CartSummaryCard({
   const shouldShowDeliveryPrice =
     !editable &&
     Boolean(deliveryMethod) &&
-    !isPickupDeliveryMethod(deliveryMethod);
+    deliveryMethod !== "PICKUP";
   const isFreeDelivery =
     shouldShowDeliveryPrice &&
     storefrontCart?.delivery?.quote?.priceMinor === 0;

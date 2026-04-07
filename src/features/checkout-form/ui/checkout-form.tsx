@@ -234,7 +234,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
         <CardTitle>{t("checkout.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="border-border/70 rounded-[28px] border bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(246,239,228,0.92))] p-5 shadow-[0_22px_55px_-42px_rgba(31,26,23,0.45)]">
+        <div className="border-border/70 rounded-2xl border bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(246,239,228,0.92))] p-5 shadow-[0_22px_55px_-42px_rgba(31,26,23,0.45)]">
           <p className="text-muted-foreground text-xs font-semibold tracking-[0.22em] uppercase">
             {t(
               isPickupDelivery

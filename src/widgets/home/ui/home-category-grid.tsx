@@ -26,7 +26,7 @@ export function HomeCategoryGrid({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {categories.map((category) => (
           <Link
-            className="group border-border/60 bg-card/96 overflow-hidden rounded-[calc(var(--radius)+0.35rem)] border shadow-[0_24px_60px_-48px_rgba(31,26,23,0.55)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_80px_-44px_rgba(31,26,23,0.42)]"
+            className="group border-border/60 bg-card/96 overflow-hidden rounded-2xl border shadow-[0_24px_60px_-48px_rgba(31,26,23,0.55)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_80px_-44px_rgba(31,26,23,0.42)]"
             href={buildMenuCategoryHref(actionHref, category.slug)}
             key={category.id}
           >

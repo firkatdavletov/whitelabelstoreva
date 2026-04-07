@@ -494,7 +494,7 @@ export function DeliveryAddressScreen() {
           {deliveryMethodsQuery.isLoading ? (
             <Skeleton className="pointer-events-auto h-12 w-full max-w-md rounded-full border border-border/60 bg-background/75 shadow-lg backdrop-blur-xl" />
           ) : deliveryMethodsQuery.isError ? (
-            <div className="pointer-events-auto flex max-w-xl flex-col gap-3 rounded-[1.5rem] border border-border/70 bg-background/84 p-4 shadow-lg backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+            <div className="pointer-events-auto flex max-w-xl flex-col gap-3 rounded-xl border border-border/70 bg-background/84 p-4 shadow-lg backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
                 {deliveryMethodsQuery.error instanceof Error
                   ? deliveryMethodsQuery.error.message
@@ -557,7 +557,7 @@ export function DeliveryAddressScreen() {
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 p-3 sm:p-5">
-        <div className="mx-auto max-w-3xl rounded-[2rem] border border-border/70 bg-background/84 shadow-[0_36px_120px_-64px_rgba(15,23,42,0.75)] backdrop-blur-2xl">
+        <div className="mx-auto max-w-3xl rounded-3xl border border-border/70 bg-background/84 shadow-[0_36px_120px_-64px_rgba(15,23,42,0.75)] backdrop-blur-2xl">
           <div className="pointer-events-auto space-y-4 p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background/88">

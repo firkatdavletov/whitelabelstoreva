@@ -30,7 +30,7 @@ type OrderDetailRowProps = {
 
 function TrackingPageSkeleton() {
   return (
-    <Card className="overflow-hidden rounded-[2.25rem]">
+    <Card className="overflow-hidden rounded-4xl">
       <CardContent className="p-6 sm:p-8">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
           <div className="space-y-4">
@@ -41,15 +41,15 @@ function TrackingPageSkeleton() {
             <Skeleton className="h-14 w-72 rounded-full" />
             <Skeleton className="h-5 w-64 rounded-full" />
             <div className="space-y-3 pt-3">
-              <Skeleton className="h-24 rounded-[1.75rem]" />
-              <Skeleton className="h-24 rounded-[1.75rem]" />
-              <Skeleton className="h-24 rounded-[1.75rem]" />
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
             </div>
           </div>
 
           <div className="space-y-4">
-            <Skeleton className="h-56 rounded-[1.75rem]" />
-            <Skeleton className="h-72 rounded-[1.75rem]" />
+            <Skeleton className="h-56 rounded-2xl" />
+            <Skeleton className="h-72 rounded-2xl" />
           </div>
         </div>
       </CardContent>
@@ -79,7 +79,7 @@ function formatOrderPrice(value: number, currency: string, locale: string) {
 }
 
 function shouldShowDeliveryPrice(order: Order) {
-  return order.deliveryMethod === "COURIER";
+  return order.deliveryMethod !== "PICKUP";
 }
 
 function resolveStatusBadgeVariant(order: Order) {
@@ -106,7 +106,7 @@ function resolveStepLabel(
 
 function OrderDetailRow({ hint, label, value }: OrderDetailRowProps) {
   return (
-    <div className="border-border/65 bg-background/72 space-y-1.5 rounded-[1.4rem] border p-4">
+    <div className="border-border/65 bg-background/72 space-y-1.5 rounded-xl border p-4">
       <p className="text-muted-foreground text-[0.68rem] font-medium tracking-[0.2em] uppercase">
         {label}
       </p>
@@ -173,7 +173,7 @@ export function OrderStatusCard({
 
   if (!data) {
     return (
-      <Card className="rounded-[2rem]">
+      <Card className="rounded-3xl">
         <CardContent className="space-y-4 p-6 sm:p-8">
           <p className="text-muted-foreground text-sm">
             {error instanceof Error ? error.message : t("order.trackingError")}
@@ -191,7 +191,7 @@ export function OrderStatusCard({
   const isFreeDelivery = showDeliveryPrice && data.deliveryFeePrice === 0;
 
   return (
-    <Card className="border-border/70 overflow-hidden rounded-[2.5rem] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_96%,white),color-mix(in_srgb,var(--secondary)_24%,white)_48%,color-mix(in_srgb,var(--background)_92%,white))] shadow-[0_36px_110px_-56px_rgba(31,26,23,0.42)]">
+    <Card className="border-border/70 overflow-hidden rounded-4xl bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_96%,white),color-mix(in_srgb,var(--secondary)_24%,white)_48%,color-mix(in_srgb,var(--background)_92%,white))] shadow-[0_36px_110px_-56px_rgba(31,26,23,0.42)]">
       <CardContent className="p-0">
         <div className="grid lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
           <section className="border-border/60 relative overflow-hidden border-b lg:border-r lg:border-b-0">
@@ -245,7 +245,7 @@ export function OrderStatusCard({
                   </div>
 
                   <div className="flex w-full flex-col gap-3 sm:w-auto sm:min-w-[240px]">
-                    <div className="border-border/60 bg-background/80 rounded-[1.85rem] border p-5 sm:text-right">
+                    <div className="border-border/60 bg-background/80 rounded-3xl border p-5 sm:text-right">
                       <p className="text-muted-foreground text-[0.68rem] font-medium tracking-[0.22em] uppercase">
                         {t("order.total")}
                       </p>
@@ -281,7 +281,7 @@ export function OrderStatusCard({
                   {data.timeline.map((step) => (
                     <div
                       className={cn(
-                        "flex items-start justify-between gap-4 rounded-[1.65rem] border p-4 transition-colors sm:p-5",
+                        "flex items-start justify-between gap-4 rounded-2xl border p-4 transition-colors sm:p-5",
                         step.isCurrent
                           ? "border-primary/28 bg-background/84 shadow-[0_18px_40px_-30px_var(--primary)]"
                           : step.isCompleted
@@ -334,7 +334,7 @@ export function OrderStatusCard({
 
           <aside className="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_98%,white),color-mix(in_srgb,var(--background)_90%,white))] p-6 sm:p-8">
             <div className="space-y-4">
-              <section className="border-border/65 bg-card/72 rounded-[1.9rem] border p-5">
+              <section className="border-border/65 bg-card/72 rounded-3xl border p-5">
                 <div className="grid gap-3">
                   <OrderDetailRow
                     label={t("order.deliveryMethod")}
@@ -362,7 +362,7 @@ export function OrderStatusCard({
                 </div>
               </section>
 
-              <section className="border-border/65 bg-card/72 rounded-[1.9rem] border p-5">
+              <section className="border-border/65 bg-card/72 rounded-3xl border p-5">
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
                     {t("order.items")}
@@ -374,7 +374,7 @@ export function OrderStatusCard({
 
                 <div className="mt-5 space-y-3">
                   {showDeliveryPrice ? (
-                    <div className="border-border/60 bg-background/76 flex items-center justify-between gap-4 rounded-[1.45rem] border p-4">
+                    <div className="border-border/60 bg-background/76 flex items-center justify-between gap-4 rounded-xl border p-4">
                       {isFreeDelivery ? (
                         <span className="text-muted-foreground text-sm">
                           {t("cart.deliveryFree")}
@@ -398,7 +398,7 @@ export function OrderStatusCard({
                   {data.items.length ? (
                     data.items.map((item) => (
                       <div
-                        className="border-border/60 bg-background/76 rounded-[1.45rem] border p-4"
+                        className="border-border/60 bg-background/76 rounded-xl border p-4"
                         key={item.id}
                       >
                         <div className="flex items-start gap-3">
@@ -438,7 +438,7 @@ export function OrderStatusCard({
                       </div>
                     ))
                   ) : (
-                    <div className="border-border/70 bg-background/54 text-muted-foreground rounded-[1.45rem] border border-dashed p-4 text-sm">
+                    <div className="border-border/70 bg-background/54 text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
                       {t("order.itemsPending")}
                     </div>
                   )}

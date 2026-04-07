@@ -13,7 +13,7 @@ const SelectableCard = React.forwardRef<HTMLButtonElement, SelectableCardProps>(
       <button
         aria-pressed={selected}
         className={cn(
-          "focus-visible:ring-ring flex items-center justify-between gap-3 rounded-[22px] border px-4 py-3 text-left transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
+          "focus-visible:ring-ring flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60",
           selected
             ? "border-primary bg-primary/6 shadow-[0_18px_30px_-24px_rgba(214,92,38,0.55)]"
             : "border-border/70 bg-card hover:border-foreground/20 hover:bg-background",

@@ -49,10 +49,10 @@ function MenuProductCard({
   }`;
 
   return (
-    <Card className="group border-border/75 bg-card relative flex min-h-[244px] w-full max-w-[164px] flex-col overflow-hidden rounded-[22px] shadow-[0_18px_38px_-26px_rgba(31,26,23,0.42)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_-28px_rgba(31,26,23,0.38)] md:min-h-[348px] md:max-w-[280px]">
+    <Card className="group border-border/75 bg-card relative flex min-h-[244px] w-full max-w-[164px] flex-col overflow-hidden rounded-lg shadow-[0_18px_38px_-26px_rgba(31,26,23,0.42)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_54px_-28px_rgba(31,26,23,0.38)] md:min-h-[348px] md:max-w-[280px]">
       <Link
         aria-label={`${t("product.preview")} ${product.name}`}
-        className="focus-visible:ring-ring absolute inset-0 z-10 rounded-[22px] outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+        className="focus-visible:ring-ring absolute inset-0 z-10 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         href={productHref}
       >
         <span className="sr-only">{`${t("product.preview")} ${product.name}`}</span>

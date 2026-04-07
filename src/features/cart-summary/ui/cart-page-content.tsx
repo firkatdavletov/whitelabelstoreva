@@ -45,20 +45,14 @@ function CartPageSkeleton() {
             <Skeleton className="h-5 w-full max-w-xl rounded-full" />
           </div>
 
-          <Skeleton className="h-32 rounded-[28px]" />
-          <Skeleton className="h-32 rounded-[28px]" />
-          <Skeleton className="h-32 rounded-[28px]" />
+          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-2xl" />
         </div>
 
-        <Skeleton className="h-64 rounded-[30px]" />
+        <Skeleton className="h-64 rounded-3xl" />
       </div>
     </section>
-  );
-}
-
-function isPickupDeliveryMethod(deliveryMethod: string | null | undefined) {
-  return (
-    deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
   );
 }
 
@@ -116,7 +110,7 @@ export function CartPageContent({
   });
   const deliveryMethod = storefrontCart?.delivery?.deliveryMethod;
   const shouldShowDeliveryPrice =
-    Boolean(deliveryMethod) && !isPickupDeliveryMethod(deliveryMethod);
+    Boolean(deliveryMethod) && deliveryMethod !== "PICKUP";
   const isFreeDelivery =
     shouldShowDeliveryPrice &&
     storefrontCart?.delivery?.quote?.priceMinor === 0;
@@ -148,8 +142,8 @@ export function CartPageContent({
         </Button>
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
-          <div className="rounded-[32px] border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_95%,white),color-mix(in_srgb,var(--secondary)_52%,white))] p-6 shadow-[0_24px_70px_-36px_rgba(31,26,23,0.45)] sm:p-8">
-            <div className="bg-primary/10 text-primary mb-5 flex h-14 w-14 items-center justify-center rounded-[22px]">
+          <div className="rounded-3xl border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_95%,white),color-mix(in_srgb,var(--secondary)_52%,white))] p-6 shadow-[0_24px_70px_-36px_rgba(31,26,23,0.45)] sm:p-8">
+            <div className="bg-primary/10 text-primary mb-5 flex h-14 w-14 items-center justify-center rounded-lg">
               <ShoppingBag className="h-6 w-6" />
             </div>
 
@@ -172,7 +166,7 @@ export function CartPageContent({
           </div>
 
           <aside className="xl:sticky xl:top-24">
-            <div className="rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_93%,white),color-mix(in_srgb,var(--background)_72%,white))] p-5 shadow-[0_22px_60px_-38px_rgba(24,19,15,0.4)] sm:p-6">
+            <div className="rounded-3xl border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_93%,white),color-mix(in_srgb,var(--background)_72%,white))] p-5 shadow-[0_22px_60px_-38px_rgba(24,19,15,0.4)] sm:p-6">
               <div className="space-y-2">
                 <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
                   {t("shared.total")}
@@ -229,7 +223,7 @@ export function CartPageContent({
 
               return (
                 <article
-                  className="rounded-[28px] border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_94%,white),color-mix(in_srgb,var(--background)_78%,white))] p-4 shadow-[0_22px_60px_-40px_rgba(31,26,23,0.4)] sm:p-5"
+                  className="rounded-2xl border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_94%,white),color-mix(in_srgb,var(--background)_78%,white))] p-4 shadow-[0_22px_60px_-40px_rgba(31,26,23,0.4)] sm:p-5"
                   key={item.id}
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -237,7 +231,7 @@ export function CartPageContent({
                       className="group flex min-w-0 items-center gap-4"
                       href={productHref}
                     >
-                      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[22px] bg-[color-mix(in_srgb,var(--secondary)_74%,white)]">
+                      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-[color-mix(in_srgb,var(--secondary)_74%,white)]">
                         <Image
                           alt={item.title}
                           className="object-cover transition duration-500 group-hover:scale-[1.04]"
@@ -342,7 +336,7 @@ export function CartPageContent({
         </div>
 
         <aside className="xl:sticky xl:top-24">
-          <div className="rounded-[30px] border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_93%,white),color-mix(in_srgb,var(--secondary)_48%,white))] p-5 shadow-[0_24px_70px_-40px_rgba(24,19,15,0.42)] sm:p-6">
+          <div className="rounded-3xl border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_93%,white),color-mix(in_srgb,var(--secondary)_48%,white))] p-5 shadow-[0_24px_70px_-40px_rgba(24,19,15,0.42)] sm:p-6">
             <div className="space-y-2">
               <p className="text-muted-foreground text-[0.7rem] font-medium tracking-[0.22em] uppercase">
                 {t("shared.total")}

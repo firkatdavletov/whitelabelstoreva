@@ -5,7 +5,9 @@
       "Bash(find /Users/firkatdavletov/WebProjects/whitelabelstoreva -name *.env* -type f)",
       "Bash(npx next:*)",
       "Bash(npx eslint:*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(find /Users/firkatdavletov/WebProjects/whitelabelstoreva -name tailwind.config.* -type f)",
+      "Bash(head:*)"
     ]
   }
 }

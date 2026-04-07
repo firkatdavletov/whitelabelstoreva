@@ -10,15 +10,15 @@ export default function OrderLoadingPage() {
 
       <div className="rounded-2xl border border-border/70 bg-card/90 p-6 shadow-[0_24px_80px_-40px_rgba(31,26,23,0.4)]">
         <div className="grid gap-3 lg:grid-cols-4">
-          <Skeleton className="h-28 rounded-[1.75rem]" />
-          <Skeleton className="h-28 rounded-[1.75rem]" />
-          <Skeleton className="h-28 rounded-[1.75rem]" />
-          <Skeleton className="h-28 rounded-[1.75rem]" />
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
         </div>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
-          <Skeleton className="h-80 rounded-[2rem]" />
-          <Skeleton className="h-80 rounded-[2rem]" />
+          <Skeleton className="h-80 rounded-3xl" />
+          <Skeleton className="h-80 rounded-3xl" />
         </div>
       </div>
     </div>
