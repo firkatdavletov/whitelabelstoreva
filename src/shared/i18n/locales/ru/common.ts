@@ -26,7 +26,7 @@ export const ruMessages = {
   checkout: {
     address: "Адрес доставки",
     apartment: "Квартира",
-    comment: "Комментарий курьеру",
+    comment: "Комментарий к заказу",
     deliveryLocation: "Куда доставить",
     emptyCart: "В корзине пока нет позиций для оформления заказа.",
     entrance: "Подъезд",

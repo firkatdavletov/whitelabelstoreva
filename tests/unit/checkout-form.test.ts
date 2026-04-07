@@ -53,7 +53,7 @@ vi.mock("react-i18next", () => ({
         case "checkout.privateHouse":
           return "Частный дом";
         case "checkout.comment":
-          return "Комментарий курьеру";
+          return "Комментарий к заказу";
         case "checkout.submit":
           return "Оформить заказ";
         default:
@@ -203,7 +203,7 @@ describe("CheckoutForm", () => {
     expect(screen.getByLabelText("Подъезд")).not.toHaveAttribute("placeholder");
     expect(screen.getByLabelText("Домофон")).not.toHaveAttribute("placeholder");
     expect(screen.getByLabelText("Этаж")).not.toHaveAttribute("placeholder");
-    expect(screen.getByLabelText("Комментарий курьеру")).not.toHaveAttribute(
+    expect(screen.getByLabelText("Комментарий к заказу")).not.toHaveAttribute(
       "placeholder",
     );
   });

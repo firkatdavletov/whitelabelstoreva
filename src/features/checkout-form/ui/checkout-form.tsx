@@ -73,9 +73,11 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     useStorefrontCartQuery(tenantSlug);
 
   const delivery = storefrontCart?.delivery;
+  const checkoutPickupPointId =
+    delivery?.pickupPointId ?? delivery?.pickupPointExternalId ?? undefined;
   const checkoutOptionsQuery = useCheckoutOptionsQuery(
     tenantSlug,
-    delivery?.pickupPointId,
+    checkoutPickupPointId,
   );
   const checkoutMutation = useCheckoutMutation(tenantSlug);
   const deliveryAddress = delivery?.address;
