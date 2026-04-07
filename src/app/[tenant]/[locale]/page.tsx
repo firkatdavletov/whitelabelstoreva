@@ -55,6 +55,7 @@ export default async function HomePage({ params }: HomePageProps) {
         actionHref={menuHref}
         actionLabel={localeContext.dictionary.home.browseMenu}
         categories={getHomeCategoryCards(menuCatalog.categories)}
+        categoryCardVariant={tenantConfig.catalog.categoryCard}
       />
     </div>
   );

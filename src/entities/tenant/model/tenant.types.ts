@@ -1,5 +1,14 @@
 import type { CurrencyCode } from "@/shared/types/common";
 
+export type ProductCardVariant = "clothes-fashion" | "food-classic";
+
+export type CategoryCardVariant = "category-classic" | "category-fashion";
+
+export type TenantCatalogConfig = {
+  categoryCard: CategoryCardVariant;
+  productCard: ProductCardVariant;
+};
+
 export type TenantTheme = {
   accent: string;
   accentForeground: string;
@@ -23,6 +32,7 @@ export type TenantTheme = {
 
 export type TenantConfig = {
   allowGuestCheckout: boolean;
+  catalog: TenantCatalogConfig;
   currency: CurrencyCode;
   description: string;
   heroCopy: string;

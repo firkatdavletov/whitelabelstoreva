@@ -61,6 +61,7 @@ export default async function MenuPage({
         categories={menuCatalog.categories}
         emptyLabel={localeContext.dictionary.menu.empty}
         locale={localeContext.locale}
+        productCardVariant={tenantConfig.catalog.productCard}
         products={menuCatalog.products}
       />
     </div>

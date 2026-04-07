@@ -1,53 +1,51 @@
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 
+import type { CategoryCardVariant } from "@/entities/tenant";
 import { buildMenuCategoryHref } from "@/features/menu-catalog/lib/catalog-navigation";
 import { Button } from "@/shared/ui/button";
 import type { HomeCategoryCard } from "@/widgets/home/lib/home-placeholders";
+import {
+  ClassicCategoryCard,
+  FashionCategoryCard,
+} from "@/widgets/home/ui/category-card";
 
 type HomeCategoryGridProps = {
   actionHref: string;
   actionLabel: string;
   categories: HomeCategoryCard[];
+  categoryCardVariant?: CategoryCardVariant;
+};
+
+const gridClassByVariant: Record<CategoryCardVariant, string> = {
+  "category-classic": "grid gap-4 sm:grid-cols-2 xl:grid-cols-3",
+  "category-fashion": "grid sm:grid-cols-2 xl:grid-cols-2",
 };
 
 export function HomeCategoryGrid({
   actionHref,
   actionLabel,
   categories,
+  categoryCardVariant = "category-classic",
 }: HomeCategoryGridProps) {
   if (!categories.length) {
     return null;
   }
 
+  const CardComponent =
+    categoryCardVariant === "category-fashion"
+      ? FashionCategoryCard
+      : ClassicCategoryCard;
+
   return (
     <section className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className={gridClassByVariant[categoryCardVariant]}>
         {categories.map((category) => (
-          <Link
-            className="group border-border/60 bg-card/96 overflow-hidden rounded-2xl border shadow-[0_24px_60px_-48px_rgba(31,26,23,0.55)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_80px_-44px_rgba(31,26,23,0.42)]"
+          <CardComponent
             href={buildMenuCategoryHref(actionHref, category.slug)}
+            imageSrc={category.imageSrc}
             key={category.id}
-          >
-            <div className="bg-muted/50 relative aspect-[4/3] overflow-hidden">
-              <Image
-                alt=""
-                className="object-cover transition duration-500 group-hover:scale-[1.04]"
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                src={category.imageSrc}
-                unoptimized
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-4 px-5 py-4">
-              <span className="text-base font-semibold tracking-[0.02em]">
-                {category.name}
-              </span>
-              <ArrowRight className="text-muted-foreground group-hover:text-foreground h-4 w-4 shrink-0 transition duration-300 group-hover:translate-x-0.5" />
-            </div>
-          </Link>
+            name={category.name}
+          />
         ))}
       </div>
 
