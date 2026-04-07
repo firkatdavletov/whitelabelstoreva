@@ -82,8 +82,8 @@ export const tenantConfigMap = {
   "storeva-street": {
     allowGuestCheckout: true,
     catalog: {
-      categoryCard: "category-fashion",
-      productCard: "clothes-fashion",
+      categoryCard: "category-classic",
+      productCard: "food-classic",
     },
     currency: "RUB",
     description:
