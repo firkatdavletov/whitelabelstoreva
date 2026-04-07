@@ -3,14 +3,15 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/shared/lib/styles";
 import { Button } from "@/shared/ui/button";
-import type { HomeBanner } from "@/widgets/home/lib/home-placeholders";
+import type { HeroBanner } from "@/widgets/home/api/get-hero-banners";
 
 type HomeBannerPagerProps = {
-  banners: HomeBanner[];
+  banners: HeroBanner[];
   nextLabel: string;
   previousLabel: string;
 };
@@ -136,9 +137,11 @@ export function HomeBannerPager({
       <div className="relative grid h-[34rem] grid-rows-[minmax(0,1fr)_220px] items-stretch sm:h-[36rem] lg:h-[30rem] lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.82fr)] lg:grid-rows-1">
         <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-6 p-6 sm:gap-8 sm:p-8">
           <div>
-            <span className="border-border/60 bg-background/80 text-muted-foreground inline-flex w-fit items-center rounded-full border px-3 py-1 text-[0.7rem] font-medium tracking-[0.22em] uppercase">
-              {currentBanner.eyebrow}
-            </span>
+            {currentBanner.subtitle && (
+              <span className="border-border/60 bg-background/80 text-muted-foreground inline-flex w-fit items-center rounded-full border px-3 py-1 text-[0.7rem] font-medium tracking-[0.22em] uppercase">
+                {currentBanner.subtitle}
+              </span>
+            )}
           </div>
 
           <div className="min-h-0 overflow-hidden">
@@ -147,9 +150,29 @@ export function HomeBannerPager({
                 {currentBanner.title}
               </h1>
 
-              <p className="text-muted-foreground max-w-xl text-sm leading-6 sm:text-base">
-                {currentBanner.description}
-              </p>
+              {currentBanner.description && (
+                <p className="text-muted-foreground max-w-xl text-sm leading-6 sm:text-base">
+                  {currentBanner.description}
+                </p>
+              )}
+
+              {(currentBanner.primaryActionLabel && currentBanner.primaryActionUrl) && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button asChild>
+                    <Link href={currentBanner.primaryActionUrl}>
+                      {currentBanner.primaryActionLabel}
+                    </Link>
+                  </Button>
+
+                  {currentBanner.secondaryActionLabel && currentBanner.secondaryActionUrl && (
+                    <Button asChild variant="outline">
+                      <Link href={currentBanner.secondaryActionUrl}>
+                        {currentBanner.secondaryActionLabel}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -196,11 +219,11 @@ export function HomeBannerPager({
 
         <div className="border-border/60 bg-muted/40 relative min-h-0 overflow-hidden border-t lg:border-t-0 lg:border-l">
           <Image
-            alt=""
+            alt={currentBanner.desktopImageAlt}
             className="object-cover"
             fill
             sizes="(max-width: 1024px) 100vw, 34vw"
-            src={currentBanner.imageSrc}
+            src={currentBanner.desktopImageUrl}
             unoptimized
           />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0))]" />

@@ -7,10 +7,8 @@ import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { buildServerRequestContext } from "@/shared/api/server-auth";
 import { buildStorefrontPath } from "@/shared/config/routing";
 import type { RouteParams } from "@/shared/types/common";
-import {
-  getHomeBanners,
-  getHomeCategoryCards,
-} from "@/widgets/home/lib/home-placeholders";
+import { getHomeCategoryCards } from "@/widgets/home/lib/home-placeholders";
+import { getHeroBanners } from "@/widgets/home/api/get-hero-banners";
 import { HomeBannerPager } from "@/widgets/home/ui/home-banner-pager";
 import { HomeCategoryGrid } from "@/widgets/home/ui/home-category-grid";
 
@@ -31,9 +29,10 @@ export default async function HomePage({ params }: HomePageProps) {
   }
 
   const requestContext = await buildServerRequestContext();
-  const [menuCatalog, currentOrder] = await Promise.all([
+  const [menuCatalog, currentOrder, heroBanners] = await Promise.all([
     getMenuCatalog(tenant),
     getCurrentOrder(tenant, requestContext).catch(() => null),
+    getHeroBanners(tenant, localeContext.locale).catch(() => []),
   ]);
   const menuHref = buildStorefrontPath({
     locale: localeContext.locale,
@@ -44,7 +43,7 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <div className="flex flex-col gap-6 lg:gap-8">
       <HomeBannerPager
-        banners={getHomeBanners(localeContext.locale)}
+        banners={heroBanners}
         nextLabel={localeContext.dictionary.home.bannerNext}
         previousLabel={localeContext.dictionary.home.bannerPrevious}
       />
