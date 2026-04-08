@@ -127,8 +127,8 @@ export const tenantConfigMap = {
   "aiymbrand": {
     allowGuestCheckout: true,
     catalog: {
-      categoryCard: "category-classic",
-      productCard: "food-classic",
+      categoryCard: "category-fashion",
+      productCard: "clothes-fashion",
     },
     currency: "RUB",
     description:
@@ -136,8 +136,8 @@ export const tenantConfigMap = {
     faviconUrl: "/tenants/aiymbrand/favicon.svg",
     heroCopy:
       "Смелый и быстрый фуд-опыт: бургеры, роллы, пицца, комбо и новинки — всё, чтобы пользователь выбрал еду за минуты и сразу оформил заказ.",
-    logoText: "AIYMBRAND",
-    logoUrl: "/tenants/aiymbrand/logo.svg",
+    logoText: "",
+    logoUrl: "/tenants/aiymbrand/logo.png",
     restaurantId: "aiymbrand",
     slug: "aiymbrand",
     supportEmail: "hello@storeva.test",
@@ -157,12 +157,12 @@ export const tenantConfigMap = {
       popoverForeground: "#F5E7C5",
       primary: "#D5AF5D",
       primaryForeground: "#16120A",
-      radius: "1.25rem",
+      radius: "1rem",
       ring: "#D5AF5D",
       secondary: "#2A2216",
       secondaryForeground: "#E7D2A0",
     },
-    title: "fashion",
+    title: "Современное этно",
   },
 } as const satisfies Record<string, TenantConfig>;
 

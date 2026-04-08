@@ -31,7 +31,7 @@ type MenuGridProps = {
 
 const gridClassByVariant: Record<ProductCardVariant, string> = {
   "clothes-fashion":
-    "grid min-w-0 grid-cols-2 gap-x-1 gap-y-6 sm:gap-x-2 md:grid-cols-[repeat(auto-fit,minmax(240px,1fr))] md:gap-x-4 md:gap-y-8",
+    "grid min-w-0 grid-cols-1 gap-x-1 gap-y-6 sm:gap-x-2 md:grid-cols-[repeat(auto-fit,minmax(240px,1fr))] md:gap-x-4 md:gap-y-8",
   "food-classic":
     "grid min-w-0 grid-cols-2 justify-between gap-x-2 gap-y-4 sm:gap-x-3 md:grid-cols-[repeat(auto-fit,minmax(280px,280px))] md:justify-start md:gap-5",
 };
