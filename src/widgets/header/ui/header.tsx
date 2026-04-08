@@ -124,6 +124,7 @@ export function Header() {
           <HeaderBrand
             href={href()}
             logoText={tenantConfig.logoText}
+            logoUrl={tenantConfig.logoUrl}
             title={tenantConfig.title}
           />
 

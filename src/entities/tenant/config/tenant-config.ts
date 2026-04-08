@@ -10,9 +10,11 @@ export const tenantConfigMap = {
     currency: "RUB",
     description:
       "Storeva — удобный сервис заказа еды на каждый день с акцентом на быстрый выбор, понятные категории, заметные акции и комфортный мобильный сценарий.",
+    faviconUrl: "/tenants/storeva-mass/favicon.svg",
     heroCopy:
       "Быстрая доставка любимой еды без лишних шагов: популярные блюда, выгодные комбо и простой путь от выбора до оформления заказа.",
     logoText: "STOREVA",
+    logoUrl: "/tenants/storeva-mass/logo.svg",
     restaurantId: "rest-storeva-mass",
     slug: "storeva-mass",
     supportEmail: "hello@storeva.test",
@@ -49,9 +51,11 @@ export const tenantConfigMap = {
     currency: "RUB",
     description:
       "Storeva Food Hall — премиальный сервис заказа еды с акцентом на визуально чистую витрину, качественную подачу блюд и ощущение современного гастрономического бренда.",
+    faviconUrl: "/tenants/storeva-premium/favicon.svg",
     heroCopy:
       "Элегантный food delivery experience: спокойная палитра, аккуратные карточки, выразительная гастро-витрина и мягкий путь к заказу любимых блюд.",
     logoText: "STOREVA",
+    logoUrl: "/tenants/storeva-premium/logo.svg",
     restaurantId: "rest-storeva-premium",
     slug: "storeva-premium",
     supportEmail: "hello@storeva.test",
@@ -88,9 +92,11 @@ export const tenantConfigMap = {
     currency: "RUB",
     description:
       "Storeva Street — яркий сервис заказа стритфуда и dark kitchen форматов с акцентом на сочные акценты, быстрый выбор хитов и энергичный мобильный интерфейс.",
+    faviconUrl: "/tenants/storeva-street/favicon.svg",
     heroCopy:
       "Смелый и быстрый фуд-опыт: бургеры, роллы, пицца, комбо и новинки — всё, чтобы пользователь выбрал еду за минуты и сразу оформил заказ.",
     logoText: "STOREVA",
+    logoUrl: "/tenants/storeva-street/logo.svg",
     restaurantId: "rest-storeva-street",
     slug: "storeva-street",
     supportEmail: "hello@storeva.test",
@@ -116,6 +122,47 @@ export const tenantConfigMap = {
       secondaryForeground: "#5C2B1C",
     },
     title: "Storeva Street",
+  },
+
+  "aiymbrand": {
+    allowGuestCheckout: true,
+    catalog: {
+      categoryCard: "category-classic",
+      productCard: "food-classic",
+    },
+    currency: "RUB",
+    description:
+      "Storeva Street — яркий сервис заказа стритфуда и dark kitchen форматов с акцентом на сочные акценты, быстрый выбор хитов и энергичный мобильный интерфейс.",
+    faviconUrl: "/tenants/aiymbrand/favicon.svg",
+    heroCopy:
+      "Смелый и быстрый фуд-опыт: бургеры, роллы, пицца, комбо и новинки — всё, чтобы пользователь выбрал еду за минуты и сразу оформил заказ.",
+    logoText: "AIYMBRAND",
+    logoUrl: "/tenants/aiymbrand/logo.svg",
+    restaurantId: "aiymbrand",
+    slug: "aiymbrand",
+    supportEmail: "hello@storeva.test",
+    tagline: "Яркий вкус. Быстрый заказ.",
+    theme: {
+      accent: "#1C7C72",
+      accentForeground: "#F3FFFC",
+      background: "#FFF6EE",
+      border: "#E6D2C2",
+      card: "#FFFCF8",
+      cardForeground: "#211A16",
+      foreground: "#211A16",
+      input: "#FFFDF9",
+      muted: "#F6E5D8",
+      mutedForeground: "#7A675B",
+      popover: "#FFFCF8",
+      popoverForeground: "#211A16",
+      primary: "#E64A19",
+      primaryForeground: "#FFF7F3",
+      radius: "1.25rem",
+      ring: "#E64A19",
+      secondary: "#FFD9C7",
+      secondaryForeground: "#5C2B1C",
+    },
+    title: "fashion",
   },
 } as const satisfies Record<string, TenantConfig>;
 

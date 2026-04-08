@@ -21,14 +21,19 @@ function buildLogoMark(logoText: string) {
 type HeaderBrandProps = {
   href: string;
   logoText: string;
+  logoUrl?: string;
   title: string;
 };
 
-export function HeaderBrand({ href, logoText, title }: HeaderBrandProps) {
+export function HeaderBrand({ href, logoText, logoUrl, title }: HeaderBrandProps) {
   return (
     <Link className="flex min-w-0 items-center gap-3" href={href}>
-      <span className="bg-card border-border/70 text-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border text-sm font-semibold tracking-[0.24em] shadow-sm">
-        {buildLogoMark(logoText)}
+      <span className="bg-card border-border/70 text-foreground flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border text-sm font-semibold tracking-[0.24em] shadow-sm overflow-hidden">
+        {logoUrl ? (
+          <img alt={logoText} className="h-full w-full object-contain p-1.5" src={logoUrl} />
+        ) : (
+          buildLogoMark(logoText)
+        )}
       </span>
       <span className="min-w-0">
         <span className="font-heading text-foreground block truncate text-base font-semibold tracking-[0.18em] sm:text-lg">

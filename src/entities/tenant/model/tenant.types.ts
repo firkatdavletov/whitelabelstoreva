@@ -35,8 +35,10 @@ export type TenantConfig = {
   catalog: TenantCatalogConfig;
   currency: CurrencyCode;
   description: string;
+  faviconUrl?: string;
   heroCopy: string;
   logoText: string;
+  logoUrl?: string;
   restaurantId: string;
   slug: string;
   supportEmail: string;
