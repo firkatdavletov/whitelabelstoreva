@@ -39,9 +39,6 @@ export async function generateMetadata({
     description:
       tenantConfig?.description ??
       "White label storefront starter for food ordering.",
-    icons: tenantConfig?.faviconUrl
-      ? { icon: [{ url: tenantConfig.faviconUrl, type: "image/svg+xml" }] }
-      : undefined,
     title: tenantConfig
       ? `${tenantConfig.title} Storefront`
       : "White Label Storefront",
