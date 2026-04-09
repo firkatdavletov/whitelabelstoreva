@@ -68,6 +68,24 @@ describe("cart checkout target", () => {
     ).toBe(true);
   });
 
+  it("treats custom address delivery with an address as ready for checkout", () => {
+    expect(
+      hasSelectedCartDelivery({
+        address: {
+          apartment: null,
+          city: "Екатеринбург",
+          house: "10",
+          street: "ул. Радищева",
+        },
+        deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+        pickupPointAddress: null,
+        pickupPointName: null,
+        quote: null,
+        quoteExpired: false,
+      }),
+    ).toBe(true);
+  });
+
   it("treats pickup delivery with pickup point details as ready for checkout", () => {
     expect(
       resolveCartCheckoutTarget({

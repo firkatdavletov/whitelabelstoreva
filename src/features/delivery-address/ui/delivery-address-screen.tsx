@@ -35,6 +35,7 @@ import {
   formatDeliveryDraftAddress,
   formatPickupPointAddress,
   getDefaultDeliveryMapCenter,
+  isAddressDeliveryMethod,
   isPickupDeliveryMethod,
   pickupPointToMapCenter,
   pickupPointToMapMarker,
@@ -148,10 +149,18 @@ export function DeliveryAddressScreen() {
     deliveryMethods.some((method) => method.code === selectedMethodCodeOverride)
       ? selectedMethodCodeOverride
       : null) ?? defaultSelectedMethodCode;
+  const selectedMethod =
+    deliveryMethods.find((method) => method.code === selectedMethodCode) ??
+    null;
 
   const isYandexPickup = selectedMethodCode === "YANDEX_PICKUP_POINT";
   const isStorePickup = selectedMethodCode === "PICKUP";
-  const isAnyPickup = isPickupDeliveryMethod(selectedMethodCode);
+  const isAnyPickup =
+    selectedMethod?.requiresPickupPoint ??
+    isPickupDeliveryMethod(selectedMethodCode);
+  const isAddressDelivery =
+    selectedMethod?.requiresAddress ??
+    isAddressDeliveryMethod(selectedMethodCode);
 
   const pickupPointsQuery = useQuery({
     enabled: isStorePickup,
@@ -173,7 +182,7 @@ export function DeliveryAddressScreen() {
   }, [mapCenter]);
 
   const courierDraftQuery = useQuery({
-    enabled: selectedMethodCode === "COURIER",
+    enabled: isAddressDelivery,
     queryFn: () =>
       detectCourierCartDeliveryDraft(
         {
@@ -315,16 +324,16 @@ export function DeliveryAddressScreen() {
     : isStorePickup
       ? selectedPickupPointId
       : null;
-  const activeMapCenter =
-    selectedMethodCode === "COURIER"
-      ? mapCenter
-      : isYandexPickup
-        ? yandexMapCenter
-        : pickupMapCenter;
+  const activeMapCenter = isAddressDelivery
+    ? mapCenter
+    : isYandexPickup
+      ? yandexMapCenter
+      : pickupMapCenter;
 
   // Summary
-  const selectedCourierDraft =
-    selectedMethodCode === "COURIER" ? courierDraftQuery.data : null;
+  const selectedCourierDraft = isAddressDelivery
+    ? courierDraftQuery.data
+    : null;
   const selectedAddressLabel = formatDeliveryDraftAddress(selectedCourierDraft);
   const selectedPickupAddressLabel =
     formatPickupPointAddress(selectedPickupPoint);
@@ -363,7 +372,7 @@ export function DeliveryAddressScreen() {
 
   const canSubmitSelectedAddress =
     Boolean(putCartDeliveryRequest) &&
-    (selectedMethodCode === "COURIER"
+    (isAddressDelivery
       ? selectedCourierQuoteAvailability === true &&
         Boolean(env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY)
       : isYandexPickup
@@ -390,8 +399,7 @@ export function DeliveryAddressScreen() {
         t("deliveryAddress.selectedPickupPending"))
       : courierDraftQuery.isLoading
         ? t("deliveryAddress.detecting")
-        : (selectedAddressLabel ??
-          t("deliveryAddress.selectedAddressPending"));
+        : (selectedAddressLabel ?? t("deliveryAddress.selectedAddressPending"));
 
   const selectedSummarySecondary = isYandexPickup
     ? yandexPickup.selectedPoint
@@ -440,11 +448,11 @@ export function DeliveryAddressScreen() {
     <section className="relative min-h-dvh overflow-hidden bg-[radial-gradient(circle_at_top,_color-mix(in_srgb,var(--primary)_12%,transparent),transparent_48%),linear-gradient(180deg,color-mix(in_srgb,var(--background)_94%,transparent),color-mix(in_srgb,var(--background)_78%,transparent))]">
       <YandexMapPicker
         center={activeMapCenter}
-        className="h-dvh rounded-none border-0 bg-muted/20"
+        className="bg-muted/20 h-dvh rounded-none border-0"
         locale={locale}
         markers={activeMarkers}
         onCenterChange={(nextCenter) => {
-          if (selectedMethodCode === "COURIER") {
+          if (isAddressDelivery) {
             setMapCenter(nextCenter);
             return;
           }
@@ -469,18 +477,20 @@ export function DeliveryAddressScreen() {
         showHint={false}
       />
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-36 bg-gradient-to-b from-background/88 via-background/36 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-48 bg-gradient-to-t from-background/92 via-background/48 to-transparent" />
+      <div className="from-background/88 via-background/36 pointer-events-none absolute inset-x-0 top-0 z-20 h-36 bg-gradient-to-b to-transparent" />
+      <div className="from-background/92 via-background/48 pointer-events-none absolute inset-x-0 bottom-0 z-20 h-48 bg-gradient-to-t to-transparent" />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col gap-3 p-3 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <Button
-            className="pointer-events-auto h-11 rounded-full border-border/70 bg-background/86 px-4 shadow-lg backdrop-blur-xl"
+            className="border-border/70 bg-background/86 pointer-events-auto h-11 rounded-full px-4 shadow-lg backdrop-blur-xl"
             onClick={handleBack}
             variant="outline"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("deliveryAddress.back")}</span>
+            <span className="hidden sm:inline">
+              {t("deliveryAddress.back")}
+            </span>
           </Button>
 
           {(deliveryMethodsQuery.isLoading ||
@@ -492,10 +502,10 @@ export function DeliveryAddressScreen() {
 
         <div className="flex justify-center">
           {deliveryMethodsQuery.isLoading ? (
-            <Skeleton className="pointer-events-auto h-12 w-full max-w-md rounded-full border border-border/60 bg-background/75 shadow-lg backdrop-blur-xl" />
+            <Skeleton className="border-border/60 bg-background/75 pointer-events-auto h-12 w-full max-w-md rounded-full border shadow-lg backdrop-blur-xl" />
           ) : deliveryMethodsQuery.isError ? (
-            <div className="pointer-events-auto flex max-w-xl flex-col gap-3 rounded-xl border border-border/70 bg-background/84 p-4 shadow-lg backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
+            <div className="border-border/70 bg-background/84 pointer-events-auto flex max-w-xl flex-col gap-3 rounded-xl border p-4 shadow-lg backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-muted-foreground text-sm">
                 {deliveryMethodsQuery.error instanceof Error
                   ? deliveryMethodsQuery.error.message
                   : t("deliveryAddress.methodsError")}
@@ -512,7 +522,7 @@ export function DeliveryAddressScreen() {
             </div>
           ) : deliveryMethodsQuery.data?.methods.length ? (
             <SegmentedControl
-              className="pointer-events-auto border-border/70 bg-background/82 shadow-lg backdrop-blur-xl"
+              className="border-border/70 bg-background/82 pointer-events-auto shadow-lg backdrop-blur-xl"
               onValueChange={(value) => {
                 const nextMethodCode =
                   value as PutCartDeliveryRequestDto["deliveryMethod"];
@@ -532,7 +542,7 @@ export function DeliveryAddressScreen() {
               }
             />
           ) : (
-            <div className="pointer-events-auto rounded-full border border-border/70 bg-background/84 px-5 py-3 text-sm text-muted-foreground shadow-lg backdrop-blur-xl">
+            <div className="border-border/70 bg-background/84 text-muted-foreground pointer-events-auto rounded-full border px-5 py-3 text-sm shadow-lg backdrop-blur-xl">
               {t("deliveryAddress.methodsEmpty")}
             </div>
           )}
@@ -557,27 +567,26 @@ export function DeliveryAddressScreen() {
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 p-3 sm:p-5">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-border/70 bg-background/84 shadow-[0_36px_120px_-64px_rgba(15,23,42,0.75)] backdrop-blur-2xl">
+        <div className="border-border/70 bg-background/84 mx-auto max-w-3xl rounded-3xl border shadow-[0_36px_120px_-64px_rgba(15,23,42,0.75)] backdrop-blur-2xl">
           <div className="pointer-events-auto space-y-4 p-4 sm:p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background/88">
-                <MapPin className="h-4 w-4 text-primary" />
+              <div className="border-border/70 bg-background/88 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border">
+                <MapPin className="text-primary h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium tracking-[0.22em] text-muted-foreground uppercase">
+                <p className="text-muted-foreground text-[11px] font-medium tracking-[0.22em] uppercase">
                   {selectedSummaryTitle}
                 </p>
-                <p className="mt-1 text-sm font-medium text-foreground sm:text-base">
+                <p className="text-foreground mt-1 text-sm font-medium sm:text-base">
                   {selectedSummaryPrimary}
                 </p>
                 {selectedSummarySecondary ? (
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="text-muted-foreground mt-1 text-sm">
                     {selectedSummarySecondary}
                   </p>
                 ) : null}
-                {isYandexPickup &&
-                yandexPickup.selectedPoint?.instruction ? (
-                  <p className="mt-1 text-xs text-muted-foreground">
+                {isYandexPickup && yandexPickup.selectedPoint?.instruction ? (
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {t("deliveryAddress.yandexInstruction")}:{" "}
                     {yandexPickup.selectedPoint.instruction}
                   </p>
@@ -585,15 +594,15 @@ export function DeliveryAddressScreen() {
               </div>
             </div>
 
-            {selectedMethodCode === "COURIER" && selectedCourierDraft?.quote ? (
+            {isAddressDelivery && selectedCourierDraft?.quote ? (
               selectedCourierQuoteAvailability === false ? (
-                <div className="rounded-2xl border border-destructive/20 bg-destructive/6 px-4 py-3 text-sm text-destructive">
+                <div className="border-destructive/20 bg-destructive/6 text-destructive rounded-2xl border px-4 py-3 text-sm">
                   {selectedCourierQuoteUnavailableMessage}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
-                    <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+                  <div className="border-border/70 bg-background/70 rounded-2xl border px-4 py-3">
+                    <p className="text-muted-foreground text-[11px] tracking-[0.18em] uppercase">
                       {t("deliveryAddress.conditionsEta")}
                     </p>
                     <p className="mt-1 text-sm font-medium">
@@ -601,8 +610,8 @@ export function DeliveryAddressScreen() {
                         t("deliveryAddress.conditionNotAvailable")}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
-                    <p className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+                  <div className="border-border/70 bg-background/70 rounded-2xl border px-4 py-3">
+                    <p className="text-muted-foreground text-[11px] tracking-[0.18em] uppercase">
                       {t("deliveryAddress.conditionsPrice")}
                     </p>
                     <p className="mt-1 text-sm font-medium">
@@ -613,8 +622,8 @@ export function DeliveryAddressScreen() {
               )
             ) : null}
 
-            {selectedMethodCode === "COURIER" && courierDraftQuery.isError ? (
-              <div className="rounded-2xl border border-destructive/20 bg-destructive/6 px-4 py-3 text-sm text-muted-foreground">
+            {isAddressDelivery && courierDraftQuery.isError ? (
+              <div className="border-destructive/20 bg-destructive/6 text-muted-foreground rounded-2xl border px-4 py-3 text-sm">
                 {courierDraftQuery.error instanceof Error
                   ? courierDraftQuery.error.message
                   : t("deliveryAddress.detectError")}
@@ -626,8 +635,8 @@ export function DeliveryAddressScreen() {
             ) : null}
 
             {isStorePickup && pickupPointsQuery.isError ? (
-              <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-muted-foreground">
+              <div className="border-border/70 bg-background/70 flex flex-col gap-3 rounded-2xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-muted-foreground text-sm">
                   {pickupPointsQuery.error instanceof Error
                     ? pickupPointsQuery.error.message
                     : t("deliveryAddress.pickupPointsError")}
@@ -648,7 +657,7 @@ export function DeliveryAddressScreen() {
             !pickupPointsQuery.isLoading &&
             !pickupPointsQuery.isError &&
             !pickupPointsQuery.data?.pickupPoints.length ? (
-              <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+              <div className="border-border/70 bg-background/70 text-muted-foreground rounded-2xl border px-4 py-3 text-sm">
                 {t("deliveryAddress.pickupPointsEmpty")}
               </div>
             ) : null}
@@ -658,8 +667,8 @@ export function DeliveryAddressScreen() {
             ) : null}
 
             {isYandexPickup && yandexPickup.pointsError ? (
-              <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-muted-foreground">
+              <div className="border-border/70 bg-background/70 flex flex-col gap-3 rounded-2xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-muted-foreground text-sm">
                   {yandexPickup.pointsError instanceof Error
                     ? yandexPickup.pointsError.message
                     : t("deliveryAddress.yandexPointsError")}
@@ -677,7 +686,7 @@ export function DeliveryAddressScreen() {
             ) : null}
 
             {isYandexPickup && yandexPickup.locationError ? (
-              <div className="rounded-2xl border border-destructive/20 bg-destructive/6 px-4 py-3 text-sm text-muted-foreground">
+              <div className="border-destructive/20 bg-destructive/6 text-muted-foreground rounded-2xl border px-4 py-3 text-sm">
                 {yandexPickup.locationError instanceof Error
                   ? yandexPickup.locationError.message
                   : t("deliveryAddress.yandexLocationError")}
@@ -689,7 +698,7 @@ export function DeliveryAddressScreen() {
             !yandexPickup.isLoadingPoints &&
             !yandexPickup.pointsError &&
             yandexPickup.pickupPoints.length === 0 ? (
-              <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+              <div className="border-border/70 bg-background/70 text-muted-foreground rounded-2xl border px-4 py-3 text-sm">
                 {t("deliveryAddress.yandexEmptyPoints")}
               </div>
             ) : null}
@@ -698,13 +707,13 @@ export function DeliveryAddressScreen() {
             yandexPickup.geoId === null &&
             !yandexPickup.isLoadingLocation &&
             !yandexPickup.locationError ? (
-              <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+              <div className="border-border/70 bg-background/70 text-muted-foreground rounded-2xl border px-4 py-3 text-sm">
                 {t("deliveryAddress.yandexSearchHint")}
               </div>
             ) : null}
 
             {!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? (
-              <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+              <div className="border-border/70 bg-background/70 text-muted-foreground rounded-2xl border px-4 py-3 text-sm">
                 {t("deliveryAddress.mapKeyMissing")}
               </div>
             ) : null}

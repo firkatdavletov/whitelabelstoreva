@@ -2,6 +2,7 @@ import type {
   StorefrontCartDeliveryMethod,
   StorefrontCart,
 } from "@/entities/cart";
+import { isPickupDeliveryMethod } from "@/entities/cart";
 import type {
   CheckoutDeliveryOptionResponseDto,
   CheckoutRequestDto,
@@ -57,9 +58,7 @@ function normalizeCheckoutField(value: string | null | undefined) {
 export function isPickupCheckoutDelivery(
   deliveryMethod: StorefrontCartDeliveryMethod | null | undefined,
 ) {
-  return (
-    deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
-  );
+  return isPickupDeliveryMethod(deliveryMethod);
 }
 
 export function formatCheckoutDeliveryAddress(
@@ -161,6 +160,8 @@ export function resolveDeliveryMethodFallbackLabel(
   switch (deliveryMethod) {
     case "COURIER":
       return "Доставка";
+    case "CUSTOM_DELIVERY_ADDRESS":
+      return "Доставка по адресу";
     case "PICKUP":
       return "Самовывоз";
     case "YANDEX_PICKUP_POINT":

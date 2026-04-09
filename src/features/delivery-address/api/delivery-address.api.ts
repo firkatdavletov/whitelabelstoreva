@@ -24,6 +24,12 @@ function createMockDeliveryMethodsResponse(): DeliveryMethodsResponseDto {
         requiresPickupPoint: false,
       },
       {
+        code: "CUSTOM_DELIVERY_ADDRESS",
+        name: "Доставка по адресу",
+        requiresAddress: true,
+        requiresPickupPoint: false,
+      },
+      {
         code: "PICKUP",
         name: "Самовывоз",
         requiresAddress: false,
@@ -42,9 +48,7 @@ function createMockDeliveryMethodsResponse(): DeliveryMethodsResponseDto {
 
 function createMockYandexLocationDetectResponse(): YandexLocationDetectResponseDto {
   return {
-    variants: [
-      { address: "Екатеринбург, Свердловская область", geoId: 54 },
-    ],
+    variants: [{ address: "Екатеринбург, Свердловская область", geoId: 54 }],
   };
 }
 

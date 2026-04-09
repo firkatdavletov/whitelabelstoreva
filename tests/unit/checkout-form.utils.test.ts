@@ -4,6 +4,7 @@ import {
   buildCheckoutRequest,
   formatCheckoutDeliveryAddress,
   isPickupCheckoutDelivery,
+  resolveDeliveryMethodFallbackLabel,
   resolveCheckoutPaymentMethods,
 } from "@/features/checkout-form/lib/checkout-form.utils";
 import { createCheckoutFormSchema } from "@/features/checkout-form/model/checkout-form.schema";
@@ -32,6 +33,31 @@ describe("checkout form utils", () => {
         quoteExpired: false,
       }),
     ).toBe("Екатеринбург, ул. Ленина, дом 15");
+  });
+
+  it("formats custom address delivery the same way as courier delivery", () => {
+    expect(
+      formatCheckoutDeliveryAddress({
+        address: {
+          apartment: null,
+          city: "Екатеринбург",
+          comment: null,
+          country: "Россия",
+          entrance: null,
+          floor: null,
+          house: "10",
+          intercom: null,
+          postalCode: "620014",
+          region: "Свердловская область",
+          street: "ул. Радищева",
+        },
+        deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+        pickupPointAddress: null,
+        pickupPointName: null,
+        quote: null,
+        quoteExpired: false,
+      }),
+    ).toBe("Екатеринбург, ул. Радищева, дом 10");
   });
 
   it("normalizes pickup addresses and strips country, region, and postal code", () => {
@@ -248,6 +274,13 @@ describe("checkout form utils", () => {
     expect(isPickupCheckoutDelivery("PICKUP")).toBe(true);
     expect(isPickupCheckoutDelivery("YANDEX_PICKUP_POINT")).toBe(true);
     expect(isPickupCheckoutDelivery("COURIER")).toBe(false);
+    expect(isPickupCheckoutDelivery("CUSTOM_DELIVERY_ADDRESS")).toBe(false);
+  });
+
+  it("returns a fallback label for custom address delivery", () => {
+    expect(resolveDeliveryMethodFallbackLabel("CUSTOM_DELIVERY_ADDRESS")).toBe(
+      "Доставка по адресу",
+    );
   });
 
   it("requires apartment only for courier checkout", () => {

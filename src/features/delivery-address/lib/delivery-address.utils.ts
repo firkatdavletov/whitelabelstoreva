@@ -2,7 +2,13 @@ import type {
   CartDeliveryDraftResponseDto,
   PutCartDeliveryRequestDto,
 } from "@/entities/cart/api/cart.dto";
+import {
+  isAddressDeliveryMethod,
+  isPickupDeliveryMethod,
+} from "@/entities/cart/lib/delivery-method";
 import type { PickupPointDto } from "@/features/delivery-address/api/delivery-address.types";
+
+export { isAddressDeliveryMethod, isPickupDeliveryMethod };
 
 export type DeliveryMapCenter = {
   latitude: number;
@@ -35,12 +41,6 @@ export function getDefaultDeliveryMapCenter(
   tenantSlug: string,
 ): DeliveryMapCenter {
   return defaultMapCenters[tenantSlug] ?? defaultMapCenters["storeva-street"];
-}
-
-export function isPickupDeliveryMethod(deliveryMethod: string | null | undefined) {
-  return (
-    deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
-  );
 }
 
 export function toYandexMapCenter(center: DeliveryMapCenter): [number, number] {
@@ -138,7 +138,7 @@ export function buildPutCartDeliveryRequest(
   draft: CartDeliveryDraftResponseDto | null | undefined,
   pickupPoint?: PickupPointDto | null,
 ): PutCartDeliveryRequestDto | null {
-  if (deliveryMethod === "COURIER") {
+  if (isAddressDeliveryMethod(deliveryMethod)) {
     if (!draft?.address) {
       return null;
     }

@@ -3,14 +3,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+import type { HeroBanner } from "@/widgets/home/api/get-hero-banners";
 import { HomeBannerPager } from "@/widgets/home/ui/home-banner-pager";
 
 vi.mock("next/image", () => ({
-  default: (props: {
-    alt?: string;
-    className?: string;
-    src?: string;
-  }) => {
+  default: (props: { alt?: string; className?: string; src?: string }) => {
     return React.createElement("img", {
       alt: props.alt ?? "",
       className: props.className,
@@ -19,22 +16,50 @@ vi.mock("next/image", () => ({
   },
 }));
 
-const banners = [
+const banners: HeroBanner[] = [
   {
+    code: "banner-1",
     description: "Первый баннер",
-    eyebrow: "Хиты недели",
+    desktopImageAlt: "",
+    desktopImageUrl:
+      "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' />",
     id: "banner-1",
-    imageSrc: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' />",
+    mobileImageAlt: "",
+    mobileImageUrl:
+      "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' />",
+    placement: "HOME_HERO",
+    primaryActionLabel: null,
+    primaryActionUrl: null,
+    secondaryActionLabel: null,
+    secondaryActionUrl: null,
+    sortOrder: 0,
+    subtitle: "Хиты недели",
+    textAlignment: "LEFT",
+    themeVariant: "LIGHT",
     title: "Первый слайд",
   },
   {
+    code: "banner-2",
     description: "Второй баннер",
-    eyebrow: "Новинки",
+    desktopImageAlt: "",
+    desktopImageUrl:
+      "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' />",
     id: "banner-2",
-    imageSrc: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' />",
+    mobileImageAlt: "",
+    mobileImageUrl:
+      "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' />",
+    placement: "HOME_HERO",
+    primaryActionLabel: null,
+    primaryActionUrl: null,
+    secondaryActionLabel: null,
+    secondaryActionUrl: null,
+    sortOrder: 1,
+    subtitle: "Новинки",
+    textAlignment: "LEFT",
+    themeVariant: "LIGHT",
     title: "Второй слайд",
   },
-] as const;
+];
 
 describe("HomeBannerPager", () => {
   it("switches slides from arrow buttons and pager dots", async () => {
@@ -52,9 +77,7 @@ describe("HomeBannerPager", () => {
       screen.getByRole("heading", { name: "Первый слайд" }),
     ).toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole("button", { name: "Следующий баннер" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Следующий баннер" }));
 
     expect(
       screen.getByRole("heading", { name: "Второй слайд" }),

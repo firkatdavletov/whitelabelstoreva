@@ -8,11 +8,13 @@ import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { isAddressDeliveryMethod } from "@/entities/cart";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
 import { useCheckoutMutation } from "@/features/checkout-form/hooks/use-checkout-mutation";
 import { useCheckoutOptionsQuery } from "@/features/checkout-form/hooks/use-checkout-options-query";
 import {
   buildCheckoutRequest,
+  findCheckoutDeliveryOption,
   formatCheckoutDeliveryAddress,
   isPickupCheckoutDelivery,
   resolveCheckoutPaymentMethods,
@@ -81,8 +83,16 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
   );
   const checkoutMutation = useCheckoutMutation(tenantSlug);
   const deliveryAddress = delivery?.address;
-  const isPickupDelivery = isPickupCheckoutDelivery(delivery?.deliveryMethod);
-  const isCourierDelivery = delivery?.deliveryMethod === "COURIER";
+  const selectedDeliveryOption = findCheckoutDeliveryOption(
+    checkoutOptionsQuery.data?.options,
+    delivery?.deliveryMethod,
+  );
+  const isPickupDelivery =
+    selectedDeliveryOption?.requiresPickupPoint ??
+    isPickupCheckoutDelivery(delivery?.deliveryMethod);
+  const isAddressDelivery =
+    selectedDeliveryOption?.requiresAddress ??
+    isAddressDeliveryMethod(delivery?.deliveryMethod);
   const selectedAddressLabel = formatCheckoutDeliveryAddress(delivery);
 
   const form = useForm<CheckoutFormValues>({
@@ -99,7 +109,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     },
     resolver: zodResolver(
       createCheckoutFormSchema({
-        requiresApartment: isCourierDelivery,
+        requiresApartment: isAddressDelivery,
         requiresContactDetails: !isAuthorized,
       }),
     ),
@@ -160,7 +170,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
   }, [form, paymentMethods]);
 
   useEffect(() => {
-    if (!isCourierDelivery || !deliveryAddress || isPrivateHouse) {
+    if (!isAddressDelivery || !deliveryAddress || isPrivateHouse) {
       return;
     }
 
@@ -186,7 +196,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
         shouldDirty: false,
       });
     });
-  }, [deliveryAddress, form, isCourierDelivery, isPrivateHouse]);
+  }, [deliveryAddress, form, isAddressDelivery, isPrivateHouse]);
 
   if (isLoading && !storefrontCart) {
     return <CheckoutFormSkeleton />;
@@ -253,7 +263,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
             onSubmit={form.handleSubmit(async (values) => {
               try {
                 const checkoutRequest = buildCheckoutRequest(values, {
-                  deliveryAddress: isCourierDelivery ? deliveryAddress : null,
+                  deliveryAddress: isAddressDelivery ? deliveryAddress : null,
                 });
                 const order =
                   await checkoutMutation.mutateAsync(checkoutRequest);
@@ -314,7 +324,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
               </>
             ) : null}
 
-            {isCourierDelivery ? (
+            {isAddressDelivery ? (
               <div className="grid gap-4">
                 <FormField
                   control={form.control}
@@ -374,7 +384,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                           <FormLabel>{t("checkout.apartment")}</FormLabel>
                           <FormControl>
                             <Input
-                              required={isCourierDelivery}
+                              required={isAddressDelivery}
                               {...field}
                               value={field.value ?? ""}
                             />

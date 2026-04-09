@@ -188,6 +188,83 @@ describe("CheckoutForm", () => {
     expect(screen.queryByText("Домофон")).not.toBeInTheDocument();
   });
 
+  it("keeps address metadata fields for custom address delivery", () => {
+    mocks.useStorefrontCartQuery.mockReturnValue({
+      data: {
+        delivery: {
+          address: {
+            apartment: null,
+            city: "Екатеринбург",
+            comment: null,
+            country: "Россия",
+            entrance: null,
+            floor: null,
+            house: "10",
+            intercom: null,
+            postalCode: "620014",
+            region: "Свердловская область",
+            street: "ул. Радищева",
+          },
+          deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+          pickupPointAddress: null,
+          pickupPointId: null,
+          pickupPointName: null,
+          quote: null,
+          quoteExpired: false,
+        },
+        id: "cart-1",
+        items: [
+          {
+            countStep: 1,
+            id: "item-1",
+            lineTotal: 12.9,
+            modifierNames: [],
+            modifiers: [],
+            productId: "prod-1",
+            quantity: 1,
+            title: "Бургер",
+            unit: "PIECE",
+            variantId: null,
+          },
+        ],
+        itemsCount: 1,
+        totalPrice: 12.9,
+      },
+      isLoading: false,
+    });
+    mocks.useCheckoutOptionsQuery.mockReturnValue({
+      data: {
+        options: [
+          {
+            code: "CUSTOM_DELIVERY_ADDRESS",
+            name: "Доставка по адресу",
+            paymentMethods: [
+              {
+                code: "CARD_ON_DELIVERY",
+                description: null,
+                isActive: true,
+                isOnline: false,
+                name: "Картой при получении",
+              },
+            ],
+            requiresAddress: true,
+            requiresPickupPoint: false,
+          },
+        ],
+      },
+      isError: false,
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+
+    render(React.createElement(CheckoutForm, { isAuthorized: true }));
+
+    expect(screen.getByText("Квартира")).toBeInTheDocument();
+    expect(screen.getByText("Подъезд")).toBeInTheDocument();
+    expect(screen.getByText("Этаж")).toBeInTheDocument();
+    expect(screen.getByText("Домофон")).toBeInTheDocument();
+  });
+
   it("renders checkout inputs without placeholders", () => {
     render(React.createElement(CheckoutForm, { isAuthorized: false }));
 

@@ -769,6 +769,7 @@ export interface components {
         CheckoutDeliveryOptionResponse: {
             code: components["schemas"]["DeliveryMethodType"];
             name: string;
+            description?: string | null;
             requiresAddress: boolean;
             requiresPickupPoint: boolean;
             paymentMethods: components["schemas"]["CheckoutPaymentMethodResponse"][];
@@ -925,6 +926,7 @@ export interface components {
         DeliveryMethodResponse: {
             code: components["schemas"]["DeliveryMethodType"];
             name: string;
+            description?: string | null;
             requiresAddress: boolean;
             requiresPickupPoint: boolean;
         };
@@ -1303,7 +1305,7 @@ export interface components {
         /** @enum {string} */
         ProductUnit: "PIECE" | "KILOGRAM" | "GRAM" | "LITER" | "MILLILITER";
         /** @enum {string} */
-        DeliveryMethodType: "PICKUP" | "COURIER" | "YANDEX_PICKUP_POINT";
+        DeliveryMethodType: "PICKUP" | "COURIER" | "YANDEX_PICKUP_POINT" | "CUSTOM_DELIVERY_ADDRESS";
         /** @enum {string} */
         PaymentMethodCode: "CASH" | "CARD_ON_DELIVERY" | "CARD_ONLINE" | "SBP";
         /** @enum {string} */

@@ -6,6 +6,7 @@ import type {
 } from "@/entities/cart/api/cart.dto";
 import {
   createCartConfigurationKey,
+  isAddressDeliveryMethod,
   mapCartDtoToStorefrontCart,
 } from "@/entities/cart";
 import type { ProductUnit } from "@/shared/lib/product-quantity";
@@ -414,41 +415,40 @@ export async function updateStorefrontCartDelivery(
 
     return setMockCart(tenantSlug, {
       ...cart,
-      delivery:
-        input.deliveryMethod === "COURIER"
-          ? {
-              address: input.address ?? null,
+      delivery: isAddressDeliveryMethod(input.deliveryMethod)
+        ? {
+            address: input.address ?? null,
+            deliveryMethod: input.deliveryMethod,
+            pickupPointAddress: null,
+            pickupPointExternalId: null,
+            pickupPointId: null,
+            pickupPointName: null,
+            quote: {
+              available: true,
+              currency: "RUB",
               deliveryMethod: input.deliveryMethod,
+              estimatedDays: 0,
+              estimatesMinutes: 25,
+              message: "от 25 минут",
               pickupPointAddress: null,
-              pickupPointExternalId: null,
-              pickupPointId: null,
               pickupPointName: null,
-              quote: {
-                available: true,
-                currency: "RUB",
-                deliveryMethod: "COURIER",
-                estimatedDays: 0,
-                estimatesMinutes: 25,
-                message: "от 25 минут",
-                pickupPointAddress: null,
-                pickupPointName: null,
-                priceMinor: 0,
-                zoneName: input.address?.city ?? "Центр",
-              },
-              quoteExpired: false,
-              updatedAt: new Date().toISOString(),
-            }
-          : {
-              address: null,
-              deliveryMethod: input.deliveryMethod,
-              pickupPointAddress: pickupPointMeta.address,
-              pickupPointExternalId: input.pickupPointExternalId ?? null,
-              pickupPointId: input.pickupPointId ?? null,
-              pickupPointName: pickupPointMeta.name,
-              quote: null,
-              quoteExpired: false,
-              updatedAt: new Date().toISOString(),
+              priceMinor: 0,
+              zoneName: input.address?.city ?? "Центр",
             },
+            quoteExpired: false,
+            updatedAt: new Date().toISOString(),
+          }
+        : {
+            address: null,
+            deliveryMethod: input.deliveryMethod,
+            pickupPointAddress: pickupPointMeta.address,
+            pickupPointExternalId: input.pickupPointExternalId ?? null,
+            pickupPointId: input.pickupPointId ?? null,
+            pickupPointName: pickupPointMeta.name,
+            quote: null,
+            quoteExpired: false,
+            updatedAt: new Date().toISOString(),
+          },
     });
   }
 

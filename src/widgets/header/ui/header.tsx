@@ -4,11 +4,11 @@ import Link from "next/link";
 import { Search, ShoppingBag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import type {
-  StorefrontCartDelivery,
-  StorefrontCartDeliveryMethod,
+import type { StorefrontCartDelivery } from "@/entities/cart";
+import {
+  isPickupDeliveryMethod,
+  resolveDeliveryQuoteEta,
 } from "@/entities/cart";
-import { resolveDeliveryQuoteEta } from "@/entities/cart";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
 import { useTenantTheme } from "@/features/tenant-theme";
 import { formatCurrency } from "@/shared/lib/currency";
@@ -20,14 +20,6 @@ import {
   HeaderBrand,
 } from "@/widgets/header/ui/header-primitives";
 
-function isPickupDeliveryMethod(
-  deliveryMethod: StorefrontCartDeliveryMethod | null | undefined,
-): boolean {
-  return (
-    deliveryMethod === "PICKUP" || deliveryMethod === "YANDEX_PICKUP_POINT"
-  );
-}
-
 function formatDeliveryAddress(
   delivery: StorefrontCartDelivery | null | undefined,
 ) {
@@ -35,10 +27,7 @@ function formatDeliveryAddress(
     return null;
   }
 
-  if (
-    delivery.deliveryMethod === "PICKUP" ||
-    delivery.deliveryMethod === "YANDEX_PICKUP_POINT"
-  ) {
+  if (isPickupDeliveryMethod(delivery.deliveryMethod)) {
     return (
       delivery.pickupPointName ??
       delivery.pickupPointAddress ??

@@ -90,6 +90,55 @@ describe("delivery address utils", () => {
     });
   });
 
+  it("builds cart delivery payload for custom address delivery", () => {
+    const payload = buildPutCartDeliveryRequest("CUSTOM_DELIVERY_ADDRESS", {
+      address: {
+        apartment: "8",
+        city: "Екатеринбург",
+        comment: "Офис",
+        country: "Россия",
+        entrance: "2",
+        floor: "4",
+        house: "10",
+        intercom: "45",
+        latitude: 56.847001,
+        longitude: 60.611512,
+        postalCode: "620014",
+        region: "Свердловская область",
+        street: "ул. Радищева",
+      },
+      deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+      pickupPointAddress: null,
+      pickupPointExternalId: null,
+      pickupPointId: null,
+      pickupPointName: null,
+      quote: null,
+      quoteExpired: false,
+      updatedAt: null,
+    });
+
+    expect(payload).toEqual({
+      address: {
+        apartment: "8",
+        city: "Екатеринбург",
+        comment: "Офис",
+        country: "Россия",
+        entrance: "2",
+        floor: "4",
+        house: "10",
+        intercom: "45",
+        latitude: 56.847001,
+        longitude: 60.611512,
+        postalCode: "620014",
+        region: "Свердловская область",
+        street: "ул. Радищева",
+      },
+      deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+      pickupPointExternalId: null,
+      pickupPointId: null,
+    });
+  });
+
   it("builds cart delivery payload for pickup point", () => {
     const payload = buildPutCartDeliveryRequest("PICKUP", null, {
       address: {

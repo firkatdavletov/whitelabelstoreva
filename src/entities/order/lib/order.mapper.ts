@@ -25,6 +25,14 @@ const DELIVERY_ORDER_FLOWS: Record<OrderDeliveryMethod, OrderStateType[]> = {
     "OUT_FOR_DELIVERY",
     "COMPLETED",
   ],
+  CUSTOM_DELIVERY_ADDRESS: [
+    "CREATED",
+    "AWAITING_CONFIRMATION",
+    "CONFIRMED",
+    "PREPARING",
+    "OUT_FOR_DELIVERY",
+    "COMPLETED",
+  ],
   PICKUP: [
     "CREATED",
     "AWAITING_CONFIRMATION",

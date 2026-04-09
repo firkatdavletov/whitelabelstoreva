@@ -46,6 +46,35 @@ function createMockCheckoutOptionsResponse({
         requiresPickupPoint: false,
       },
       {
+        code: "CUSTOM_DELIVERY_ADDRESS",
+        name: "Доставка по адресу",
+        paymentMethods: [
+          {
+            code: "CARD_ON_DELIVERY",
+            description: "Оплата картой при получении по адресу.",
+            isActive: true,
+            isOnline: false,
+            name: "Картой при получении",
+          },
+          {
+            code: "CASH",
+            description: "Оплата наличными при получении по адресу.",
+            isActive: true,
+            isOnline: false,
+            name: "Наличными",
+          },
+          {
+            code: "CARD_ONLINE",
+            description: "Онлайн-оплата банковской картой.",
+            isActive: true,
+            isOnline: true,
+            name: "Картой онлайн",
+          },
+        ],
+        requiresAddress: true,
+        requiresPickupPoint: false,
+      },
+      {
         code: "PICKUP",
         name: "Самовывоз",
         paymentMethods: [
@@ -121,8 +150,7 @@ function createMockCheckoutOrderResponse(
     customerEmail: input.customerEmail ?? null,
     customerName: input.customerName ?? null,
     customerPhone: input.customerPhone ?? null,
-    customerType:
-      input.customerName || input.customerPhone ? "GUEST" : "USER",
+    customerType: input.customerName || input.customerPhone ? "GUEST" : "USER",
     delivery: {
       address: {
         apartment: address?.apartment ?? "12",
