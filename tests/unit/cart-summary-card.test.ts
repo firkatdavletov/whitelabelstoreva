@@ -28,6 +28,8 @@ vi.mock("react-i18next", () => ({
           return "Обновляем корзину...";
         case "cart.delivery":
           return "Доставка";
+        case "cart.deliveryCalculatedIndividually":
+          return "Стоимость доставки рассчитывается индивидуально";
         case "cart.deliveryFree":
           return "Доставка бесплатно";
         case "cart.summary":
@@ -228,6 +230,50 @@ describe("CartSummaryCard", () => {
       }),
     );
 
+    expect(screen.queryByText("Доставка")).not.toBeInTheDocument();
+    expect(screen.queryByText("Доставка бесплатно")).not.toBeInTheDocument();
+  });
+
+  it("shows individual delivery cost note for custom address delivery", () => {
+    mocks.useStorefrontCartQuery.mockReturnValue({
+      data: createStorefrontCart({
+        address: {
+          apartment: null,
+          city: "Екатеринбург",
+          house: "2",
+          street: "улица Колмогорова",
+        },
+        deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+        pickupPointAddress: null,
+        pickupPointExternalId: null,
+        pickupPointId: null,
+        pickupPointName: null,
+        quote: {
+          available: true,
+          currency: "RUB",
+          estimatedDays: null,
+          estimatedMinutes: null,
+          message: null,
+          pickupPointAddress: null,
+          pickupPointName: null,
+          priceMinor: 0,
+          zoneName: null,
+        },
+        quoteExpired: false,
+      }),
+      isLoading: false,
+    });
+
+    render(
+      React.createElement(CartSummaryCard, {
+        editable: false,
+        showCheckoutCta: false,
+      }),
+    );
+
+    expect(
+      screen.getByText("Стоимость доставки рассчитывается индивидуально"),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Доставка")).not.toBeInTheDocument();
     expect(screen.queryByText("Доставка бесплатно")).not.toBeInTheDocument();
   });

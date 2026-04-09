@@ -109,10 +109,13 @@ export function CartPageContent({
     storefrontCart,
   });
   const deliveryMethod = storefrontCart?.delivery?.deliveryMethod;
+  const isCustomAddressDelivery =
+    deliveryMethod === "CUSTOM_DELIVERY_ADDRESS";
   const shouldShowDeliveryPrice =
     Boolean(deliveryMethod) && deliveryMethod !== "PICKUP";
   const isFreeDelivery =
     shouldShowDeliveryPrice &&
+    !isCustomAddressDelivery &&
     storefrontCart?.delivery?.quote?.priceMinor === 0;
   const deliveryPriceLabel = shouldShowDeliveryPrice
     ? formatDeliveryPrice(
@@ -356,22 +359,28 @@ export function CartPageContent({
 
             <div className="mt-6 space-y-4 border-t border-dashed border-black/10 pt-4 text-sm">
               {shouldShowDeliveryPrice ? (
-                <div className="flex items-center justify-between gap-4">
-                  {isFreeDelivery ? (
-                    <span className="text-muted-foreground">
-                      {t("cart.deliveryFree")}
-                    </span>
-                  ) : (
-                    <>
+                isCustomAddressDelivery ? (
+                  <p className="text-muted-foreground">
+                    {t("cart.deliveryCalculatedIndividually")}
+                  </p>
+                ) : (
+                  <div className="flex items-center justify-between gap-4">
+                    {isFreeDelivery ? (
                       <span className="text-muted-foreground">
-                        {t("cart.delivery")}
+                        {t("cart.deliveryFree")}
                       </span>
-                      <span className="font-semibold">
-                        {deliveryPriceLabel}
-                      </span>
-                    </>
-                  )}
-                </div>
+                    ) : (
+                      <>
+                        <span className="text-muted-foreground">
+                          {t("cart.delivery")}
+                        </span>
+                        <span className="font-semibold">
+                          {deliveryPriceLabel}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )
               ) : null}
 
               <div className="flex items-center justify-between">

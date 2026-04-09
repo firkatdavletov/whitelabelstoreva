@@ -33,6 +33,7 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import {
   buildPutCartDeliveryRequest,
   buildYandexPickupDeliveryRequest,
+  canSubmitAddressDeliveryDraft,
   formatDeliveryDraftAddress,
   formatPickupPointAddress,
   getDefaultDeliveryMapCenter,
@@ -157,6 +158,8 @@ export function DeliveryAddressScreen() {
 
   const isYandexPickup = selectedMethodCode === "YANDEX_PICKUP_POINT";
   const isStorePickup = selectedMethodCode === "PICKUP";
+  const isCustomAddressDelivery =
+    selectedMethodCode === "CUSTOM_DELIVERY_ADDRESS";
   const isAnyPickup =
     selectedMethod?.requiresPickupPoint ??
     isPickupDeliveryMethod(selectedMethodCode);
@@ -384,8 +387,11 @@ export function DeliveryAddressScreen() {
   const canSubmitSelectedAddress =
     Boolean(putCartDeliveryRequest) &&
     (isAddressDelivery
-      ? selectedCourierQuoteAvailability === true &&
-        Boolean(env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY)
+      ? canSubmitAddressDeliveryDraft(
+          selectedMethodCode,
+          selectedCourierDraft,
+          selectedCourierQuoteAvailability,
+        ) && Boolean(env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY)
       : isYandexPickup
         ? Boolean(yandexPickup.selectedPoint)
         : isStorePickup
@@ -607,7 +613,9 @@ export function DeliveryAddressScreen() {
               </div>
             </div>
 
-            {isAddressDelivery && selectedCourierDraft?.quote ? (
+            {isAddressDelivery &&
+            !isCustomAddressDelivery &&
+            selectedCourierDraft?.quote ? (
               selectedCourierQuoteAvailability === false ? (
                 <div className="border-destructive/20 bg-destructive/6 text-destructive rounded-2xl border px-4 py-3 text-sm">
                   {selectedCourierQuoteUnavailableMessage}

@@ -22,6 +22,15 @@ export type MapPickupMarker = {
   longitude: number;
 };
 
+function buildAddressLine(parts: Array<string | null | undefined>) {
+  return (
+    parts
+      .map((part) => part?.trim() ?? "")
+      .filter(Boolean)
+      .join(", ") || null
+  );
+}
+
 const defaultMapCenters: Record<string, DeliveryMapCenter> = {
   "storeva-mass": {
     latitude: 56.838011,
@@ -73,14 +82,30 @@ export function formatDeliveryDraftAddress(
     );
   }
 
-  const addressParts = [
+  return buildAddressLine([
     draft.address?.city ?? null,
     draft.address?.street ?? null,
     draft.address?.house ?? null,
     draft.address?.apartment ? `кв. ${draft.address.apartment}` : null,
-  ].filter(Boolean);
+    draft.address?.region ?? null,
+    draft.address?.country ?? null,
+  ]);
+}
 
-  return addressParts.join(", ") || null;
+export function canSubmitAddressDeliveryDraft(
+  deliveryMethod: PutCartDeliveryRequestDto["deliveryMethod"] | null | undefined,
+  draft: CartDeliveryDraftResponseDto | null | undefined,
+  quoteAvailability: boolean | null,
+) {
+  if (!isAddressDeliveryMethod(deliveryMethod) || !draft?.address) {
+    return false;
+  }
+
+  if (deliveryMethod === "CUSTOM_DELIVERY_ADDRESS") {
+    return true;
+  }
+
+  return quoteAvailability === true;
 }
 
 export function pickupPointToMapCenter(

@@ -13,6 +13,8 @@ export const ruMessages = {
     checkoutSubtitle: "Проверьте состав заказа перед подтверждением.",
     checkout: "Перейти к оформлению",
     continue: "Открыть меню",
+    deliveryCalculatedIndividually:
+      "Стоимость доставки рассчитывается индивидуально",
     delivery: "Доставка",
     deliveryFree: "Доставка бесплатно",
     empty: "Корзина пока пустая. Добавьте несколько блюд, чтобы начать заказ.",

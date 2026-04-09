@@ -65,12 +65,15 @@ export function CartSummaryCard({
     ? t("cart.subtitle")
     : t("cart.checkoutSubtitle");
   const deliveryMethod = storefrontCart?.delivery?.deliveryMethod;
+  const isCustomAddressDelivery =
+    deliveryMethod === "CUSTOM_DELIVERY_ADDRESS";
   const shouldShowDeliveryPrice =
     !editable &&
     Boolean(deliveryMethod) &&
     deliveryMethod !== "PICKUP";
   const isFreeDelivery =
     shouldShowDeliveryPrice &&
+    !isCustomAddressDelivery &&
     storefrontCart?.delivery?.quote?.priceMinor === 0;
   const deliveryPriceLabel = shouldShowDeliveryPrice
     ? formatDeliveryPrice(
@@ -183,22 +186,28 @@ export function CartSummaryCard({
         </div>
         <div className="border-border space-y-2 border-t border-dashed pt-4">
           {shouldShowDeliveryPrice ? (
-            <div className="flex items-center justify-between gap-4">
-              {isFreeDelivery ? (
-                <span className="text-muted-foreground text-sm">
-                  {t("cart.deliveryFree")}
-                </span>
-              ) : (
-                <>
+            isCustomAddressDelivery ? (
+              <p className="text-muted-foreground text-sm">
+                {t("cart.deliveryCalculatedIndividually")}
+              </p>
+            ) : (
+              <div className="flex items-center justify-between gap-4">
+                {isFreeDelivery ? (
                   <span className="text-muted-foreground text-sm">
-                    {t("cart.delivery")}
+                    {t("cart.deliveryFree")}
                   </span>
-                  <span className="text-sm font-medium">
-                    {deliveryPriceLabel}
-                  </span>
-                </>
-              )}
-            </div>
+                ) : (
+                  <>
+                    <span className="text-muted-foreground text-sm">
+                      {t("cart.delivery")}
+                    </span>
+                    <span className="text-sm font-medium">
+                      {deliveryPriceLabel}
+                    </span>
+                  </>
+                )}
+              </div>
+            )
           ) : null}
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground text-sm">

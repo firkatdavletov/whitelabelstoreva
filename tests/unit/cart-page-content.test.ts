@@ -31,6 +31,8 @@ vi.mock("react-i18next", () => ({
           return "Перейти к оформлению";
         case "cart.delivery":
           return "Доставка";
+        case "cart.deliveryCalculatedIndividually":
+          return "Стоимость доставки рассчитывается индивидуально";
         case "cart.deliveryFree":
           return "Доставка бесплатно";
         case "cart.subtitle":
@@ -146,5 +148,69 @@ describe("CartPageContent", () => {
 
     expect(screen.getByText("Доставка")).toBeInTheDocument();
     expect(screen.getByText(/200/)).toBeInTheDocument();
+  });
+
+  it("shows individual delivery cost note for custom address delivery", () => {
+    mocks.useStorefrontCartQuery.mockReturnValue({
+      data: {
+        delivery: {
+          address: {
+            apartment: null,
+            city: "Екатеринбург",
+            house: "2",
+            street: "улица Колмогорова",
+          },
+          deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+          pickupPointAddress: null,
+          pickupPointExternalId: null,
+          pickupPointId: null,
+          pickupPointName: null,
+          quote: {
+            available: true,
+            currency: "RUB",
+            estimatedDays: null,
+            estimatedMinutes: null,
+            message: null,
+            pickupPointAddress: null,
+            pickupPointName: null,
+            priceMinor: 0,
+            zoneName: null,
+          },
+          quoteExpired: false,
+        },
+        id: "cart-1",
+        items: [
+          {
+            countStep: 1,
+            id: "item-1",
+            lineTotal: 12.9,
+            modifierNames: [],
+            modifiers: [],
+            productId: "prod-1",
+            quantity: 1,
+            title: "Бургер",
+            unit: "PIECE",
+            variantId: null,
+          },
+        ],
+        itemsCount: 1,
+        totalPrice: 12.9,
+      },
+      isLoading: false,
+    });
+
+    render(
+      React.createElement(CartPageContent, {
+        isAuthorized: true,
+        locale: "ru",
+        products: [],
+      }),
+    );
+
+    expect(
+      screen.getByText("Стоимость доставки рассчитывается индивидуально"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Доставка")).not.toBeInTheDocument();
+    expect(screen.queryByText("Доставка бесплатно")).not.toBeInTheDocument();
   });
 });

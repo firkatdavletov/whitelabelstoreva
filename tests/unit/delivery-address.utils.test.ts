@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildPutCartDeliveryRequest,
   buildYandexPickupDeliveryRequest,
+  canSubmitAddressDeliveryDraft,
   formatDeliveryDraftAddress,
 } from "@/features/delivery-address/lib/delivery-address.utils";
 
@@ -39,6 +40,26 @@ describe("delivery address utils", () => {
     });
 
     expect(formattedAddress).toBe("Екатеринбург, ул. Ленина, 15, кв. 12");
+  });
+
+  it("formats custom address draft even when only city and region are resolved", () => {
+    const formattedAddress = formatDeliveryDraftAddress({
+      address: {
+        city: "Екатеринбург",
+        country: "Россия",
+        region: "Свердловская область",
+      },
+      deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+      pickupPointAddress: null,
+      pickupPointExternalId: null,
+      pickupPointId: null,
+      pickupPointName: null,
+      quote: null,
+      quoteExpired: false,
+      updatedAt: null,
+    });
+
+    expect(formattedAddress).toBe("Екатеринбург, Свердловская область, Россия");
   });
 
   it("builds cart delivery payload for courier draft", () => {
@@ -137,6 +158,54 @@ describe("delivery address utils", () => {
       pickupPointExternalId: null,
       pickupPointId: null,
     });
+  });
+
+  it("allows submitting custom address delivery draft when address is resolved", () => {
+    const canSubmit = canSubmitAddressDeliveryDraft(
+      "CUSTOM_DELIVERY_ADDRESS",
+      {
+        address: {
+          city: "Екатеринбург",
+          latitude: 56.847001,
+          longitude: 60.611512,
+        },
+        deliveryMethod: "CUSTOM_DELIVERY_ADDRESS",
+        pickupPointAddress: null,
+        pickupPointExternalId: null,
+        pickupPointId: null,
+        pickupPointName: null,
+        quote: null,
+        quoteExpired: false,
+        updatedAt: null,
+      },
+      null,
+    );
+
+    expect(canSubmit).toBe(true);
+  });
+
+  it("requires an available quote for courier draft submission", () => {
+    const canSubmit = canSubmitAddressDeliveryDraft(
+      "COURIER",
+      {
+        address: {
+          city: "Екатеринбург",
+          latitude: 56.851038,
+          longitude: 60.649683,
+        },
+        deliveryMethod: "COURIER",
+        pickupPointAddress: null,
+        pickupPointExternalId: null,
+        pickupPointId: null,
+        pickupPointName: null,
+        quote: null,
+        quoteExpired: false,
+        updatedAt: null,
+      },
+      null,
+    );
+
+    expect(canSubmit).toBe(false);
   });
 
   it("builds cart delivery payload for pickup point", () => {
