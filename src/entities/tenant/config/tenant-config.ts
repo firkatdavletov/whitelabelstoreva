@@ -141,7 +141,7 @@ export const tenantConfigMap = {
     restaurantId: "aiymbrand",
     slug: "aiymbrand",
     supportEmail: "kiranova@bk.ru",
-    tagline: "Яркий вкус. Быстрый заказ.",
+    tagline: "Современный этно брэнд",
     theme: {
       accent: "#D5AF5D",
       accentForeground: "#16120A",
