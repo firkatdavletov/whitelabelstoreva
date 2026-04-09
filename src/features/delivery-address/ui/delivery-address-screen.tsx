@@ -235,7 +235,7 @@ export function DeliveryAddressScreen() {
       (position) => {
         detectCourierCartDeliveryDraft(
           {
-            deliveryMethod: "COURIER",
+            deliveryMethod: selectedMethodCode ?? "YANDEX_PICKUP_POINT",
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           },
@@ -262,7 +262,7 @@ export function DeliveryAddressScreen() {
         timeout: 10_000,
       },
     );
-  }, [t, tenantSlug, yandexPickup]);
+  }, [selectedMethodCode, t, tenantSlug, yandexPickup]);
 
   const handleYandexUseCourierAddress = useCallback(() => {
     if (courierAddressHint) {
