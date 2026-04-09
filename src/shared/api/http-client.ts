@@ -46,6 +46,35 @@ function createHeaders(
   return requestHeaders;
 }
 
+function logApiFailure({
+  url,
+  method,
+  statusCode,
+  message,
+  hasAccessToken,
+  hasCookie,
+  hasInstallId,
+}: {
+  url: string;
+  method: ApiMethod;
+  statusCode: number;
+  message: string;
+  hasAccessToken: boolean;
+  hasCookie: boolean;
+  hasInstallId: boolean;
+}) {
+  console.error("[apiRequest] request failed", {
+    hasAccessToken,
+    hasCookie,
+    hasInstallId,
+    message,
+    method,
+    runtime: typeof window === "undefined" ? "server" : "client",
+    statusCode,
+    url,
+  });
+}
+
 // Shared HTTP transport stays intentionally thin: backend business rules remain in Spring Boot.
 export async function apiRequest<TResponse, TBody = undefined>(
   pathname: string,
@@ -64,11 +93,15 @@ export async function apiRequest<TResponse, TBody = undefined>(
   } = options;
 
   const resolvedCredentials = credentials ?? "same-origin";
+  const requestUrl = createApiUrl(pathname, query);
+  const hasAccessToken = Boolean(accessToken);
+  const hasCookie = Boolean(cookie);
+  const hasInstallId = Boolean(installId);
 
   let response: Response;
 
   try {
-    response = await fetch(createApiUrl(pathname, query), {
+    response = await fetch(requestUrl, {
       ...rest,
       body: body !== undefined ? JSON.stringify(body) : undefined,
       credentials: resolvedCredentials,
@@ -76,8 +109,21 @@ export async function apiRequest<TResponse, TBody = undefined>(
       method,
     });
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Network request failed.";
+
+    logApiFailure({
+      hasAccessToken,
+      hasCookie,
+      hasInstallId,
+      message,
+      method,
+      statusCode: 0,
+      url: requestUrl,
+    });
+
     throw new ApiError(
-      error instanceof Error ? error.message : "Network request failed.",
+      message,
       0,
     );
   }
@@ -89,6 +135,16 @@ export async function apiRequest<TResponse, TBody = undefined>(
       payload && typeof payload === "object" && "message" in payload
         ? payload.message ?? "Request failed."
         : "Request failed.";
+
+    logApiFailure({
+      hasAccessToken,
+      hasCookie,
+      hasInstallId,
+      message,
+      method,
+      statusCode: response.status,
+      url: requestUrl,
+    });
 
     throw new ApiError(message, response.status, {
       error:
