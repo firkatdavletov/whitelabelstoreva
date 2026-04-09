@@ -20,7 +20,7 @@ Production-style starter for a multi-tenant food-ordering storefront on `Next.js
 ## Run
 
 1. Install `pnpm` locally if it is not available yet.
-2. Copy `.env.example` into `.env.local`.
+2. Copy `.env.example` into `.env.local` for local development.
 3. Install dependencies: `pnpm install`
 4. Start dev server: `pnpm dev`
 
@@ -31,6 +31,20 @@ Useful scripts:
 - `pnpm format`
 - `pnpm test:unit`
 - `pnpm test:e2e`
+
+## Environment Variables
+
+- Local development: use `.env.local`.
+- Production on Amvera: add the same variables in the project section `Переменные`.
+- The app now bootstraps public runtime config from the server, so on Amvera values are read from the container environment at startup instead of being taken from `.env.local`.
+
+Public variables used by the storefront:
+
+- `NEXT_PUBLIC_API_BASE_URL`
+- `NEXT_PUBLIC_API_MOCKING`
+- `NEXT_PUBLIC_DEFAULT_LOCALE`
+- `NEXT_PUBLIC_DEFAULT_TENANT`
+- `NEXT_PUBLIC_YANDEX_MAPS_API_KEY`
 
 ## Architecture
 
