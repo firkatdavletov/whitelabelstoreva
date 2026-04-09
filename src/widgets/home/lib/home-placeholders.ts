@@ -173,7 +173,7 @@ export function getHomeCategoryCards(
 ): HomeCategoryCard[] {
   return categories.map((category, index) => ({
     id: category.id,
-    imageSrc: createCategorySvg(category.name, index),
+    imageSrc: category.imageUrl ?? createCategorySvg(category.name, index),
     name: category.name,
     slug: category.slug,
   }));

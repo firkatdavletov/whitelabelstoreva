@@ -13,6 +13,7 @@ export function mapCatalogCategoryDtoToCategory(
   return {
     description: "",
     id: dto.id,
+    imageUrl: dto.imageUrls[0] ?? null,
     name: dto.name,
     slug: dto.slug,
   };

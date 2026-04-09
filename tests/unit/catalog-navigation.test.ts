@@ -11,12 +11,14 @@ const categories: Category[] = [
   {
     description: "",
     id: "cat-burgers",
+    imageUrl: null,
     name: "Burgers",
     slug: "burgers",
   },
   {
     description: "",
     id: "cat-drinks",
+    imageUrl: null,
     name: "Drinks",
     slug: "drinks",
   },
