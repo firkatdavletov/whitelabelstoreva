@@ -875,6 +875,7 @@ export interface components {
             latitude: number;
             /** Format: double */
             longitude: number;
+            deliveryMethod: components["schemas"]["DeliveryMethodType"];
         };
         CartItemResponse: {
             /** Format: uuid */

@@ -161,6 +161,11 @@ export function DeliveryAddressScreen() {
   const isAddressDelivery =
     selectedMethod?.requiresAddress ??
     isAddressDeliveryMethod(selectedMethodCode);
+  const selectedAddressDeliveryMethod = isAddressDeliveryMethod(
+    selectedMethodCode,
+  )
+    ? selectedMethodCode
+    : null;
 
   const pickupPointsQuery = useQuery({
     enabled: isStorePickup,
@@ -182,10 +187,11 @@ export function DeliveryAddressScreen() {
   }, [mapCenter]);
 
   const courierDraftQuery = useQuery({
-    enabled: isAddressDelivery,
+    enabled: Boolean(selectedAddressDeliveryMethod),
     queryFn: () =>
       detectCourierCartDeliveryDraft(
         {
+          deliveryMethod: selectedAddressDeliveryMethod!,
           latitude: debouncedMapCenter.latitude,
           longitude: debouncedMapCenter.longitude,
         },
@@ -194,6 +200,7 @@ export function DeliveryAddressScreen() {
     queryKey: [
       "courier-delivery-draft",
       tenantSlug,
+      selectedAddressDeliveryMethod,
       debouncedMapCenter.latitude,
       debouncedMapCenter.longitude,
     ],
@@ -228,6 +235,7 @@ export function DeliveryAddressScreen() {
       (position) => {
         detectCourierCartDeliveryDraft(
           {
+            deliveryMethod: "COURIER",
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           },

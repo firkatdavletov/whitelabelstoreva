@@ -165,7 +165,7 @@ function createMockCourierDraft(
       region: "Свердловская область",
       street: "ул. Малышева",
     },
-    deliveryMethod: "COURIER",
+    deliveryMethod: input.deliveryMethod,
     pickupPointAddress: null,
     pickupPointExternalId: null,
     pickupPointId: null,
@@ -173,7 +173,7 @@ function createMockCourierDraft(
     quote: {
       available: true,
       currency: "RUB",
-      deliveryMethod: "COURIER",
+      deliveryMethod: input.deliveryMethod,
       estimatedDays: 0,
       estimatesMinutes: estimatedMinutes,
       message: `от ${estimatedMinutes} минут`,
