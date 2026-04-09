@@ -5,6 +5,7 @@ import type {
 } from "@/entities/product";
 
 export type SelectedModifiersState = Record<string, string[]>;
+export type SelectedOptionsState = Record<string, string | null>;
 
 export function getActiveVariants(product: Product) {
   return product.variants.filter((variant) => variant.isActive);
@@ -27,7 +28,7 @@ export function getMaxSelections(group: ProductModifierGroup) {
   return group.maxSelected > 0 ? group.maxSelected : group.options.length;
 }
 
-export function getDefaultVariantId(product: Product) {
+function getDefaultVariant(product: Product): ProductVariant | null {
   const activeVariants = getActiveVariants(product);
 
   if (!activeVariants.length) {
@@ -35,10 +36,66 @@ export function getDefaultVariantId(product: Product) {
   }
 
   return (
-    activeVariants.find((variant) => variant.id === product.defaultVariantId)
-      ?.id ??
-    activeVariants[0]?.id ??
+    activeVariants.find((variant) => variant.id === product.defaultVariantId) ??
+    activeVariants[0] ??
     null
+  );
+}
+
+export function getDefaultVariantId(product: Product) {
+  return getDefaultVariant(product)?.id ?? null;
+}
+
+export function createInitialOptionSelection(
+  product: Product,
+): SelectedOptionsState {
+  const defaultVariant = getDefaultVariant(product);
+  const selections: SelectedOptionsState = {};
+
+  for (const group of product.optionGroups) {
+    const defaultValueId =
+      group.values.find((value) =>
+        defaultVariant?.optionValueIds.includes(value.id),
+      )?.id ??
+      group.values[0]?.id ??
+      null;
+
+    selections[group.id] = defaultValueId;
+  }
+
+  return selections;
+}
+
+export function resolveVariantForSelectedOptions(
+  product: Product,
+  selectedOptionIdsByGroup: SelectedOptionsState,
+) {
+  const activeVariants = getActiveVariants(product);
+
+  if (!activeVariants.length) {
+    return null;
+  }
+
+  if (!product.optionGroups.length) {
+    return getDefaultVariant(product);
+  }
+
+  const selectedOptionValueIds = product.optionGroups
+    .map((group) => selectedOptionIdsByGroup[group.id])
+    .filter((valueId): valueId is string => Boolean(valueId));
+
+  if (selectedOptionValueIds.length !== product.optionGroups.length) {
+    return null;
+  }
+
+  return (
+    activeVariants.find(
+      (variant) =>
+        variant.optionValueIds.length === selectedOptionValueIds.length &&
+        selectedOptionValueIds.every((valueId) =>
+          variant.optionValueIds.includes(valueId),
+        ),
+    ) ?? null
   );
 }
 

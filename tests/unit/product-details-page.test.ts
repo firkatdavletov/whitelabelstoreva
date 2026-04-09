@@ -199,12 +199,104 @@ const plainProduct: Product = {
   variants: [],
 };
 
-function renderProductDetails() {
+const productWithVariantImages: Product = {
+  ...baseProduct,
+  defaultVariantId: "variant-regular",
+  optionGroups: [
+    {
+      id: "size",
+      title: "Размер",
+      values: [
+        {
+          id: "size-regular",
+          title: "Обычный",
+        },
+        {
+          id: "size-large",
+          title: "Большой",
+        },
+      ],
+    },
+  ],
+  variants: [
+    {
+      id: "variant-regular",
+      imageUrl: null,
+      isActive: true,
+      optionValueIds: ["size-regular"],
+      price: 14.9,
+      title: "Обычный",
+    },
+    {
+      id: "variant-large",
+      imageUrl: "https://example.com/poke-large.jpg",
+      isActive: true,
+      optionValueIds: ["size-large"],
+      price: 16.9,
+      title: "Большой",
+    },
+  ],
+};
+
+const productWithMissingVariantCombination: Product = {
+  ...baseProduct,
+  defaultVariantId: "variant-small-brioche",
+  optionGroups: [
+    {
+      id: "size",
+      title: "Размер",
+      values: [
+        {
+          id: "size-small",
+          title: "Small",
+        },
+        {
+          id: "size-large",
+          title: "Large",
+        },
+      ],
+    },
+    {
+      id: "bread",
+      title: "Булка",
+      values: [
+        {
+          id: "bread-brioche",
+          title: "Бриошь",
+        },
+        {
+          id: "bread-potato",
+          title: "Картофельная",
+        },
+      ],
+    },
+  ],
+  variants: [
+    {
+      id: "variant-small-brioche",
+      imageUrl: null,
+      isActive: true,
+      optionValueIds: ["size-small", "bread-brioche"],
+      price: 14.9,
+      title: "Small / Бриошь",
+    },
+    {
+      id: "variant-large-brioche",
+      imageUrl: null,
+      isActive: true,
+      optionValueIds: ["size-large", "bread-brioche"],
+      price: 16.9,
+      title: "Large / Бриошь",
+    },
+  ],
+};
+
+function renderProductDetails(product: Product = baseProduct) {
   return render(
     React.createElement(ProductDetailsPage, {
       backHref: "/menu",
       locale: "ru",
-      product: baseProduct,
+      product,
     }),
   );
 }
@@ -361,6 +453,57 @@ describe("ProductDetailsPage", () => {
     expect(
       screen.queryByRole("button", { name: "Увеличить количество" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("uses the variant image when selected and falls back to the parent image otherwise", async () => {
+    const user = userEvent.setup();
+
+    mocks.useMenuProductDetailsQuery.mockReturnValue({
+      data: productWithVariantImages,
+      error: null,
+      isError: false,
+      isPending: false,
+      refetch: mocks.productDetailsRefetch,
+    });
+
+    renderProductDetails(productWithVariantImages);
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke.jpg",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Большой" }));
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke-large.jpg",
+    );
+  });
+
+  it("shows unavailable text when the selected option combination has no variant", async () => {
+    const user = userEvent.setup();
+
+    mocks.useMenuProductDetailsQuery.mockReturnValue({
+      data: productWithMissingVariantCombination,
+      error: null,
+      isError: false,
+      isPending: false,
+      refetch: mocks.productDetailsRefetch,
+    });
+
+    renderProductDetails(productWithMissingVariantCombination);
+
+    expect(
+      screen.getByRole("button", { name: "Добавить в корзину" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Картофельная" }));
+
+    expect(
+      screen.queryByRole("button", { name: "Добавить в корзину" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Нет в наличии")).toBeInTheDocument();
   });
 
   it("does not render the ready-to-order info block for products without customizations", () => {

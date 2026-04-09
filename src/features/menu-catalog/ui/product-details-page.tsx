@@ -19,14 +19,16 @@ import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storef
 import { useMenuProductDetailsQuery } from "@/features/menu-catalog/hooks/use-menu-product-details-query";
 import {
   createInitialModifierSelection,
+  createInitialOptionSelection,
   getActiveVariants,
-  getDefaultVariantId,
   getMaxSelections,
   getNextSelectedModifierIds,
   getRenderableModifierGroups,
   getRequiredSelections,
+  resolveVariantForSelectedOptions,
   resolveVariantLabel,
   type SelectedModifiersState,
+  type SelectedOptionsState,
 } from "@/features/menu-catalog/lib/product-configurator";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { formatCurrency } from "@/shared/lib/currency";
@@ -84,14 +86,14 @@ export function ProductDetailsPage({
     true,
   );
   const { t } = useTranslation();
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    getDefaultVariantId(product),
-  );
+  const [selectedOptionIdByGroup, setSelectedOptionIdByGroup] =
+    useState<SelectedOptionsState>(() =>
+      createInitialOptionSelection(product),
+    );
   const [selectedModifierIdsByGroup, setSelectedModifierIdsByGroup] =
     useState<SelectedModifiersState>(() =>
       createInitialModifierSelection(product),
     );
-
   const resolvedProduct = productDetailsQuery.data ?? product;
   const isDetailsLoading =
     productDetailsQuery.isPending && !productDetailsQuery.data;
@@ -99,7 +101,7 @@ export function ProductDetailsPage({
     productDetailsQuery.isError && !productDetailsQuery.data;
 
   useEffect(() => {
-    setSelectedVariantId(getDefaultVariantId(resolvedProduct));
+    setSelectedOptionIdByGroup(createInitialOptionSelection(resolvedProduct));
     setSelectedModifierIdsByGroup(
       createInitialModifierSelection(resolvedProduct),
     );
@@ -107,8 +109,22 @@ export function ProductDetailsPage({
 
   const activeVariants = getActiveVariants(resolvedProduct);
   const modifierGroups = getRenderableModifierGroups(resolvedProduct);
-  const selectedVariant =
-    activeVariants.find((variant) => variant.id === selectedVariantId) ?? null;
+  const selectedVariant = resolveVariantForSelectedOptions(
+    resolvedProduct,
+    selectedOptionIdByGroup,
+  );
+  const selectedOptionSummary = resolvedProduct.optionGroups
+    .map((group) =>
+      group.values.find((value) => value.id === selectedOptionIdByGroup[group.id]),
+    )
+    .filter((value): value is { id: string; title: string } => Boolean(value))
+    .map((value) => value.title);
+  const isVariantSelectionUnavailable =
+    activeVariants.length > 0 &&
+    resolvedProduct.optionGroups.length > 0 &&
+    selectedVariant === null;
+  const selectedVariantIdForCart =
+    activeVariants.length > 0 ? selectedVariant?.id ?? null : null;
   const selectedUnitPrice = selectedVariant?.price ?? resolvedProduct.price;
   const selectedModifierOptions = modifierGroups.flatMap((group) => {
     const selectedIds = selectedModifierIdsByGroup[group.id] ?? [];
@@ -160,17 +176,19 @@ export function ProductDetailsPage({
   const selectedConfigurationKey = createCartConfigurationKey({
     modifiers: selectedModifierOptions,
     productId: resolvedProduct.id,
-    variantId: selectedVariant?.id ?? resolvedProduct.defaultVariantId ?? null,
+    variantId: selectedVariantIdForCart,
   });
   const matchingCartItems =
-    storefrontCart?.items.filter(
-      (item) =>
-        createCartConfigurationKey({
-          modifiers: item.modifiers,
-          productId: item.productId,
-          variantId: item.variantId,
-        }) === selectedConfigurationKey,
-    ) ?? [];
+    selectedVariantIdForCart === null && activeVariants.length > 0
+      ? []
+      : (storefrontCart?.items.filter(
+          (item) =>
+            createCartConfigurationKey({
+              modifiers: item.modifiers,
+              productId: item.productId,
+              variantId: item.variantId,
+            }) === selectedConfigurationKey,
+        ) ?? []);
   const primaryCartItem = matchingCartItems[0] ?? null;
   const quantityInCart = matchingCartItems.reduce(
     (total, item) => total + item.quantity,
@@ -194,6 +212,7 @@ export function ProductDetailsPage({
     removeCartItemMutation.isPending;
   const isSubmitDisabled =
     !resolvedProduct.isAvailable ||
+    isVariantSelectionUnavailable ||
     missingRequiredGroups.length > 0 ||
     addCartItemMutation.isPending;
 
@@ -206,7 +225,7 @@ export function ProductDetailsPage({
         title: configuredTitle,
         unit: resolvedProduct.unit,
         unitPrice: selectedUnitPrice,
-        variantId: selectedVariant?.id ?? resolvedProduct.defaultVariantId,
+        variantId: selectedVariantIdForCart,
       },
       {
         onSuccess: () => {
@@ -285,6 +304,10 @@ export function ProductDetailsPage({
                   <p className="text-muted-foreground text-sm leading-5">
                     {resolveVariantLabel(resolvedProduct, selectedVariant)}
                   </p>
+                ) : selectedOptionSummary.length ? (
+                  <p className="text-muted-foreground text-sm leading-5">
+                    {selectedOptionSummary.join(" · ")}
+                  </p>
                 ) : null}
               </div>
 
@@ -356,54 +379,54 @@ export function ProductDetailsPage({
           </Card>
         ) : (
           <>
-            {activeVariants.length ? (
-              <Card className="rounded-3xl">
-                <CardContent className="space-y-4 p-5 sm:p-6">
-                  <div className="space-y-1">
-                    <h2 className="font-heading text-foreground text-2xl font-semibold">
-                      {t("product.variantTitle")}
-                    </h2>
-                    <p className="text-muted-foreground text-sm">
-                      {t("product.selectOne")}
-                    </p>
-                  </div>
+            {resolvedProduct.optionGroups.map((group) => {
+              const selectedValueId = selectedOptionIdByGroup[group.id] ?? null;
 
-                  <div className="grid gap-2">
-                    {activeVariants.map((variant) => {
-                      const isSelected = variant.id === selectedVariantId;
+              return (
+                <Card className="rounded-3xl" key={group.id}>
+                  <CardContent className="space-y-4 p-5 sm:p-6">
+                    <div className="space-y-1">
+                      <h2 className="font-heading text-foreground text-2xl font-semibold">
+                        {group.title}
+                      </h2>
+                      <p className="text-muted-foreground text-sm">
+                        {t("product.selectOne")}
+                      </p>
+                    </div>
 
-                      return (
-                        <SelectableCard
-                          key={variant.id}
-                          onClick={() => setSelectedVariantId(variant.id)}
-                          selected={isSelected}
-                        >
-                          <div className="min-w-0">
-                            <p className="text-foreground font-medium">
-                              {resolveVariantLabel(resolvedProduct, variant)}
-                            </p>
-                          </div>
+                    <div className="grid gap-2">
+                      {group.values.map((value) => {
+                        const isSelected = value.id === selectedValueId;
 
-                          <div className="flex items-center gap-2">
-                            <span className="text-foreground text-sm font-semibold">
-                              {formatCurrency(
-                                variant.price ?? resolvedProduct.price,
-                                resolvedProduct.currency,
-                                locale,
-                              )}
-                            </span>
+                        return (
+                          <SelectableCard
+                            key={value.id}
+                            onClick={() =>
+                              setSelectedOptionIdByGroup((currentState) => ({
+                                ...currentState,
+                                [group.id]: value.id,
+                              }))
+                            }
+                            selected={isSelected}
+                          >
+                            <div className="min-w-0">
+                              <p className="text-foreground font-medium">
+                                {value.title}
+                              </p>
+                            </div>
+
                             <SelectableCardIndicator
                               selected={isSelected}
                               size="md"
                             />
-                          </div>
-                        </SelectableCard>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
+                          </SelectableCard>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
 
             {modifierGroups.map((group) => {
               const selectedIds = selectedModifierIdsByGroup[group.id] ?? [];
@@ -512,6 +535,10 @@ export function ProductDetailsPage({
               <p className="text-muted-foreground mt-1 truncate text-xs leading-5 sm:text-sm">
                 {resolveVariantLabel(resolvedProduct, selectedVariant)}
               </p>
+            ) : selectedOptionSummary.length ? (
+              <p className="text-muted-foreground mt-1 truncate text-xs leading-5 sm:text-sm">
+                {selectedOptionSummary.join(" · ")}
+              </p>
             ) : selectedSummary.length ? (
               <p className="text-muted-foreground mt-1 truncate text-xs leading-5 sm:text-sm">
                 {selectedSummary.join(" · ")}
@@ -549,6 +576,10 @@ export function ProductDetailsPage({
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+          ) : isVariantSelectionUnavailable ? (
+            <p className="text-foreground shrink-0 px-2 text-sm font-semibold sm:text-base">
+              {t("product.unavailable")}
+            </p>
           ) : (
             <Button
               className="h-12 shrink-0 rounded-lg px-4 text-sm sm:px-5"
