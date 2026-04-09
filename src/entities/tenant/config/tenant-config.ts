@@ -139,7 +139,7 @@ export const tenantConfigMap = {
     logoText: "",
     logoUrl: "/tenants/aiymbrand/logo.png",
     restaurantId: "aiymbrand",
-    slug: "aiym",
+    slug: "aiymbrand",
     supportEmail: "kiranova@bk.ru",
     tagline: "Современный этно брэнд",
     theme: {
