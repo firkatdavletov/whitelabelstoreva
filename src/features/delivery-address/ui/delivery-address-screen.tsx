@@ -13,6 +13,7 @@ import { useUpdateStorefrontCartDeliveryMutation } from "@/features/cart-summary
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
 import {
   detectCourierCartDeliveryDraft,
+  detectYandexCity,
   findPickupPointById,
   getDeliveryMethods,
   getDeliveryPickupPoints,
@@ -127,6 +128,7 @@ export function DeliveryAddressScreen() {
     useState<string | null>(null);
   const [pickupMapHasManualCenter, setPickupMapHasManualCenter] =
     useState(false);
+  const [isDetectingNearbyCity, setIsDetectingNearbyCity] = useState(false);
   const updateCartDeliveryMutation =
     useUpdateStorefrontCartDeliveryMutation(tenantSlug);
 
@@ -232,26 +234,27 @@ export function DeliveryAddressScreen() {
     }
 
     window.navigator.geolocation.getCurrentPosition(
-      (position) => {
-        detectCourierCartDeliveryDraft(
-          {
-            deliveryMethod: selectedMethodCode ?? "YANDEX_PICKUP_POINT",
+      async (position) => {
+        setIsDetectingNearbyCity(true);
+
+        try {
+          const { city } = await detectYandexCity({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-          },
-          tenantSlug,
-        )
-          .then((draft) => {
-            const cityQuery = draft?.address?.city;
-
-            if (cityQuery) {
-              yandexPickup.setSearchQuery(cityQuery);
-              yandexPickup.submitSearch(cityQuery);
-            }
-          })
-          .catch(() => {
-            toast.error(t("deliveryAddress.yandexLocationError"));
           });
+          const cityQuery = city?.trim();
+
+          if (!cityQuery) {
+            throw new Error("Missing city");
+          }
+
+          yandexPickup.setSearchQuery(cityQuery);
+          yandexPickup.submitSearch(cityQuery);
+        } catch {
+          toast.error(t("deliveryAddress.yandexLocationError"));
+        } finally {
+          setIsDetectingNearbyCity(false);
+        }
       },
       () => {
         toast.error(t("deliveryAddress.locationError"));
@@ -262,7 +265,7 @@ export function DeliveryAddressScreen() {
         timeout: 10_000,
       },
     );
-  }, [selectedMethodCode, t, tenantSlug, yandexPickup]);
+  }, [t, yandexPickup]);
 
   const handleYandexUseCourierAddress = useCallback(() => {
     if (courierAddressHint) {
@@ -560,7 +563,9 @@ export function DeliveryAddressScreen() {
           <div className="flex justify-center">
             <YandexPickupSearch
               courierAddressHint={courierAddressHint}
-              isLoadingLocation={yandexPickup.isLoadingLocation}
+              isLoadingLocation={
+                isDetectingNearbyCity || yandexPickup.isLoadingLocation
+              }
               locationVariants={yandexPickup.locationVariants}
               onDismissVariants={yandexPickup.dismissVariants}
               onLocateMe={handleYandexLocateMe}

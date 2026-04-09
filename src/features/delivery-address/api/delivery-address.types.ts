@@ -22,6 +22,12 @@ export type YandexLocationDetectRequestDto =
 export type YandexLocationDetectResponseDto =
   components["schemas"]["YandexLocationDetectResponse"];
 
+export type YandexCityDetectRequestDto =
+  components["schemas"]["YandexCityDetectRequest"];
+
+export type YandexCityDetectResponseDto =
+  components["schemas"]["YandexCityDetectResponse"];
+
 export type YandexLocationVariantDto =
   components["schemas"]["YandexLocationVariantResponse"];
 

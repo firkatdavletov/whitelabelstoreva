@@ -458,6 +458,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/delivery/yandex/city-detect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Detect city name by coordinates via Yandex geocoder */
+        post: operations["detectYandexCity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/delivery/yandex/pickup-points": {
         parameters: {
             query?: never;
@@ -944,6 +961,15 @@ export interface components {
         };
         YandexLocationDetectResponse: {
             variants: components["schemas"]["YandexLocationVariantResponse"][];
+        };
+        YandexCityDetectRequest: {
+            /** Format: double */
+            latitude: number;
+            /** Format: double */
+            longitude: number;
+        };
+        YandexCityDetectResponse: {
+            city: string | null;
         };
         YandexLocationVariantResponse: {
             /** Format: int64 */
@@ -2193,6 +2219,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["YandexLocationDetectResponse"];
+                };
+            };
+            400: components["responses"]["BadRequestError"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    detectYandexCity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["YandexCityDetectRequest"];
+            };
+        };
+        responses: {
+            /** @description Detected city for coordinates */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["YandexCityDetectResponse"];
                 };
             };
             400: components["responses"]["BadRequestError"];

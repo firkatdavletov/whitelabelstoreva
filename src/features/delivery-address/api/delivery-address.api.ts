@@ -8,6 +8,8 @@ import type {
   DetectCourierCartDeliveryDraftResponseDto,
   PickupPointDto,
   PickupPointsResponseDto,
+  YandexCityDetectRequestDto,
+  YandexCityDetectResponseDto,
   YandexLocationDetectRequestDto,
   YandexLocationDetectResponseDto,
   YandexPickupPointsRequestDto,
@@ -49,6 +51,12 @@ function createMockDeliveryMethodsResponse(): DeliveryMethodsResponseDto {
 function createMockYandexLocationDetectResponse(): YandexLocationDetectResponseDto {
   return {
     variants: [{ address: "Екатеринбург, Свердловская область", geoId: 54 }],
+  };
+}
+
+function createMockYandexCityDetectResponse(): YandexCityDetectResponseDto {
+  return {
+    city: "Екатеринбург",
   };
 }
 
@@ -238,6 +246,23 @@ export async function detectYandexLocations(query: string) {
     YandexLocationDetectRequestDto
   >("/v1/delivery/yandex/location-detect", {
     body: { query },
+    cache: "no-store",
+    method: "POST",
+  });
+}
+
+export async function detectYandexCity(
+  input: YandexCityDetectRequestDto,
+) {
+  if (env.apiMocksEnabled) {
+    return createMockYandexCityDetectResponse();
+  }
+
+  return apiRequest<
+    YandexCityDetectResponseDto,
+    YandexCityDetectRequestDto
+  >("/v1/delivery/yandex/city-detect", {
+    body: input,
     cache: "no-store",
     method: "POST",
   });
