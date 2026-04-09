@@ -1,6 +1,6 @@
-const INSTALL_ID_COOKIE_NAME = "install_id";
-const INSTALL_ID_STORAGE_KEY = "storefront_install_id";
-const INSTALL_ID_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 10;
+export const INSTALL_ID_COOKIE_NAME = "install_id";
+export const INSTALL_ID_STORAGE_KEY = "storefront_install_id";
+export const INSTALL_ID_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 10;
 
 function readInstallIdCookie() {
   if (typeof document === "undefined" || !document.cookie) {
@@ -54,7 +54,7 @@ function writeInstallIdStorage(installId: string) {
   }
 }
 
-function generateInstallId() {
+export function createInstallId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
@@ -81,7 +81,7 @@ export function getClientInstallId() {
     return cookieInstallId;
   }
 
-  const nextInstallId = generateInstallId();
+  const nextInstallId = createInstallId();
 
   writeInstallIdStorage(nextInstallId);
   writeInstallIdCookie(nextInstallId);

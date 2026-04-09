@@ -1,6 +1,6 @@
 import { ApiError } from "@/shared/api/api-error";
 import { createApiUrl } from "@/shared/api/create-url";
-import { getClientInstallId } from "@/shared/api/install-id";
+import { getClientInstallId, INSTALL_ID_COOKIE_NAME } from "@/shared/api/install-id";
 import { safeJson } from "@/shared/lib/safe-json";
 import type { ApiMethod, ApiQueryParams } from "@/shared/types/api";
 
@@ -75,22 +75,67 @@ function logApiFailure({
   });
 }
 
+async function resolveDefaultServerRequestContext({
+  accessToken,
+  cookie,
+  installId,
+}: {
+  accessToken?: string;
+  cookie?: string;
+  installId?: string;
+}) {
+  if (typeof window !== "undefined") {
+    return { accessToken, cookie, installId };
+  }
+
+  try {
+    const { cookies, headers } = await import("next/headers");
+    const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
+
+    const authorizationHeader = headerStore.get("authorization");
+
+    return {
+      accessToken:
+        accessToken ??
+        authorizationHeader?.replace(/^Bearer\s+/i, "") ??
+        cookieStore.get("access_token")?.value,
+      cookie: cookie ?? headerStore.get("cookie") ?? cookieStore.toString(),
+      installId:
+        installId ??
+        headerStore.get("x-install-id") ??
+        cookieStore.get(INSTALL_ID_COOKIE_NAME)?.value,
+    };
+  } catch {
+    return { accessToken, cookie, installId };
+  }
+}
+
 // Shared HTTP transport stays intentionally thin: backend business rules remain in Spring Boot.
 export async function apiRequest<TResponse, TBody = undefined>(
   pathname: string,
   options: ApiRequestOptions<TBody> = {},
 ) {
   const {
-    accessToken,
+    accessToken: inputAccessToken,
     body,
-    cookie,
+    cookie: inputCookie,
     credentials,
     headers,
-    installId,
+    installId: inputInstallId,
     method = "GET",
     query,
     ...rest
   } = options;
+
+  const {
+    accessToken,
+    cookie,
+    installId,
+  } = await resolveDefaultServerRequestContext({
+    accessToken: inputAccessToken,
+    cookie: inputCookie,
+    installId: inputInstallId,
+  });
 
   const resolvedCredentials = credentials ?? "same-origin";
   const requestUrl = createApiUrl(pathname, query);
