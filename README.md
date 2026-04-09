@@ -37,6 +37,7 @@ Useful scripts:
 - Local development: use `.env.local`.
 - Production on Amvera: add the same variables in the project section `Переменные`.
 - The app now bootstraps public runtime config from the server, so on Amvera values are read from the container environment at startup instead of being taken from `.env.local`.
+- `NEXT_PUBLIC_API_BASE_URL` may be either the API root (`https://example.com/api`) or just the host (`https://example.com`) - the storefront will normalize it to `/api`.
 
 Public variables used by the storefront:
 
