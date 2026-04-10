@@ -124,14 +124,6 @@ export function FashionProductCard({
             : formatCurrency(product.price, product.currency, locale)}
         </p>
       </div>
-
-      <div className="relative z-20 px-1 md:px-0">
-        <AddToCartButton
-          className="w-full text-xs md:text-sm"
-          product={product}
-          productHref={productHref}
-        />
-      </div>
     </div>
   );
 }

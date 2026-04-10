@@ -263,9 +263,9 @@ export const ruMessages = {
     errorDescription:
       "Попробуйте изменить запрос или перейти в полное меню каталога.",
     errorTitle: "Не удалось загрузить результаты поиска",
-    inputPlaceholder: "Например, бургер, ролл или лимонад",
+    inputPlaceholder: "Найти",
     loading: "Ищем по каталогу...",
-    openMenu: "Открыть меню",
+    openMenu: "Посмотреть все",
     resultsCount: "Найдено позиций: {{count}}",
     title: "Поиск",
   },

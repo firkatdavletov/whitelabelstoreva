@@ -481,6 +481,17 @@ describe("ProductDetailsPage", () => {
     );
   });
 
+  it("renders the product image without crop classes", () => {
+    renderProductDetails();
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveClass(
+      "object-contain",
+    );
+    expect(screen.getByRole("img", { name: "Поке" })).not.toHaveClass(
+      "object-cover",
+    );
+  });
+
   it("shows unavailable text when the selected option combination has no variant", async () => {
     const user = userEvent.setup();
 

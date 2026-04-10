@@ -167,11 +167,14 @@ export function ProductDetailsPage({
     selectedVariant?.imageUrl ??
     resolvedProduct.imageUrl ??
     getProductCardImageSrc(resolvedProduct);
+  const selectedVariantLabel = selectedVariant
+    ? resolveVariantLabel(resolvedProduct, selectedVariant)
+    : null;
+  const selectedHeaderSummary =
+    selectedVariantLabel ??
+    (selectedOptionSummary.length ? selectedOptionSummary.join(" · ") : null);
   const configuredTitle = selectedVariant
-    ? `${resolvedProduct.name} · ${resolveVariantLabel(
-        resolvedProduct,
-        selectedVariant,
-      )}`
+    ? `${resolvedProduct.name} · ${selectedVariantLabel}`
     : resolvedProduct.name;
   const selectedConfigurationKey = createCartConfigurationKey({
     modifiers: selectedModifierOptions,
@@ -275,19 +278,22 @@ export function ProductDetailsPage({
         </Button>
 
         <Card className="overflow-hidden rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_90%,white),color-mix(in_srgb,var(--secondary)_58%,white))]">
-          <div className="relative aspect-[4/3] min-h-[280px] overflow-hidden sm:aspect-[16/11]">
-            <Image
-              alt={resolvedProduct.name}
-              className="object-cover"
-              fill
-              sizes="(max-width: 1279px) 100vw, 720px"
-              src={imageSrc}
-              unoptimized
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(28,17,11,0.04),rgba(28,17,11,0.2))]" />
+          <div className="p-4 sm:p-6">
+            <div className="relative min-h-[280px] w-full sm:min-h-[420px] xl:min-h-[560px]">
+              <Image
+                alt={resolvedProduct.name}
+                className="object-contain"
+                fill
+                sizes="(max-width: 1279px) 100vw, 50vw"
+                src={imageSrc}
+                unoptimized
+              />
+            </div>
           </div>
         </Card>
+      </div>
 
+      <div className="space-y-4">
         <Card className="rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_92%,white),color-mix(in_srgb,var(--secondary)_48%,white))]">
           <CardContent className="space-y-4 p-5 sm:p-7">
             <div className="space-y-3">
@@ -300,13 +306,9 @@ export function ProductDetailsPage({
                   {formatCurrency(totalPrice, resolvedProduct.currency, locale)}
                 </p>
 
-                {selectedVariant ? (
+                {selectedHeaderSummary ? (
                   <p className="text-muted-foreground text-sm leading-5">
-                    {resolveVariantLabel(resolvedProduct, selectedVariant)}
-                  </p>
-                ) : selectedOptionSummary.length ? (
-                  <p className="text-muted-foreground text-sm leading-5">
-                    {selectedOptionSummary.join(" · ")}
+                    {selectedHeaderSummary}
                   </p>
                 ) : null}
               </div>
@@ -330,9 +332,7 @@ export function ProductDetailsPage({
             ) : null}
           </CardContent>
         </Card>
-      </div>
 
-      <div className="space-y-4">
         {isDetailsLoading ? (
           <>
             <Card className="rounded-3xl">
