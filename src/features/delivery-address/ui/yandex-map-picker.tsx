@@ -19,11 +19,39 @@ import {
 } from "@/features/delivery-address/lib/delivery-address.utils";
 
 const DEFAULT_MAP_ZOOM = 16;
+const CLUSTER_CLICK_ZOOM_DELTA = 2;
+const CLUSTER_DATA_SOURCE_ID = "pickup-points";
+const CLUSTER_GRID_SIZE = 64;
 const MIN_MAP_ZOOM = 10;
 const MAX_MAP_ZOOM = 19;
 const SCRIPT_ID = "yandex-maps-v3-script";
 
 type MapStatus = "error" | "loading" | "missing-key" | "ready";
+
+type YandexClusterFeature = {
+  type: "Feature";
+  id: string;
+  geometry: {
+    coordinates: [number, number];
+    type: "Point";
+  };
+  properties: {
+    label: string;
+  };
+};
+
+type YandexClustererModule = {
+  clusterByGrid: (options: { gridSize: number }) => unknown;
+  YMapClusterer: new (props: {
+    cluster: (
+      coordinates: [number, number],
+      features: YandexClusterFeature[],
+    ) => unknown;
+    features: YandexClusterFeature[];
+    marker: (feature: YandexClusterFeature) => unknown;
+    method: unknown;
+  }) => unknown;
+};
 
 function getYandexMapsLang(locale: Locale) {
   return locale === "ru" ? "ru_RU" : "en_US";
@@ -48,6 +76,68 @@ function normalizeMapCenter(
     latitude: Number(latitude.toFixed(6)),
     longitude: Number(longitude.toFixed(6)),
   };
+}
+
+function createPickupMarkerElement({
+  isActive,
+  label,
+  onClick,
+}: {
+  isActive: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  const markerElement = document.createElement("button");
+
+  markerElement.className =
+    "group flex h-11 w-11 items-center justify-center rounded-full border shadow-lg transition-all " +
+    (isActive
+      ? "border-[color:var(--primary)] bg-[color:var(--primary)] text-[color:var(--primary-foreground)]"
+      : "border-[color:var(--border)] bg-[color:var(--background)] text-[color:var(--primary)]");
+  markerElement.type = "button";
+  markerElement.setAttribute("aria-label", label);
+  markerElement.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M16 4h2a2 2 0 0 1 2 2v11a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2h2"/><path d="M9 2h6v4H9z"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>';
+  markerElement.addEventListener("click", onClick);
+
+  return markerElement;
+}
+
+function createClusterElement({
+  count,
+  onClick,
+}: {
+  count: number;
+  onClick: () => void;
+}) {
+  const clusterElement = document.createElement("button");
+  const countLabel = document.createElement("span");
+
+  clusterElement.className =
+    "flex h-12 w-12 items-center justify-center rounded-full border border-primary/25 bg-primary text-primary-foreground shadow-[0_18px_36px_-18px_rgba(15,23,42,0.72)] transition-transform hover:scale-[1.03]";
+  clusterElement.type = "button";
+  clusterElement.setAttribute("aria-label", String(count));
+  clusterElement.addEventListener("click", onClick);
+
+  countLabel.className = "text-xs font-semibold";
+  countLabel.textContent = count > 99 ? "99+" : String(count);
+  clusterElement.appendChild(countLabel);
+
+  return clusterElement;
+}
+
+function toClusterFeatures(markers: MapPickupMarker[]): YandexClusterFeature[] {
+  return markers.map((marker) => ({
+    type: "Feature",
+    id: marker.id,
+    geometry: {
+      coordinates: [marker.longitude, marker.latitude],
+      type: "Point",
+    },
+    properties: {
+      label: marker.label,
+    },
+  }));
 }
 
 async function loadYandexMapsApi(apiKey: string, locale: Locale) {
@@ -140,11 +230,13 @@ export function YandexMapPicker({
   const mapRef = useRef<YandexMapInstance | null>(null);
   const latestCenterRef = useRef(center);
   const latestZoomRef = useRef(DEFAULT_MAP_ZOOM);
-  const markersRef = useRef<unknown[]>([]);
+  const clustererModuleRef = useRef<YandexClustererModule | null>(null);
+  const clustererRef = useRef<unknown | null>(null);
+  const fallbackMarkersRef = useRef<unknown[]>([]);
   const onCenterChangeRef = useRef(onCenterChange);
   const onMarkerSelectRef = useRef(onMarkerSelect);
-  const [status, setStatus] = useState<MapStatus>(
-    () => (env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? "loading" : "missing-key"),
+  const [status, setStatus] = useState<MapStatus>(() =>
+    env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? "loading" : "missing-key",
   );
   const [zoom, setZoom] = useState(DEFAULT_MAP_ZOOM);
   const [isLocating, setIsLocating] = useState(false);
@@ -199,46 +291,154 @@ export function YandexMapPicker({
 
     const ymaps3 = window.ymaps3;
 
-    markersRef.current.forEach((marker) => {
-      mapRef.current?.removeChild?.(marker);
-    });
-    markersRef.current = [];
+    let cancelled = false;
 
-    markers.forEach((pickupMarker) => {
-      const markerElement = document.createElement("button");
-      const isActive = pickupMarker.id === selectedMarkerId;
+    function clearRenderedMarkers() {
+      if (clustererRef.current) {
+        mapRef.current?.removeChild?.(clustererRef.current);
+        clustererRef.current = null;
+      }
 
-      markerElement.className =
-        "group flex h-11 w-11 items-center justify-center rounded-full border shadow-lg transition-all " +
-        (isActive
-          ? "border-[color:var(--primary)] bg-[color:var(--primary)] text-[color:var(--primary-foreground)]"
-          : "border-[color:var(--border)] bg-[color:var(--background)] text-[color:var(--primary)]");
-      markerElement.type = "button";
-      markerElement.setAttribute("aria-label", pickupMarker.label);
-      markerElement.innerHTML =
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M16 4h2a2 2 0 0 1 2 2v11a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2h2"/><path d="M9 2h6v4H9z"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>';
-      markerElement.addEventListener("click", () => {
-        onMarkerSelectRef.current?.(pickupMarker.id);
+      fallbackMarkersRef.current.forEach((marker) => {
+        mapRef.current?.removeChild?.(marker);
       });
+      fallbackMarkersRef.current = [];
+    }
+
+    function renderPlainMarkers() {
+      markers.forEach((pickupMarker) => {
+        const isActive = pickupMarker.id === selectedMarkerId;
+        const markerElement = createPickupMarkerElement({
+          isActive,
+          label: pickupMarker.label,
+          onClick: () => {
+            onMarkerSelectRef.current?.(pickupMarker.id);
+          },
+        });
+
+        try {
+          const marker = new ymaps3.YMapMarker(
+            {
+              coordinates: [pickupMarker.longitude, pickupMarker.latitude],
+              id: pickupMarker.id,
+              source: CLUSTER_DATA_SOURCE_ID,
+              zIndex: isActive ? 2000 : 1000,
+            },
+            markerElement,
+          );
+
+          mapRef.current?.addChild(marker);
+          fallbackMarkersRef.current.push(marker);
+        } catch (error) {
+          if (process.env.NODE_ENV !== "production") {
+            console.error("Failed to attach pickup marker", error);
+          }
+        }
+      });
+    }
+
+    async function renderMarkers() {
+      clearRenderedMarkers();
+
+      if (!markers.length) {
+        return;
+      }
 
       try {
-        const marker = new ymaps3.YMapMarker(
-          {
-            coordinates: [pickupMarker.longitude, pickupMarker.latitude],
-            id: pickupMarker.id,
-            zIndex: isActive ? 2000 : 1000,
-          },
-          markerElement,
-        );
+        if (
+          !ymaps3.YMapFeatureDataSource ||
+          !ymaps3.YMapLayer ||
+          typeof ymaps3.import !== "function"
+        ) {
+          renderPlainMarkers();
+          return;
+        }
 
-        mapRef.current?.addChild(marker);
-        markersRef.current.push(marker);
+        const clustererModule =
+          clustererModuleRef.current ??
+          (await ymaps3.import<YandexClustererModule>(
+            "@yandex/ymaps3-clusterer",
+          ));
+
+        if (cancelled || !mapRef.current) {
+          return;
+        }
+
+        clustererModuleRef.current = clustererModule;
+
+        const clusterer = new clustererModule.YMapClusterer({
+          cluster: (coordinates, features) =>
+            new ymaps3.YMapMarker(
+              {
+                coordinates,
+                source: CLUSTER_DATA_SOURCE_ID,
+                zIndex: 1500,
+              },
+              createClusterElement({
+                count: features.length,
+                onClick: () => {
+                  const nextCenter = fromYandexMapCenter(coordinates);
+                  const nextZoom = clampMapZoom(
+                    latestZoomRef.current + CLUSTER_CLICK_ZOOM_DELTA,
+                  );
+
+                  latestCenterRef.current = nextCenter;
+                  latestZoomRef.current = nextZoom;
+
+                  mapRef.current?.update({
+                    location: {
+                      center: coordinates,
+                      duration: 220,
+                      zoom: nextZoom,
+                    },
+                  });
+
+                  setZoom(nextZoom);
+                  onCenterChangeRef.current(nextCenter);
+                },
+              }),
+            ),
+          features: toClusterFeatures(markers),
+          marker: (feature) =>
+            new ymaps3.YMapMarker(
+              {
+                coordinates: feature.geometry.coordinates,
+                id: feature.id,
+                source: CLUSTER_DATA_SOURCE_ID,
+                zIndex: feature.id === selectedMarkerId ? 2000 : 1000,
+              },
+              createPickupMarkerElement({
+                isActive: feature.id === selectedMarkerId,
+                label: feature.properties.label,
+                onClick: () => {
+                  onMarkerSelectRef.current?.(feature.id);
+                },
+              }),
+            ),
+          method: clustererModule.clusterByGrid({
+            gridSize: CLUSTER_GRID_SIZE,
+          }),
+        });
+
+        mapRef.current.addChild(clusterer);
+        clustererRef.current = clusterer;
       } catch (error) {
         if (process.env.NODE_ENV !== "production") {
-          console.error("Failed to attach pickup marker", error);
+          console.error("Failed to initialize marker clustering", error);
+        }
+
+        if (!cancelled) {
+          renderPlainMarkers();
         }
       }
-    });
+    }
+
+    void renderMarkers();
+
+    return () => {
+      cancelled = true;
+      clearRenderedMarkers();
+    };
   }, [markers, selectedMarkerId, status]);
 
   useEffect(() => {
@@ -275,6 +475,21 @@ export function YandexMapPicker({
 
         if (ymaps3.YMapDefaultFeaturesLayer) {
           map.addChild(new ymaps3.YMapDefaultFeaturesLayer());
+        }
+
+        if (ymaps3.YMapFeatureDataSource && ymaps3.YMapLayer) {
+          map.addChild(
+            new ymaps3.YMapFeatureDataSource({
+              id: CLUSTER_DATA_SOURCE_ID,
+            }),
+          );
+          map.addChild(
+            new ymaps3.YMapLayer({
+              source: CLUSTER_DATA_SOURCE_ID,
+              type: "markers",
+              zIndex: 1800,
+            }),
+          );
         }
 
         map.addChild(
@@ -315,7 +530,8 @@ export function YandexMapPicker({
 
     return () => {
       cancelled = true;
-      markersRef.current = [];
+      clustererRef.current = null;
+      fallbackMarkersRef.current = [];
       mapRef.current?.destroy?.();
       mapRef.current = null;
     };
@@ -374,28 +590,28 @@ export function YandexMapPicker({
   return (
     <div
       className={cn(
-        "relative h-[420px] touch-none overflow-hidden rounded-xl border border-border/70 bg-muted/30",
+        "border-border/70 bg-muted/30 relative h-[420px] touch-none overflow-hidden rounded-xl border",
         className,
       )}
     >
       <div className="h-full w-full touch-none" ref={containerRef} />
 
       {status !== "ready" ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-card/95">
+        <div className="bg-card/95 absolute inset-0 flex items-center justify-center">
           <div className="flex max-w-sm flex-col items-center gap-3 px-6 text-center">
             {status === "loading" ? (
               <>
                 <LoaderCircle className="text-primary h-6 w-6 animate-spin" />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {t("deliveryAddress.mapLoading")}
                 </p>
               </>
             ) : status === "missing-key" ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t("deliveryAddress.mapKeyMissing")}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t("deliveryAddress.mapLoadError")}
               </p>
             )}
@@ -405,7 +621,7 @@ export function YandexMapPicker({
 
       {showHint ? (
         <div className="pointer-events-none absolute inset-x-0 top-4 flex justify-center px-4">
-          <div className="rounded-full border border-border/70 bg-background/90 px-4 py-2 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
+          <div className="border-border/70 bg-background/90 text-muted-foreground rounded-full border px-4 py-2 text-xs font-medium shadow-sm backdrop-blur-sm">
             {markers.length
               ? t("deliveryAddress.pickupMapHint")
               : t("deliveryAddress.dragMapHint")}
@@ -414,12 +630,10 @@ export function YandexMapPicker({
       ) : null}
 
       {status === "ready" ? (
-        <div
-          className="absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col gap-2 sm:right-5"
-        >
+        <div className="absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col gap-2 sm:right-5">
           <button
             aria-label={t("deliveryAddress.locateMe")}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-background/90 text-foreground shadow-lg backdrop-blur-sm transition hover:bg-background disabled:cursor-wait disabled:opacity-70"
+            className="border-border/70 bg-background/90 text-foreground hover:bg-background flex h-11 w-11 items-center justify-center rounded-2xl border shadow-lg backdrop-blur-sm transition disabled:cursor-wait disabled:opacity-70"
             disabled={isLocating}
             onClick={handleLocateMe}
             title={t("deliveryAddress.locateMe")}
@@ -432,10 +646,10 @@ export function YandexMapPicker({
             )}
           </button>
 
-          <div className="overflow-hidden rounded-2xl border border-border/70 bg-background/90 shadow-lg backdrop-blur-sm">
+          <div className="border-border/70 bg-background/90 overflow-hidden rounded-2xl border shadow-lg backdrop-blur-sm">
             <button
               aria-label={t("deliveryAddress.zoomIn")}
-              className="flex h-11 w-11 items-center justify-center text-foreground transition hover:bg-background disabled:opacity-40"
+              className="text-foreground hover:bg-background flex h-11 w-11 items-center justify-center transition disabled:opacity-40"
               disabled={!canZoomIn}
               onClick={() => handleZoomChange(1)}
               title={t("deliveryAddress.zoomIn")}
@@ -443,10 +657,10 @@ export function YandexMapPicker({
             >
               <Plus className="h-4 w-4" />
             </button>
-            <div className="h-px w-full bg-border/70" />
+            <div className="bg-border/70 h-px w-full" />
             <button
               aria-label={t("deliveryAddress.zoomOut")}
-              className="flex h-11 w-11 items-center justify-center text-foreground transition hover:bg-background disabled:opacity-40"
+              className="text-foreground hover:bg-background flex h-11 w-11 items-center justify-center transition disabled:opacity-40"
               disabled={!canZoomOut}
               onClick={() => handleZoomChange(-1)}
               title={t("deliveryAddress.zoomOut")}

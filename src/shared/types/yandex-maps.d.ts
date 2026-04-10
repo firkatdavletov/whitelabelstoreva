@@ -33,6 +33,7 @@ declare global {
   }
 
   interface YandexMapsNamespace {
+    import<T = unknown>(packageName: string): Promise<T>;
     ready: Promise<void>;
     YMap: new (
       container: HTMLElement,
@@ -43,6 +44,12 @@ declare global {
     ) => YandexMapInstance;
     YMapDefaultFeaturesLayer?: new () => unknown;
     YMapDefaultSchemeLayer: new () => unknown;
+    YMapFeatureDataSource?: new (options: { id: string }) => unknown;
+    YMapLayer?: new (options: {
+      source: string;
+      type: string;
+      zIndex?: number;
+    }) => unknown;
     YMapListener: new (options: {
       onActionEnd?: (event: YandexMapListenerEvent) => void;
     }) => unknown;
