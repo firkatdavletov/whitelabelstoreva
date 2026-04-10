@@ -13,8 +13,7 @@ export const enMessages = {
     checkoutSubtitle: "Review your order before submitting it.",
     checkout: "Proceed to checkout",
     continue: "Browse menu",
-    deliveryCalculatedIndividually:
-      "Delivery cost is calculated individually",
+    deliveryCalculatedIndividually: "Delivery cost is calculated individually",
     delivery: "Delivery",
     deliveryFree: "Free delivery",
     empty: "Your cart is empty. Add a few dishes to start an order.",
@@ -130,9 +129,10 @@ export const enMessages = {
     zoomOut: "Zoom out",
   },
   footer: {
-    caption:
-      "Feature-first storefront shell ready for Spring Boot integration.",
-    subtitle: "Shared frontend, branded by tenant config.",
+    documents: "Official documents",
+    personalDataConsent: "Consent to personal data processing",
+    personalDataPolicy: "Personal data policy",
+    publicOffer: "Public offer",
   },
   header: {
     addressPending: "add address",
@@ -158,6 +158,11 @@ export const enMessages = {
     featured: "Featured dishes",
     subtitle:
       "One frontend shell, tenant-specific branding, typed API boundaries, and zero backend business rules on the client.",
+  },
+  legalDocuments: {
+    backToStorefront: "Back to storefront",
+    badge: "Official documents",
+    updatedAt: "Updated",
   },
   menu: {
     empty: "Menu is empty for this tenant.",

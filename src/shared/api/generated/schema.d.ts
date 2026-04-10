@@ -689,6 +689,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/legal-documents/{type}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a legal document for storefront clients */
+        get: operations["getPublicLegalDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/hero-banners": {
         parameters: {
             query?: never;
@@ -1325,6 +1342,14 @@ export interface components {
         ModifierPriceType: "FIXED" | "FREE";
         /** @enum {string} */
         ModifierApplicationScope: "PER_ITEM" | "PER_LINE";
+        LegalDocumentResponse: {
+            type: components["schemas"]["LegalDocumentType"];
+            title: string;
+            subtitle?: string | null;
+            text: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
         /** @enum {string} */
         AuthMethod: "PHONE_SMS" | "PHONE_CALL" | "TELEGRAM" | "MAX" | "EMAIL";
         /** @enum {string} */
@@ -1343,6 +1368,8 @@ export interface components {
         OrderCustomerType: "USER" | "GUEST";
         /** @enum {string} */
         OrderStateType: "CREATED" | "AWAITING_CONFIRMATION" | "CONFIRMED" | "PREPARING" | "READY_FOR_PICKUP" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELED" | "ON_HOLD";
+        /** @enum {string} */
+        LegalDocumentType: "public-offer" | "personal-data-consent" | "personal-data-policy";
         CreateVirtualTryOnSessionRequest: {
             /** Format: uuid */
             productId: string;
@@ -1503,6 +1530,7 @@ export interface components {
         ProductIdPathParam: string;
         CartItemIdPathParam: string;
         OrderIdPathParam: string;
+        LegalDocumentTypePathParam: components["schemas"]["LegalDocumentType"];
     };
     requestBodies: never;
     headers: never;
@@ -2565,6 +2593,30 @@ export interface operations {
                 };
             };
             401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    getPublicLegalDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type: components["parameters"]["LegalDocumentTypePathParam"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Legal document content */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalDocumentResponse"];
+                };
+            };
+            400: components["responses"]["BadRequestError"];
             500: components["responses"]["InternalServerError"];
         };
     };

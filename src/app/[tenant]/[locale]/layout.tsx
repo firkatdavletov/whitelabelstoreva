@@ -65,7 +65,12 @@ export default async function StorefrontLayout({
         <main className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 pt-6 pb-16 sm:px-6 lg:px-8">
           {children}
         </main>
-        <Footer />
+        <Footer
+          locale={resolvedLocale}
+          supportEmail={tenantConfig.supportEmail}
+          tenantSlug={tenantConfig.slug}
+          tenantTitle={tenantConfig.title}
+        />
       </div>
     </RootProviders>
   );

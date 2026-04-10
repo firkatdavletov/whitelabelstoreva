@@ -130,9 +130,10 @@ export const ruMessages = {
     zoomOut: "Уменьшить карту",
   },
   footer: {
-    caption:
-      "Feature-first storefront-оболочка, подготовленная к интеграции со Spring Boot.",
-    subtitle: "Один фронтенд, разные бренды через tenant config.",
+    documents: "Официальные документы",
+    personalDataConsent: "Согласие на обработку персональных данных",
+    personalDataPolicy: "Политика обработки персональных данных",
+    publicOffer: "Публичная оферта",
   },
   header: {
     addressPending: "укажите адрес",
@@ -158,6 +159,11 @@ export const ruMessages = {
     featured: "Популярные позиции",
     subtitle:
       "Один frontend shell, tenant-specific branding, typed API boundaries и без backend-бизнес-логики на клиенте.",
+  },
+  legalDocuments: {
+    backToStorefront: "Вернуться на витрину",
+    badge: "Официальные документы",
+    updatedAt: "Обновлено",
   },
   menu: {
     empty: "Для этого tenant каталог пока пуст.",
