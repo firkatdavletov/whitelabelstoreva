@@ -3,7 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Minus, Plus, RefreshCw, ShoppingBag } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Minus,
+  Plus,
+  RefreshCw,
+  ShoppingBag,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -50,6 +57,12 @@ type ProductDetailsPageProps = {
   product: Product;
 };
 
+type ProductGalleryImage = {
+  id: string;
+  src: string;
+  thumbnailLabel: string;
+};
+
 function describeModifierGroup(
   group: ProductModifierGroup,
   t: (key: string, options?: Record<string, unknown>) => string,
@@ -94,6 +107,12 @@ export function ProductDetailsPage({
     useState<SelectedModifiersState>(() =>
       createInitialModifierSelection(product),
     );
+  const [selectedGalleryImageId, setSelectedGalleryImageId] = useState(
+    `product:${product.id}`,
+  );
+  const [imageSizeBySrc, setImageSizeBySrc] = useState<
+    Record<string, { height: number; width: number }>
+  >({});
   const resolvedProduct = productDetailsQuery.data ?? product;
   const isDetailsLoading =
     productDetailsQuery.isPending && !productDetailsQuery.data;
@@ -163,16 +182,46 @@ export function ProductDetailsPage({
   const selectedSummary = selectedModifierOptions.map(
     (option) => option.optionName,
   );
-  const imageSrc =
-    selectedVariant?.imageUrl ??
-    resolvedProduct.imageUrl ??
-    getProductCardImageSrc(resolvedProduct);
+  const productImageSrc = getProductCardImageSrc(resolvedProduct);
   const selectedVariantLabel = selectedVariant
     ? resolveVariantLabel(resolvedProduct, selectedVariant)
     : null;
   const selectedHeaderSummary =
     selectedVariantLabel ??
     (selectedOptionSummary.length ? selectedOptionSummary.join(" · ") : null);
+  const galleryImages: ProductGalleryImage[] = [
+    {
+      id: `product:${resolvedProduct.id}`,
+      src: productImageSrc,
+      thumbnailLabel: t("product.mainImage"),
+    },
+  ];
+  const activeVariantGalleryImageId =
+    selectedVariant?.id &&
+    selectedVariant.imageUrl &&
+    selectedVariant.imageUrl !== productImageSrc
+      ? `variant:${selectedVariant.id}`
+      : null;
+
+  if (activeVariantGalleryImageId && selectedVariant?.imageUrl) {
+    galleryImages.push({
+      id: activeVariantGalleryImageId,
+      src: selectedVariant.imageUrl,
+      thumbnailLabel: selectedVariantLabel
+        ? `${t("product.variantImage")}: ${selectedVariantLabel}`
+        : t("product.variantImage"),
+    });
+  }
+
+  const activeGalleryIndex = Math.max(
+    galleryImages.findIndex((image) => image.id === selectedGalleryImageId),
+    0,
+  );
+  const activeGalleryImage = galleryImages[activeGalleryIndex] ?? galleryImages[0];
+  const activeImageSize = imageSizeBySrc[activeGalleryImage.src] ?? {
+    height: 1200,
+    width: 1200,
+  };
   const configuredTitle = selectedVariant
     ? `${resolvedProduct.name} · ${selectedVariantLabel}`
     : resolvedProduct.name;
@@ -219,6 +268,15 @@ export function ProductDetailsPage({
     missingRequiredGroups.length > 0 ||
     addCartItemMutation.isPending;
 
+  useEffect(() => {
+    if (activeVariantGalleryImageId) {
+      setSelectedGalleryImageId(activeVariantGalleryImageId);
+      return;
+    }
+
+    setSelectedGalleryImageId(`product:${resolvedProduct.id}`);
+  }, [activeVariantGalleryImageId, resolvedProduct.id]);
+
   function addConfiguredProduct({ showToast }: { showToast: boolean }) {
     addCartItemMutation.mutate(
       {
@@ -262,6 +320,18 @@ export function ProductDetailsPage({
     });
   }
 
+  function showGalleryImage(imageId: string) {
+    setSelectedGalleryImageId(imageId);
+  }
+
+  function stepGallery(direction: -1 | 1) {
+    const nextIndex =
+      (activeGalleryIndex + direction + galleryImages.length) %
+      galleryImages.length;
+
+    setSelectedGalleryImageId(galleryImages[nextIndex]?.id ?? selectedGalleryImageId);
+  }
+
   return (
     <section className="relative grid items-start gap-6 pb-32 xl:grid-cols-[minmax(0,1.04fr)_minmax(21rem,0.96fr)] xl:gap-8 xl:pb-10">
       <div className="space-y-4">
@@ -273,24 +343,105 @@ export function ProductDetailsPage({
         >
           <Link href={backHref}>
             <ChevronLeft className="h-4 w-4" />
-            {t("navigation.menu")}
+            {t("cart.back")}
           </Link>
         </Button>
 
         <Card className="overflow-hidden rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_90%,white),color-mix(in_srgb,var(--secondary)_58%,white))]">
-          <div className="p-4 sm:p-6">
-            <div className="relative min-h-[280px] w-full sm:min-h-[420px] xl:min-h-[560px]">
+          <div className="relative">
+            {galleryImages.length > 1 ? (
+              <>
+                <button
+                  aria-label={t("product.previousImage")}
+                  className="bg-background/84 text-foreground hover:bg-background absolute top-1/2 left-3 z-10 -translate-y-1/2 rounded-full border border-white/70 p-2 shadow-[0_12px_30px_-18px_rgba(22,15,11,0.45)] backdrop-blur-sm transition"
+                  onClick={() => stepGallery(-1)}
+                  type="button"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                <button
+                  aria-label={t("product.nextImage")}
+                  className="bg-background/84 text-foreground hover:bg-background absolute top-1/2 right-3 z-10 -translate-y-1/2 rounded-full border border-white/70 p-2 shadow-[0_12px_30px_-18px_rgba(22,15,11,0.45)] backdrop-blur-sm transition"
+                  onClick={() => stepGallery(1)}
+                  type="button"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </>
+            ) : null}
+
+            <div className="w-full">
               <Image
                 alt={resolvedProduct.name}
-                className="object-contain"
-                fill
+                className="block h-auto w-full object-contain"
+                height={activeImageSize.height}
+                onLoad={(event) => {
+                  const nextHeight = event.currentTarget.naturalHeight;
+                  const nextWidth = event.currentTarget.naturalWidth;
+
+                  if (!nextHeight || !nextWidth) {
+                    return;
+                  }
+
+                  setImageSizeBySrc((currentState) => {
+                    const currentSize = currentState[activeGalleryImage.src];
+
+                    if (
+                      currentSize?.height === nextHeight &&
+                      currentSize.width === nextWidth
+                    ) {
+                      return currentState;
+                    }
+
+                    return {
+                      ...currentState,
+                      [activeGalleryImage.src]: {
+                        height: nextHeight,
+                        width: nextWidth,
+                      },
+                    };
+                  });
+                }}
                 sizes="(max-width: 1279px) 100vw, 50vw"
-                src={imageSrc}
+                src={activeGalleryImage.src}
                 unoptimized
+                width={activeImageSize.width}
               />
             </div>
           </div>
         </Card>
+
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {galleryImages.map((image) => {
+            const isSelected = image.id === activeGalleryImage.id;
+
+            return (
+              <button
+                aria-label={image.thumbnailLabel}
+                aria-pressed={isSelected}
+                className={cn(
+                  "bg-card hover:border-foreground/20 overflow-hidden rounded-2xl border transition",
+                  isSelected
+                    ? "border-primary shadow-[0_12px_28px_-18px_rgba(214,92,38,0.5)]"
+                    : "border-border/70",
+                )}
+                key={image.id}
+                onClick={() => showGalleryImage(image.id)}
+                type="button"
+              >
+                <Image
+                  alt=""
+                  className="block h-16 w-16 object-contain sm:h-20 sm:w-20"
+                  height={96}
+                  src={image.src}
+                  unoptimized
+                  width={96}
+                />
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="space-y-4">

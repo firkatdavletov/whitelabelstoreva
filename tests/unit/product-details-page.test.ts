@@ -37,8 +37,8 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       switch (key) {
-        case "navigation.menu":
-          return "Меню";
+        case "cart.back":
+          return "Назад";
         case "product.addToCart":
           return "Добавить в корзину";
         case "product.chooseAtLeast":
@@ -53,12 +53,18 @@ vi.mock("react-i18next", () => ({
           return "Входит в цену";
         case "product.loadError":
           return "Не удалось загрузить детали товара.";
+        case "product.mainImage":
+          return "Основное фото";
         case "product.modifiersTotal":
           return "Дополнительно";
+        case "product.nextImage":
+          return "Следующее фото";
         case "product.noCustomization":
           return "Без дополнительных настроек.";
         case "product.optional":
           return "Опционально";
+        case "product.previousImage":
+          return "Предыдущее фото";
         case "product.readyToOrder":
           return "Можно заказывать";
         case "product.required":
@@ -67,6 +73,8 @@ vi.mock("react-i18next", () => ({
           return "Выберите один вариант";
         case "product.unavailable":
           return "Нет в наличии";
+        case "product.variantImage":
+          return "Фото варианта";
         case "product.variantTitle":
           return "Вариант товара";
         case "shared.retry":
@@ -481,6 +489,58 @@ describe("ProductDetailsPage", () => {
     );
   });
 
+  it("renders a gallery with thumbnails and arrow navigation", async () => {
+    const user = userEvent.setup();
+
+    mocks.useMenuProductDetailsQuery.mockReturnValue({
+      data: productWithVariantImages,
+      error: null,
+      isError: false,
+      isPending: false,
+      refetch: mocks.productDetailsRefetch,
+    });
+
+    renderProductDetails(productWithVariantImages);
+
+    expect(screen.getByRole("link", { name: "Назад" })).toHaveAttribute(
+      "href",
+      "/menu",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Большой" }));
+
+    const productThumbnail = screen.getByRole("button", {
+      name: "Основное фото",
+    });
+    const variantThumbnail = screen.getByRole("button", {
+      name: "Фото варианта: Большой",
+    });
+
+    expect(variantThumbnail).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(productThumbnail);
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke.jpg",
+    );
+    expect(productThumbnail).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(screen.getByRole("button", { name: "Следующее фото" }));
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke-large.jpg",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Предыдущее фото" }));
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke.jpg",
+    );
+  });
+
   it("renders the product image without crop classes", () => {
     renderProductDetails();
 
@@ -489,6 +549,10 @@ describe("ProductDetailsPage", () => {
     );
     expect(screen.getByRole("img", { name: "Поке" })).not.toHaveClass(
       "object-cover",
+    );
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveClass(
+      "w-full",
+      "h-auto",
     );
   });
 
