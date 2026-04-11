@@ -9,6 +9,12 @@ export type TenantCatalogConfig = {
   productCard: ProductCardVariant;
 };
 
+export type TenantSocialLinks = {
+  instagram: string | null;
+  max: string | null;
+  telegram: string | null;
+};
+
 export type TenantTheme = {
   accent: string;
   accentForeground: string;
@@ -40,6 +46,7 @@ export type TenantConfig = {
   logoText: string;
   logoUrl?: string;
   restaurantId: string;
+  socialLinks: TenantSocialLinks;
   slug: string;
   supportEmail: string;
   tagline: string;

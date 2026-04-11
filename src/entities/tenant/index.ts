@@ -3,6 +3,7 @@ export type {
   ProductCardVariant,
   TenantCatalogConfig,
   TenantConfig,
+  TenantSocialLinks,
   TenantTheme,
 } from "@/entities/tenant/model/tenant.types";
 export { tenantConfigMap, tenantConfigs } from "@/entities/tenant/config/tenant-config";

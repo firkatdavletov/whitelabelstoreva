@@ -116,42 +116,12 @@ export async function GET(request: Request) {
             display: "flex",
             flex: 1,
             flexDirection: "column",
-            justifyContent: "space-between",
+            justifyContent: "center",
             padding: "44px",
             position: "relative",
             zIndex: 1,
           }}
         >
-          <div
-            style={{
-              alignItems: "center",
-              display: "flex",
-              gap: "16px",
-            }}
-          >
-            <div
-              style={{
-                background: brand.primary,
-                borderRadius: "999px",
-                display: "flex",
-                height: "18px",
-                width: "18px",
-              }}
-            />
-            <div
-              style={{
-                color: withAlpha(brand.foreground, 0.72),
-                display: "flex",
-                fontSize: "30px",
-                fontWeight: 600,
-                letterSpacing: "0.24em",
-                textTransform: "uppercase",
-              }}
-            >
-              Share Preview
-            </div>
-          </div>
-
           <div
             style={{
               display: "flex",
@@ -180,40 +150,6 @@ export async function GET(request: Request) {
               }}
             >
               {brand.description}
-            </div>
-          </div>
-
-          <div
-            style={{
-              alignItems: "center",
-              display: "flex",
-              gap: "14px",
-            }}
-          >
-            <div
-              style={{
-                background: withAlpha(brand.primary, 0.12),
-                border: `1px solid ${withAlpha(brand.primary, 0.28)}`,
-                borderRadius: "999px",
-                color: brand.primary,
-                display: "flex",
-                fontSize: "26px",
-                fontWeight: 700,
-                letterSpacing: "0.12em",
-                padding: "12px 22px",
-                textTransform: "uppercase",
-              }}
-            >
-              Storeva
-            </div>
-            <div
-              style={{
-                color: withAlpha(brand.foreground, 0.6),
-                display: "flex",
-                fontSize: "26px",
-              }}
-            >
-              Social-ready storefront metadata
             </div>
           </div>
         </div>

@@ -74,6 +74,7 @@ export default async function StorefrontLayout({
         </main>
         <Footer
           locale={resolvedLocale}
+          socialLinks={tenantConfig.socialLinks}
           supportEmail={tenantConfig.supportEmail}
           tenantSlug={tenantConfig.slug}
           tenantTitle={tenantConfig.title}

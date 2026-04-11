@@ -89,6 +89,9 @@ Per-tenant config controls:
 - `title`
 - `description`
 - `logoText`
+- `socialLinks.instagram`
+- `socialLinks.max`
+- `socialLinks.telegram`
 - theme colors
 - radius
 - restaurant metadata

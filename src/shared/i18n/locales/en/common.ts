@@ -133,6 +133,7 @@ export const enMessages = {
     personalDataConsent: "Consent to personal data processing",
     personalDataPolicy: "Personal data policy",
     publicOffer: "Public offer",
+    socials: "Socials and messaging",
   },
   header: {
     addressPending: "add address",

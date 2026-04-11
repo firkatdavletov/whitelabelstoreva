@@ -134,6 +134,7 @@ export const ruMessages = {
     personalDataConsent: "Согласие на обработку персональных данных",
     personalDataPolicy: "Политика обработки персональных данных",
     publicOffer: "Публичная оферта",
+    socials: "Соцсети и мессенджеры",
   },
   header: {
     addressPending: "укажите адрес",

@@ -18,6 +18,11 @@ export const tenantConfigMap = {
     restaurantId: "rest-storeva-mass",
     slug: "storeva-mass",
     supportEmail: "hello@storeva.test",
+    socialLinks: {
+        max: "",
+        telegram: "",
+        instagram: ""
+    },
     tagline: "Любимая еда рядом",
     theme: {
       accent: "#248A57",
@@ -59,6 +64,11 @@ export const tenantConfigMap = {
     restaurantId: "rest-storeva-premium",
     slug: "storeva-premium",
     supportEmail: "hello@storeva.test",
+    socialLinks: {
+        max: "",
+        telegram: "",
+        instagram: ""
+    },
     tagline: "Современная еда с красивой подачей",
     theme: {
       accent: "#556B5D",
@@ -100,6 +110,11 @@ export const tenantConfigMap = {
     restaurantId: "rest-storeva-street",
     slug: "storeva-street",
     supportEmail: "hello@storeva.test",
+    socialLinks: {
+        max: "",
+        telegram: "",
+        instagram: ""
+    },
     tagline: "Яркий вкус. Быстрый заказ.",
     theme: {
       accent: "#1C7C72",
@@ -132,16 +147,21 @@ export const tenantConfigMap = {
     },
     currency: "RUB",
     description:
-      "Storeva Street — яркий сервис заказа стритфуда и dark kitchen форматов с акцентом на сочные акценты, быстрый выбор хитов и энергичный мобильный интерфейс.",
+      "Украшения и аксессуары в этно стиле — для образов с характером, глубиной и настроением. Откройте коллекцию акцентных деталей, в которых традиционные мотивы звучат современно и стильно.",
     faviconUrl: "/tenants/aiymbrand/favicon.svg",
     heroCopy:
-      "Смелый и быстрый фуд-опыт: бургеры, роллы, пицца, комбо и новинки — всё, чтобы пользователь выбрал еду за минуты и сразу оформил заказ.",
+      "Этно украшения и аксессуары в современном прочтении — для тех, кто ценит эстетику, глубину образа и выразительные детали. Коллекция акцентов, в которых чувствуется характер и культурное вдохновение.",
     logoText: "",
     logoUrl: "/tenants/aiymbrand/logo.png",
     restaurantId: "aiymbrand",
     slug: "aiymbrand",
     supportEmail: "kiranova@bk.ru",
-    tagline: "Современный этно брэнд",
+    socialLinks: {
+        max: "https://max.ru/u/f9LHodD0cOJMqo_yXqDJc3vYMY8TLXpIKrvC9qcK9VAml2ym5LVrYcDUEfo",
+        telegram: "https://t.me/aiymbrand",
+        instagram: "https://www.instagram.com/aigulkiranova?igsh=MXdrbDdmdzd3djdycQ=="
+    },
+    tagline: "Этно украшения и аксессуары в современном премиальном стиле",
     theme: {
       accent: "#D5AF5D",
       accentForeground: "#16120A",
@@ -162,7 +182,7 @@ export const tenantConfigMap = {
       secondary: "#2A2216",
       secondaryForeground: "#E7D2A0",
     },
-    title: "Современное этно",
+    title: "Наследие в форме",
   },
 } as const satisfies Record<string, TenantConfig>;
 
