@@ -14,7 +14,6 @@ export function mapCatalogCategoryDtoToCategory(
     description: "",
     id: dto.id,
     imageUrl: dto.imageUrls[0] ?? null,
-    imageUrls: dto.imageUrls,
     name: dto.name,
     slug: dto.slug,
   };
