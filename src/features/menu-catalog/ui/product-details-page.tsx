@@ -411,8 +411,8 @@ export function ProductDetailsPage({
   }
 
   return (
-    <section className="relative grid items-start gap-6 pb-32 xl:grid-cols-[minmax(0,1.04fr)_minmax(21rem,0.96fr)] xl:gap-8 xl:pb-10">
-      <div className="space-y-4">
+    <section className="relative grid min-w-0 items-start gap-6 pb-32 xl:grid-cols-[minmax(0,1.04fr)_minmax(21rem,0.96fr)] xl:gap-8 xl:pb-10">
+      <div className="min-w-0 space-y-4">
         <Button
           asChild
           className="w-fit rounded-full px-4"
@@ -449,10 +449,10 @@ export function ProductDetailsPage({
               </>
             ) : null}
 
-            <div className="aspect-[3/4] w-full px-4 py-5 sm:px-6 sm:py-7">
+            <div className="aspect-[3/4] w-full overflow-hidden px-4 py-5 sm:px-6 sm:py-7">
               <Image
                 alt={resolvedProduct.name}
-                className="block h-full w-full object-contain"
+                className="block h-full max-w-full object-contain"
                 height={activeImageSize.height}
                 onLoad={(event) => {
                   const nextHeight = event.currentTarget.naturalHeight;
@@ -490,7 +490,7 @@ export function ProductDetailsPage({
           </div>
         </Card>
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
           {galleryImages.map((image) => {
             const isSelected = image.id === activeGalleryImage.id;
 
@@ -522,7 +522,7 @@ export function ProductDetailsPage({
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         <Card className="rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_92%,white),color-mix(in_srgb,var(--secondary)_48%,white))]">
           <CardContent className="space-y-4 p-5 sm:p-7">
             <div className="space-y-3">
