@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { DeliveryAddressScreen } from "@/features/delivery-address";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
+import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
+
+export const metadata = nonIndexableMetadata;
 
 type DeliveryPageProps = {
   params: RouteParams<{

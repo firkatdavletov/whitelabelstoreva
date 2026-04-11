@@ -7,7 +7,11 @@ const publicEnvKeys = [
   "NEXT_PUBLIC_API_MOCKING",
   "NEXT_PUBLIC_DEFAULT_LOCALE",
   "NEXT_PUBLIC_DEFAULT_TENANT",
+  "NEXT_PUBLIC_GA_ID",
+  "NEXT_PUBLIC_META_PIXEL_ID",
+  "NEXT_PUBLIC_SITE_URL",
   "NEXT_PUBLIC_YANDEX_MAPS_API_KEY",
+  "NEXT_PUBLIC_YANDEX_METRIKA_ID",
 ] as const;
 
 type PublicEnvKey = (typeof publicEnvKeys)[number];
@@ -17,7 +21,11 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_API_MOCKING: z.enum(["disabled", "enabled"]).default("enabled"),
   NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(["en", "ru"]).default("en"),
   NEXT_PUBLIC_DEFAULT_TENANT: z.string().min(1).default("urban-bites"),
+  NEXT_PUBLIC_GA_ID: z.string().trim().min(1).optional(),
+  NEXT_PUBLIC_META_PIXEL_ID: z.string().trim().min(1).optional(),
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("http://localhost:3000"),
   NEXT_PUBLIC_YANDEX_MAPS_API_KEY: z.string().optional(),
+  NEXT_PUBLIC_YANDEX_METRIKA_ID: z.string().trim().min(1).optional(),
 });
 
 type PublicEnv = z.infer<typeof publicEnvSchema>;
@@ -91,8 +99,20 @@ export const env = {
   get NEXT_PUBLIC_DEFAULT_TENANT() {
     return getPublicEnvValue("NEXT_PUBLIC_DEFAULT_TENANT");
   },
+  get NEXT_PUBLIC_GA_ID() {
+    return getPublicEnvValue("NEXT_PUBLIC_GA_ID");
+  },
+  get NEXT_PUBLIC_META_PIXEL_ID() {
+    return getPublicEnvValue("NEXT_PUBLIC_META_PIXEL_ID");
+  },
+  get NEXT_PUBLIC_SITE_URL() {
+    return getPublicEnvValue("NEXT_PUBLIC_SITE_URL");
+  },
   get NEXT_PUBLIC_YANDEX_MAPS_API_KEY() {
     return getPublicEnvValue("NEXT_PUBLIC_YANDEX_MAPS_API_KEY");
+  },
+  get NEXT_PUBLIC_YANDEX_METRIKA_ID() {
+    return getPublicEnvValue("NEXT_PUBLIC_YANDEX_METRIKA_ID");
   },
   get apiMocksEnabled() {
     return getPublicEnvValue("NEXT_PUBLIC_API_MOCKING") === "enabled";

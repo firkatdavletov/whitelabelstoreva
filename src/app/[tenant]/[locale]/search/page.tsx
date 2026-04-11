@@ -8,8 +8,11 @@ import {
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { buildStorefrontPath } from "@/shared/config/routing";
+import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
 import { CatalogSearchShell } from "@/widgets/catalog-search";
+
+export const metadata = nonIndexableMetadata;
 
 type SearchPageProps = {
   params: RouteParams<{

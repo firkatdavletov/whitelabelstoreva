@@ -40,6 +40,7 @@ import {
   type SelectedModifiersState,
   type SelectedOptionsState,
 } from "@/features/menu-catalog/lib/product-configurator";
+import { trackCommerceEvent } from "@/shared/analytics/analytics";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { formatCurrency } from "@/shared/lib/currency";
 import { formatProductQuantity } from "@/shared/lib/product-quantity";
@@ -145,6 +146,7 @@ export function ProductDetailsPage({
   const [hasSelectedVariantOption, setHasSelectedVariantOption] =
     useState(false);
   const autoSelectedVariantIdRef = useRef<string | null>(null);
+  const trackedProductIdRef = useRef<string | null>(null);
   const [imageSizeBySrc, setImageSizeBySrc] = useState<
     Record<string, { height: number; width: number }>
   >({});
@@ -163,6 +165,33 @@ export function ProductDetailsPage({
     autoSelectedVariantIdRef.current = null;
     setSelectedGalleryImageId(`product:${resolvedProduct.id}:0`);
   }, [resolvedProduct]);
+
+  useEffect(() => {
+    if (trackedProductIdRef.current === resolvedProduct.id) {
+      return;
+    }
+
+    trackedProductIdRef.current = resolvedProduct.id;
+
+    trackCommerceEvent({
+      currency: resolvedProduct.currency,
+      event: "view_item",
+      items: [
+        {
+          currency: resolvedProduct.currency,
+          itemId: resolvedProduct.id,
+          itemName: resolvedProduct.name,
+          price: resolvedProduct.price,
+        },
+      ],
+      value: resolvedProduct.price,
+    });
+  }, [
+    resolvedProduct.currency,
+    resolvedProduct.id,
+    resolvedProduct.name,
+    resolvedProduct.price,
+  ]);
 
   const activeVariants = getActiveVariants(resolvedProduct);
   const modifierGroups = getRenderableModifierGroups(resolvedProduct);
@@ -366,6 +395,21 @@ export function ProductDetailsPage({
       },
       {
         onSuccess: () => {
+          trackCommerceEvent({
+            currency: resolvedProduct.currency,
+            event: "add_to_cart",
+            items: [
+              {
+                currency: resolvedProduct.currency,
+                itemId: resolvedProduct.id,
+                itemName: configuredTitle,
+                price: totalPrice,
+                quantity: resolvedProduct.countStep,
+              },
+            ],
+            value: totalPrice * resolvedProduct.countStep,
+          });
+
           if (showToast) {
             toast.success(t("toast.itemAddedTitle"), {
               description: t("toast.itemAddedDescription", {

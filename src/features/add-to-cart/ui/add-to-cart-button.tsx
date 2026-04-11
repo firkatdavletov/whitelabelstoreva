@@ -12,6 +12,7 @@ import {
   useRemoveStorefrontCartItemMutation,
 } from "@/features/cart-summary/hooks/use-storefront-cart-mutations";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
+import { trackCommerceEvent } from "@/shared/analytics/analytics";
 import { formatProductQuantity } from "@/shared/lib/product-quantity";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { cn } from "@/shared/lib/styles";
@@ -78,6 +79,21 @@ export function AddToCartButton({
       },
       {
         onSuccess: () => {
+          trackCommerceEvent({
+            currency: product.currency,
+            event: "add_to_cart",
+            items: [
+              {
+                currency: product.currency,
+                itemId: product.id,
+                itemName: product.name,
+                price: product.price,
+                quantity: product.countStep,
+              },
+            ],
+            value: product.price * product.countStep,
+          });
+
           if (showToast) {
             toast.success(t("toast.itemAddedTitle"), {
               description: t("toast.itemAddedDescription", {

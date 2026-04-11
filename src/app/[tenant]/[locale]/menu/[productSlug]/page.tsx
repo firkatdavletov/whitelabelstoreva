@@ -10,6 +10,10 @@ import {
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { buildStorefrontPath } from "@/shared/config/routing";
+import {
+  createStorefrontMetadata,
+  nonIndexableMetadata,
+} from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
 
 type ProductPageProps = {
@@ -59,15 +63,18 @@ export async function generateMetadata({
   const data = await getProductPageData(params);
 
   if (!data) {
-    return {
-      title: "Product",
-    };
+    return nonIndexableMetadata;
   }
 
-  return {
+  return createStorefrontMetadata({
     description: data.product.description || data.tenantConfig.description,
+    image: data.product.imageUrl,
+    keywords: data.product.tags,
+    locale: data.localeContext.locale,
+    pathname: `/menu/${data.product.slug}`,
+    tenantConfig: data.tenantConfig,
     title: `${data.product.name} | ${data.tenantConfig.title}`,
-  };
+  });
 }
 
 export default async function ProductPage({

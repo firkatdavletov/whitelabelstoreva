@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +8,8 @@ import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { isAddressDeliveryMethod } from "@/entities/cart";
+import { type StorefrontCartItem, isAddressDeliveryMethod } from "@/entities/cart";
+import { getTenantConfig } from "@/entities/tenant";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
 import { useCheckoutMutation } from "@/features/checkout-form/hooks/use-checkout-mutation";
 import { useCheckoutOptionsQuery } from "@/features/checkout-form/hooks/use-checkout-options-query";
@@ -26,6 +27,7 @@ import {
 import type { CheckoutFormValues } from "@/features/checkout-form/model/checkout-form.schema";
 import { createCheckoutFormSchema } from "@/features/checkout-form/model/checkout-form.schema";
 import { rememberTrackedOrderId } from "@/features/order-tracking/lib/tracked-order-storage";
+import { trackCommerceEvent } from "@/shared/analytics/analytics";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -67,10 +69,23 @@ function CheckoutFormSkeleton() {
   );
 }
 
+function createAnalyticsItems(items: StorefrontCartItem[], currency: string) {
+  return items.map((item) => ({
+    currency,
+    itemId: item.productId,
+    itemName: item.title,
+    price: item.quantity > 0 ? item.lineTotal / item.quantity : item.lineTotal,
+    quantity: item.quantity,
+  }));
+}
+
 export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
   const { href, tenantSlug } = useStorefrontRoute();
   const router = useRouter();
   const { t } = useTranslation();
+  const tenantConfig = getTenantConfig(tenantSlug);
+  const currency = tenantConfig?.currency ?? "RUB";
+  const beginCheckoutSignatureRef = useRef<string | null>(null);
   const { data: storefrontCart, isLoading } =
     useStorefrontCartQuery(tenantSlug);
 
@@ -236,6 +251,29 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     form.clearErrors("isPrivateHouse");
   }, [form, showsAddressMetaFields]);
 
+  useEffect(() => {
+    if (!storefrontCart?.items.length) {
+      return;
+    }
+
+    const signature = storefrontCart.items
+      .map((item) => `${item.id}:${item.quantity}:${item.lineTotal}`)
+      .join("|");
+
+    if (beginCheckoutSignatureRef.current === signature) {
+      return;
+    }
+
+    beginCheckoutSignatureRef.current = signature;
+
+    trackCommerceEvent({
+      currency,
+      event: "begin_checkout",
+      items: createAnalyticsItems(storefrontCart.items, currency),
+      value: storefrontCart.totalPrice,
+    });
+  }, [currency, storefrontCart]);
+
   if (isLoading && !storefrontCart) {
     return <CheckoutFormSkeleton />;
   }
@@ -300,6 +338,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
             className="grid gap-5"
             onSubmit={form.handleSubmit(async (values) => {
               try {
+                const cartSnapshot = storefrontCart;
                 const checkoutRequest = buildCheckoutRequest(values, {
                   deliveryAddress: isAddressDelivery ? deliveryAddress : null,
                   includeAddressMetaFields: showsAddressMetaFields,
@@ -319,6 +358,16 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                     orderNumber: order.orderNumber,
                   }),
                 });
+
+                if (cartSnapshot?.items.length) {
+                  trackCommerceEvent({
+                    currency,
+                    event: "purchase",
+                    items: createAnalyticsItems(cartSnapshot.items, currency),
+                    orderId: order.orderNumber,
+                    value: cartSnapshot.totalPrice,
+                  });
+                }
 
                 rememberTrackedOrderId(tenantSlug, order.id);
                 router.push(href(`/orders/${order.id}`));

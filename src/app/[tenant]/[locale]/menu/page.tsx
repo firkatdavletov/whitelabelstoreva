@@ -8,6 +8,10 @@ import {
 } from "@/features/menu-catalog/lib/catalog-navigation";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
+import {
+  createStorefrontMetadata,
+  nonIndexableMetadata,
+} from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
 import { MenuGrid } from "@/widgets/menu-grid";
 
@@ -24,13 +28,21 @@ type MenuPageProps = {
 export async function generateMetadata({
   params,
 }: MenuPageProps): Promise<Metadata> {
-  const { tenant } = await params;
+  const { locale, tenant } = await params;
+  const localeContext = await bootstrapLocale(locale);
   const tenantConfig = resolveTenant(tenant);
 
-  return {
-    description: tenantConfig?.description ?? "Tenant-specific food catalog.",
-    title: tenantConfig ? `${tenantConfig.title} Menu` : "Menu",
-  };
+  if (!localeContext || !tenantConfig) {
+    return nonIndexableMetadata;
+  }
+
+  return createStorefrontMetadata({
+    description: tenantConfig.heroCopy,
+    locale: localeContext.locale,
+    pathname: "/menu",
+    tenantConfig,
+    title: `${tenantConfig.title} Menu`,
+  });
 }
 
 export default async function MenuPage({

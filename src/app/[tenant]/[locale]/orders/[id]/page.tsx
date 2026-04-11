@@ -6,7 +6,10 @@ import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { ApiError } from "@/shared/api";
 import { buildServerRequestContext } from "@/shared/api/server-auth";
+import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
+
+export const metadata = nonIndexableMetadata;
 
 type OrderPageProps = {
   params: RouteParams<{

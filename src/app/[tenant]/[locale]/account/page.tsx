@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { buildStorefrontPath } from "@/shared/config/routing";
+import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -14,6 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
+
+export const metadata = nonIndexableMetadata;
 
 type AccountPageProps = {
   params: RouteParams<{
