@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,7 +16,10 @@ import { toast } from "sonner";
 
 import { createCartConfigurationKey } from "@/entities/cart";
 import type { Product, ProductModifierGroup } from "@/entities/product";
-import { getProductCardImageSrc } from "@/entities/product/lib/product-card";
+import {
+  getProductImageSources,
+  getProductVariantImageSources,
+} from "@/entities/product/lib/product-card";
 import {
   useAddStorefrontCartItemMutation,
   useChangeStorefrontCartItemQuantityMutation,
@@ -63,6 +66,52 @@ type ProductGalleryImage = {
   thumbnailLabel: string;
 };
 
+function createGalleryImageLabel(label: string, index: number) {
+  return index === 0 ? label : `${label} ${index + 1}`;
+}
+
+function createGalleryImages(
+  sources: string[],
+  idPrefix: string,
+  baseLabel: string,
+): ProductGalleryImage[] {
+  return sources.map((src, index) => ({
+    id: `${idPrefix}:${index}`,
+    src,
+    thumbnailLabel: createGalleryImageLabel(baseLabel, index),
+  }));
+}
+
+function mergeGalleryImages(...groups: ProductGalleryImage[][]) {
+  const seenSources = new Set<string>();
+
+  return groups.flatMap((group) =>
+    group.filter((image) => {
+      if (seenSources.has(image.src)) {
+        return false;
+      }
+
+      seenSources.add(image.src);
+      return true;
+    }),
+  );
+}
+
+function areGalleryImagesEqual(
+  left: ProductGalleryImage[],
+  right: ProductGalleryImage[],
+) {
+  return (
+    left.length === right.length &&
+    left.every(
+      (image, index) =>
+        image.id === right[index]?.id &&
+        image.src === right[index]?.src &&
+        image.thumbnailLabel === right[index]?.thumbnailLabel,
+    )
+  );
+}
+
 function describeModifierGroup(
   group: ProductModifierGroup,
   t: (key: string, options?: Record<string, unknown>) => string,
@@ -100,16 +149,19 @@ export function ProductDetailsPage({
   );
   const { t } = useTranslation();
   const [selectedOptionIdByGroup, setSelectedOptionIdByGroup] =
-    useState<SelectedOptionsState>(() =>
-      createInitialOptionSelection(product),
-    );
+    useState<SelectedOptionsState>(() => createInitialOptionSelection(product));
   const [selectedModifierIdsByGroup, setSelectedModifierIdsByGroup] =
     useState<SelectedModifiersState>(() =>
       createInitialModifierSelection(product),
     );
   const [selectedGalleryImageId, setSelectedGalleryImageId] = useState(
-    `product:${product.id}`,
+    `product:${product.id}:0`,
   );
+  const [hasSelectedVariantOption, setHasSelectedVariantOption] =
+    useState(false);
+  const [displayedVariantGalleryImages, setDisplayedVariantGalleryImages] =
+    useState<ProductGalleryImage[]>([]);
+  const autoSelectedVariantIdRef = useRef<string | null>(null);
   const [imageSizeBySrc, setImageSizeBySrc] = useState<
     Record<string, { height: number; width: number }>
   >({});
@@ -124,6 +176,10 @@ export function ProductDetailsPage({
     setSelectedModifierIdsByGroup(
       createInitialModifierSelection(resolvedProduct),
     );
+    setHasSelectedVariantOption(false);
+    setDisplayedVariantGalleryImages([]);
+    autoSelectedVariantIdRef.current = null;
+    setSelectedGalleryImageId(`product:${resolvedProduct.id}:0`);
   }, [resolvedProduct]);
 
   const activeVariants = getActiveVariants(resolvedProduct);
@@ -134,7 +190,9 @@ export function ProductDetailsPage({
   );
   const selectedOptionSummary = resolvedProduct.optionGroups
     .map((group) =>
-      group.values.find((value) => value.id === selectedOptionIdByGroup[group.id]),
+      group.values.find(
+        (value) => value.id === selectedOptionIdByGroup[group.id],
+      ),
     )
     .filter((value): value is { id: string; title: string } => Boolean(value))
     .map((value) => value.title);
@@ -143,7 +201,7 @@ export function ProductDetailsPage({
     resolvedProduct.optionGroups.length > 0 &&
     selectedVariant === null;
   const selectedVariantIdForCart =
-    activeVariants.length > 0 ? selectedVariant?.id ?? null : null;
+    activeVariants.length > 0 ? (selectedVariant?.id ?? null) : null;
   const selectedUnitPrice = selectedVariant?.price ?? resolvedProduct.price;
   const selectedModifierOptions = modifierGroups.flatMap((group) => {
     const selectedIds = selectedModifierIdsByGroup[group.id] ?? [];
@@ -182,42 +240,46 @@ export function ProductDetailsPage({
   const selectedSummary = selectedModifierOptions.map(
     (option) => option.optionName,
   );
-  const productImageSrc = getProductCardImageSrc(resolvedProduct);
+  const productGalleryImages = createGalleryImages(
+    getProductImageSources(resolvedProduct),
+    `product:${resolvedProduct.id}`,
+    t("product.mainImage"),
+  );
+  const firstProductGalleryImageId =
+    productGalleryImages[0]?.id ?? `product:${resolvedProduct.id}:0`;
   const selectedVariantLabel = selectedVariant
     ? resolveVariantLabel(resolvedProduct, selectedVariant)
     : null;
   const selectedHeaderSummary =
     selectedVariantLabel ??
     (selectedOptionSummary.length ? selectedOptionSummary.join(" · ") : null);
-  const galleryImages: ProductGalleryImage[] = [
-    {
-      id: `product:${resolvedProduct.id}`,
-      src: productImageSrc,
-      thumbnailLabel: t("product.mainImage"),
-    },
-  ];
-  const activeVariantGalleryImageId =
-    selectedVariant?.id &&
-    selectedVariant.imageUrl &&
-    selectedVariant.imageUrl !== productImageSrc
-      ? `variant:${selectedVariant.id}`
-      : null;
-
-  if (activeVariantGalleryImageId && selectedVariant?.imageUrl) {
-    galleryImages.push({
-      id: activeVariantGalleryImageId,
-      src: selectedVariant.imageUrl,
-      thumbnailLabel: selectedVariantLabel
-        ? `${t("product.variantImage")}: ${selectedVariantLabel}`
-        : t("product.variantImage"),
-    });
-  }
-
+  const selectedVariantImageSources = selectedVariant
+    ? getProductVariantImageSources(selectedVariant)
+    : [];
+  const selectedVariantGalleryImages =
+    selectedVariant && selectedVariantImageSources.length
+      ? createGalleryImages(
+          selectedVariantImageSources,
+          `variant:${selectedVariant.id}`,
+          selectedVariantLabel
+            ? `${t("product.variantImage")}: ${selectedVariantLabel}`
+            : t("product.variantImage"),
+        )
+      : [];
+  const galleryImages = mergeGalleryImages(
+    productGalleryImages,
+    selectedVariant
+      ? selectedVariantGalleryImages
+      : displayedVariantGalleryImages,
+  );
+  const activeGalleryImage =
+    galleryImages.find((image) => image.id === selectedGalleryImageId) ??
+    galleryImages.find((image) => image.id === firstProductGalleryImageId) ??
+    galleryImages[0];
   const activeGalleryIndex = Math.max(
-    galleryImages.findIndex((image) => image.id === selectedGalleryImageId),
+    galleryImages.findIndex((image) => image.id === activeGalleryImage.id),
     0,
   );
-  const activeGalleryImage = galleryImages[activeGalleryIndex] ?? galleryImages[0];
   const activeImageSize = imageSizeBySrc[activeGalleryImage.src] ?? {
     height: 1200,
     width: 1200,
@@ -269,13 +331,56 @@ export function ProductDetailsPage({
     addCartItemMutation.isPending;
 
   useEffect(() => {
-    if (activeVariantGalleryImageId) {
-      setSelectedGalleryImageId(activeVariantGalleryImageId);
+    if (!selectedVariant) {
       return;
     }
 
-    setSelectedGalleryImageId(`product:${resolvedProduct.id}`);
-  }, [activeVariantGalleryImageId, resolvedProduct.id]);
+    if (!selectedVariantGalleryImages.length) {
+      setDisplayedVariantGalleryImages((currentState) =>
+        currentState.length ? [] : currentState,
+      );
+      return;
+    }
+
+    setDisplayedVariantGalleryImages((currentState) => {
+      if (areGalleryImagesEqual(currentState, selectedVariantGalleryImages)) {
+        return currentState;
+      }
+
+      return selectedVariantGalleryImages;
+    });
+  }, [selectedVariant, selectedVariantGalleryImages]);
+
+  useEffect(() => {
+    if (!selectedVariant) {
+      autoSelectedVariantIdRef.current = null;
+    }
+  }, [selectedVariant]);
+
+  useEffect(() => {
+    if (!hasSelectedVariantOption || !selectedVariant) {
+      return;
+    }
+
+    if (autoSelectedVariantIdRef.current === selectedVariant.id) {
+      return;
+    }
+
+    const nextSelectedGalleryImageId =
+      selectedVariantGalleryImages[0]?.id ?? firstProductGalleryImageId;
+
+    autoSelectedVariantIdRef.current = selectedVariant.id;
+    setSelectedGalleryImageId((currentState) =>
+      currentState === nextSelectedGalleryImageId
+        ? currentState
+        : nextSelectedGalleryImageId,
+    );
+  }, [
+    firstProductGalleryImageId,
+    hasSelectedVariantOption,
+    selectedVariant,
+    selectedVariantGalleryImages,
+  ]);
 
   function addConfiguredProduct({ showToast }: { showToast: boolean }) {
     addCartItemMutation.mutate(
@@ -329,7 +434,9 @@ export function ProductDetailsPage({
       (activeGalleryIndex + direction + galleryImages.length) %
       galleryImages.length;
 
-    setSelectedGalleryImageId(galleryImages[nextIndex]?.id ?? selectedGalleryImageId);
+    setSelectedGalleryImageId(
+      galleryImages[nextIndex]?.id ?? selectedGalleryImageId,
+    );
   }
 
   return (
@@ -371,10 +478,10 @@ export function ProductDetailsPage({
               </>
             ) : null}
 
-            <div className="w-full">
+            <div className="aspect-[3/4] w-full px-4 py-5 sm:px-6 sm:py-7">
               <Image
                 alt={resolvedProduct.name}
-                className="block h-auto w-full object-contain"
+                className="block h-full w-full object-contain"
                 height={activeImageSize.height}
                 onLoad={(event) => {
                   const nextHeight = event.currentTarget.naturalHeight;
@@ -421,7 +528,7 @@ export function ProductDetailsPage({
                 aria-label={image.thumbnailLabel}
                 aria-pressed={isSelected}
                 className={cn(
-                  "bg-card hover:border-foreground/20 overflow-hidden rounded-2xl border transition",
+                  "bg-card hover:border-foreground/20 aspect-[3/4] w-16 shrink-0 overflow-hidden border transition sm:w-20",
                   isSelected
                     ? "border-primary shadow-[0_12px_28px_-18px_rgba(214,92,38,0.5)]"
                     : "border-border/70",
@@ -432,8 +539,8 @@ export function ProductDetailsPage({
               >
                 <Image
                   alt=""
-                  className="block h-16 w-16 object-contain sm:h-20 sm:w-20"
-                  height={96}
+                  className="block h-full w-full object-contain"
+                  height={128}
                   src={image.src}
                   unoptimized
                   width={96}
@@ -552,12 +659,17 @@ export function ProductDetailsPage({
                         return (
                           <SelectableCard
                             key={value.id}
-                            onClick={() =>
+                            onClick={() => {
+                              if (value.id === selectedValueId) {
+                                return;
+                              }
+
+                              setHasSelectedVariantOption(true);
                               setSelectedOptionIdByGroup((currentState) => ({
                                 ...currentState,
                                 [group.id]: value.id,
-                              }))
-                            }
+                              }));
+                            }}
                             selected={isSelected}
                           >
                             <div className="min-w-0">

@@ -1,4 +1,7 @@
-import type { Product } from "@/entities/product/model/product.types";
+import type {
+  Product,
+  ProductVariant,
+} from "@/entities/product/model/product.types";
 
 function createProductPlaceholder(visual: string) {
   const glyph = visual.trim().charAt(0).toUpperCase() || "?";
@@ -26,8 +29,52 @@ function createProductPlaceholder(visual: string) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-export function getProductCardImageSrc(product: Pick<Product, "imageUrl" | "visual">) {
+export function getProductCardImageSrc(
+  product: Pick<Product, "imageUrl" | "visual">,
+) {
   return product.imageUrl ?? createProductPlaceholder(product.visual);
+}
+
+function normalizeImageSources(
+  imageUrls: string[] | undefined,
+  fallback: string | null | undefined,
+) {
+  const uniqueSources = new Set<string>();
+
+  imageUrls?.forEach((imageUrl) => {
+    const normalizedImageUrl = imageUrl.trim();
+
+    if (normalizedImageUrl) {
+      uniqueSources.add(normalizedImageUrl);
+    }
+  });
+
+  const normalizedFallback = fallback?.trim();
+
+  if (normalizedFallback) {
+    uniqueSources.add(normalizedFallback);
+  }
+
+  return Array.from(uniqueSources);
+}
+
+export function getProductImageSources(
+  product: Pick<Product, "imageUrl" | "imageUrls" | "visual">,
+) {
+  const productImageSources = normalizeImageSources(
+    product.imageUrls,
+    product.imageUrl,
+  );
+
+  return productImageSources.length
+    ? productImageSources
+    : [createProductPlaceholder(product.visual)];
+}
+
+export function getProductVariantImageSources(
+  variant: Pick<ProductVariant, "imageUrl" | "imageUrls">,
+) {
+  return normalizeImageSources(variant.imageUrls, variant.imageUrl);
 }
 
 export function getProductCardMeta(

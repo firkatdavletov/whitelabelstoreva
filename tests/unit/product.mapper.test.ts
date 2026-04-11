@@ -28,6 +28,7 @@ describe("mapProductDtoToProduct", () => {
       description: "Double smash patty.",
       id: "prod-1",
       imageUrl: null,
+      imageUrls: [],
       isAvailable: true,
       isConfigured: false,
       modifierGroups: [],
@@ -124,6 +125,7 @@ describe("mapProductDtoToProduct", () => {
         description: "Double smash patty.",
         id: "prod-1",
         imageUrl: null,
+        imageUrls: [],
         isAvailable: true,
         isConfigured: false,
         modifierGroups: [],
@@ -146,6 +148,7 @@ describe("mapProductDtoToProduct", () => {
       description: "Choose size and extras.",
       id: "prod-1",
       imageUrl: "https://cdn.example.com/city-smash.jpg",
+      imageUrls: ["https://cdn.example.com/city-smash.jpg"],
       isAvailable: true,
       isConfigured: true,
       modifierGroups: [
@@ -189,6 +192,7 @@ describe("mapProductDtoToProduct", () => {
         {
           id: "variant-double",
           imageUrl: "https://cdn.example.com/city-smash-double.jpg",
+          imageUrls: ["https://cdn.example.com/city-smash-double.jpg"],
           isActive: true,
           optionValueIds: ["value-double"],
           price: 14.9,

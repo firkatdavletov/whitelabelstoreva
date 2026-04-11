@@ -14,6 +14,7 @@ export function mapCatalogCategoryDtoToCategory(
     description: "",
     id: dto.id,
     imageUrl: dto.imageUrls[0] ?? null,
+    imageUrls: dto.imageUrls,
     name: dto.name,
     slug: dto.slug,
   };
@@ -31,6 +32,7 @@ export function mapCatalogProductDtoToProduct(
     description: dto.description ?? "",
     id: dto.id,
     imageUrl: dto.imageUrls[0] ?? null,
+    imageUrls: dto.imageUrls,
     isAvailable: dto.isActive,
     isConfigured: dto.isConfigured,
     modifierGroups: [],

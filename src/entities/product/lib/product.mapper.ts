@@ -4,6 +4,10 @@ import type {
 } from "@/entities/product/api/product.dto";
 import type { Product } from "@/entities/product/model/product.types";
 
+function normalizeImageUrls(imageUrls: string[] | null | undefined) {
+  return imageUrls?.map((imageUrl) => imageUrl.trim()).filter(Boolean) ?? [];
+}
+
 // DTO-to-domain mapping is kept close to the entity so feature modules stay focused on use cases.
 export function mapProductDtoToProduct(dto: ProductDto): Product {
   return {
@@ -14,6 +18,7 @@ export function mapProductDtoToProduct(dto: ProductDto): Product {
     description: dto.description,
     id: dto.id,
     imageUrl: null,
+    imageUrls: [],
     isAvailable: dto.is_available,
     isConfigured: false,
     modifierGroups: [],
@@ -32,13 +37,19 @@ export function mapProductDetailsDtoToProduct(
   dto: ProductDetailsDto,
   product: Product,
 ): Product {
+  const productImageUrls = normalizeImageUrls(dto.imageUrls);
+  const resolvedProductImageUrls = productImageUrls.length
+    ? productImageUrls
+    : normalizeImageUrls(product.imageUrls);
+
   return {
     ...product,
     categoryId: dto.categoryId,
     countStep: dto.countStep,
     defaultVariantId: dto.defaultVariantId ?? null,
     description: dto.description ?? product.description,
-    imageUrl: dto.imageUrls[0] ?? product.imageUrl,
+    imageUrl: resolvedProductImageUrls[0] ?? product.imageUrl,
+    imageUrls: resolvedProductImageUrls,
     isAvailable: dto.isActive,
     isConfigured: dto.isConfigured,
     modifierGroups: dto.modifierGroups
@@ -84,16 +95,21 @@ export function mapProductDetailsDtoToProduct(
     variants: dto.variants
       .slice()
       .sort((left, right) => left.sortOrder - right.sortOrder)
-      .map((variant) => ({
-        id: variant.id,
-        imageUrl: variant.imageUrls[0] ?? null,
-        isActive: variant.isActive,
-        optionValueIds: variant.optionValueIds,
-        price:
-          variant.priceMinor !== undefined && variant.priceMinor !== null
-            ? variant.priceMinor / 100
-            : null,
-        title: variant.title ?? null,
-      })),
+      .map((variant) => {
+        const variantImageUrls = normalizeImageUrls(variant.imageUrls);
+
+        return {
+          id: variant.id,
+          imageUrl: variantImageUrls[0] ?? null,
+          imageUrls: variantImageUrls,
+          isActive: variant.isActive,
+          optionValueIds: variant.optionValueIds,
+          price:
+            variant.priceMinor !== undefined && variant.priceMinor !== null
+              ? variant.priceMinor / 100
+              : null,
+          title: variant.title ?? null,
+        };
+      }),
   };
 }

@@ -137,6 +137,7 @@ const baseProduct: Product = {
   description: "Свежий поке с лососем и рисом.",
   id: "prod-1",
   imageUrl: "https://example.com/poke.jpg",
+  imageUrls: ["https://example.com/poke.jpg", "https://example.com/poke-2.jpg"],
   isAvailable: true,
   isConfigured: true,
   modifierGroups: [
@@ -188,7 +189,11 @@ const baseProduct: Product = {
   variants: [
     {
       id: "variant-regular",
-      imageUrl: null,
+      imageUrl: "https://example.com/poke-regular.jpg",
+      imageUrls: [
+        "https://example.com/poke-regular.jpg",
+        "https://example.com/poke-regular-2.jpg",
+      ],
       isActive: true,
       optionValueIds: ["size-regular"],
       price: 14.9,
@@ -229,7 +234,11 @@ const productWithVariantImages: Product = {
   variants: [
     {
       id: "variant-regular",
-      imageUrl: null,
+      imageUrl: "https://example.com/poke-regular.jpg",
+      imageUrls: [
+        "https://example.com/poke-regular.jpg",
+        "https://example.com/poke-regular-2.jpg",
+      ],
       isActive: true,
       optionValueIds: ["size-regular"],
       price: 14.9,
@@ -238,6 +247,10 @@ const productWithVariantImages: Product = {
     {
       id: "variant-large",
       imageUrl: "https://example.com/poke-large.jpg",
+      imageUrls: [
+        "https://example.com/poke-large.jpg",
+        "https://example.com/poke-large-2.jpg",
+      ],
       isActive: true,
       optionValueIds: ["size-large"],
       price: 16.9,
@@ -282,7 +295,8 @@ const productWithMissingVariantCombination: Product = {
   variants: [
     {
       id: "variant-small-brioche",
-      imageUrl: null,
+      imageUrl: "https://example.com/poke-small-brioche.jpg",
+      imageUrls: ["https://example.com/poke-small-brioche.jpg"],
       isActive: true,
       optionValueIds: ["size-small", "bread-brioche"],
       price: 14.9,
@@ -290,11 +304,67 @@ const productWithMissingVariantCombination: Product = {
     },
     {
       id: "variant-large-brioche",
-      imageUrl: null,
+      imageUrl: "https://example.com/poke-large-brioche.jpg",
+      imageUrls: ["https://example.com/poke-large-brioche.jpg"],
       isActive: true,
       optionValueIds: ["size-large", "bread-brioche"],
       price: 16.9,
       title: "Large / Бриошь",
+    },
+  ],
+};
+
+const productWithTransitioningVariantImages: Product = {
+  ...baseProduct,
+  defaultVariantId: "variant-small-brioche",
+  optionGroups: [
+    {
+      id: "size",
+      title: "Размер",
+      values: [
+        {
+          id: "size-small",
+          title: "Small",
+        },
+        {
+          id: "size-large",
+          title: "Large",
+        },
+      ],
+    },
+    {
+      id: "bread",
+      title: "Булка",
+      values: [
+        {
+          id: "bread-brioche",
+          title: "Бриошь",
+        },
+        {
+          id: "bread-potato",
+          title: "Картофельная",
+        },
+      ],
+    },
+  ],
+  variants: [
+    {
+      id: "variant-small-brioche",
+      imageUrl: "https://example.com/poke-small-brioche.jpg",
+      imageUrls: ["https://example.com/poke-small-brioche.jpg"],
+      isActive: true,
+      optionValueIds: ["size-small", "bread-brioche"],
+      price: 14.9,
+      title: "Small / Бриошь",
+    },
+    {
+      id: "variant-large-potato",
+      imageUrl: "https://example.com/poke-large-potato.jpg",
+      imageUrls: ["https://example.com/poke-large-potato.jpg"],
+      isActive: true,
+      optionValueIds: ["size-large", "bread-potato"],
+      price: 16.9,
+      title: "Large / Картофельная",
     },
   ],
 };
@@ -512,11 +582,19 @@ describe("ProductDetailsPage", () => {
     const productThumbnail = screen.getByRole("button", {
       name: "Основное фото",
     });
+    const secondProductThumbnail = screen.getByRole("button", {
+      name: "Основное фото 2",
+    });
     const variantThumbnail = screen.getByRole("button", {
       name: "Фото варианта: Большой",
     });
+    const secondVariantThumbnail = screen.getByRole("button", {
+      name: "Фото варианта: Большой 2",
+    });
 
     expect(variantThumbnail).toHaveAttribute("aria-pressed", "true");
+    expect(secondProductThumbnail).toBeInTheDocument();
+    expect(secondVariantThumbnail).toBeInTheDocument();
 
     await user.click(productThumbnail);
 
@@ -530,6 +608,13 @@ describe("ProductDetailsPage", () => {
 
     expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
       "src",
+      "https://example.com/poke-2.jpg",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Следующее фото" }));
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
       "https://example.com/poke-large.jpg",
     );
 
@@ -537,23 +622,81 @@ describe("ProductDetailsPage", () => {
 
     expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
       "src",
-      "https://example.com/poke.jpg",
+      "https://example.com/poke-2.jpg",
+    );
+  });
+
+  it("keeps the previous variant image while the next option combination is unresolved", async () => {
+    const user = userEvent.setup();
+
+    mocks.useMenuProductDetailsQuery.mockReturnValue({
+      data: productWithTransitioningVariantImages,
+      error: null,
+      isError: false,
+      isPending: false,
+      refetch: mocks.productDetailsRefetch,
+    });
+
+    renderProductDetails(productWithTransitioningVariantImages);
+
+    await user.click(
+      screen.getByRole("button", { name: "Фото варианта: Small / Бриошь" }),
+    );
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke-small-brioche.jpg",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Large" }));
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke-small-brioche.jpg",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Картофельная" }));
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke-large-potato.jpg",
     );
   });
 
   it("renders the product image without crop classes", () => {
     renderProductDetails();
 
-    expect(screen.getByRole("img", { name: "Поке" })).toHaveClass(
-      "object-contain",
-    );
-    expect(screen.getByRole("img", { name: "Поке" })).not.toHaveClass(
-      "object-cover",
-    );
-    expect(screen.getByRole("img", { name: "Поке" })).toHaveClass(
-      "w-full",
-      "h-auto",
-    );
+    const productImage = screen.getByRole("img", { name: "Поке" });
+
+    expect(productImage).toHaveClass("object-contain");
+    expect(productImage).not.toHaveClass("object-cover");
+    expect(productImage).toHaveClass("w-full", "h-full");
+    expect(productImage.parentElement).toHaveClass("aspect-[3/4]");
+  });
+
+  it("renders gallery thumbnails in a 3:4 frame without rounded corners", async () => {
+    const user = userEvent.setup();
+
+    mocks.useMenuProductDetailsQuery.mockReturnValue({
+      data: productWithVariantImages,
+      error: null,
+      isError: false,
+      isPending: false,
+      refetch: mocks.productDetailsRefetch,
+    });
+
+    renderProductDetails(productWithVariantImages);
+
+    await user.click(screen.getByRole("button", { name: "Большой" }));
+
+    const productThumbnail = screen.getByRole("button", {
+      name: "Основное фото",
+    });
+    const thumbnailImage = productThumbnail.querySelector("img");
+
+    expect(productThumbnail).toHaveClass("aspect-[3/4]");
+    expect(productThumbnail).not.toHaveClass("rounded-2xl");
+    expect(thumbnailImage).toHaveClass("h-full", "w-full", "object-contain");
   });
 
   it("shows unavailable text when the selected option combination has no variant", async () => {

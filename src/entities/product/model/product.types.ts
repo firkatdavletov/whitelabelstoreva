@@ -36,6 +36,7 @@ export type ProductModifierGroup = {
 export type ProductVariant = {
   id: string;
   imageUrl: string | null;
+  imageUrls?: string[];
   isActive: boolean;
   optionValueIds: string[];
   price: number | null;
@@ -50,6 +51,7 @@ export type Product = {
   description: string;
   id: string;
   imageUrl: string | null;
+  imageUrls?: string[];
   isAvailable: boolean;
   isConfigured: boolean;
   modifierGroups: ProductModifierGroup[];
