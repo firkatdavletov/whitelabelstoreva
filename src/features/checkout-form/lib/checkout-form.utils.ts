@@ -114,30 +114,36 @@ export function buildCheckoutRequest(
   values: CheckoutFormValues,
   options?: {
     deliveryAddress?: NonNullable<StorefrontCart["delivery"]>["address"] | null;
+    includeAddressMetaFields?: boolean;
   },
 ): CheckoutRequestDto {
   const customerName = normalizeCheckoutField(values.fullName);
   const customerPhone = normalizeCheckoutField(values.phone);
   const comment = normalizeCheckoutField(values.comment);
   const deliveryAddress = options?.deliveryAddress;
+  const includeAddressMetaFields = options?.includeAddressMetaFields ?? true;
   const address = deliveryAddress
     ? {
-        apartment: values.isPrivateHouse
-          ? null
-          : normalizeCheckoutField(values.apartment),
+        apartment:
+          !includeAddressMetaFields || values.isPrivateHouse
+            ? null
+            : normalizeCheckoutField(values.apartment),
         city: normalizeCheckoutField(deliveryAddress.city),
         comment,
         country: normalizeCheckoutField(deliveryAddress.country),
-        entrance: values.isPrivateHouse
-          ? null
-          : normalizeCheckoutField(values.entrance),
-        floor: values.isPrivateHouse
-          ? null
-          : normalizeCheckoutField(values.floor),
+        entrance:
+          !includeAddressMetaFields || values.isPrivateHouse
+            ? null
+            : normalizeCheckoutField(values.entrance),
+        floor:
+          !includeAddressMetaFields || values.isPrivateHouse
+            ? null
+            : normalizeCheckoutField(values.floor),
         house: normalizeCheckoutField(deliveryAddress.house),
-        intercom: values.isPrivateHouse
-          ? null
-          : normalizeCheckoutField(values.intercom),
+        intercom:
+          !includeAddressMetaFields || values.isPrivateHouse
+            ? null
+            : normalizeCheckoutField(values.intercom),
         postalCode: normalizeCheckoutField(deliveryAddress.postalCode),
         region: normalizeCheckoutField(deliveryAddress.region),
         street: normalizeCheckoutField(deliveryAddress.street),

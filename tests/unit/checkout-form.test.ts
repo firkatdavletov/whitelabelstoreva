@@ -188,7 +188,7 @@ describe("CheckoutForm", () => {
     expect(screen.queryByText("Домофон")).not.toBeInTheDocument();
   });
 
-  it("keeps address metadata fields for custom address delivery", () => {
+  it("hides address metadata fields for custom address delivery", () => {
     mocks.useStorefrontCartQuery.mockReturnValue({
       data: {
         delivery: {
@@ -259,10 +259,13 @@ describe("CheckoutForm", () => {
 
     render(React.createElement(CheckoutForm, { isAuthorized: true }));
 
-    expect(screen.getByText("Квартира")).toBeInTheDocument();
-    expect(screen.getByText("Подъезд")).toBeInTheDocument();
-    expect(screen.getByText("Этаж")).toBeInTheDocument();
-    expect(screen.getByText("Домофон")).toBeInTheDocument();
+    expect(screen.queryByText("Квартира")).not.toBeInTheDocument();
+    expect(screen.queryByText("Подъезд")).not.toBeInTheDocument();
+    expect(screen.queryByText("Этаж")).not.toBeInTheDocument();
+    expect(screen.queryByText("Домофон")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Частный дом" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders checkout inputs without placeholders", () => {

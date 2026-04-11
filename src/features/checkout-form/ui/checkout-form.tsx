@@ -93,6 +93,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
   const isAddressDelivery =
     selectedDeliveryOption?.requiresAddress ??
     isAddressDeliveryMethod(delivery?.deliveryMethod);
+  const showsAddressMetaFields = delivery?.deliveryMethod === "COURIER";
   const selectedAddressLabel = formatCheckoutDeliveryAddress(delivery);
 
   const form = useForm<CheckoutFormValues>({
@@ -109,7 +110,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     },
     resolver: zodResolver(
       createCheckoutFormSchema({
-        requiresApartment: isAddressDelivery,
+        requiresApartment: showsAddressMetaFields,
         requiresContactDetails: !isAuthorized,
       }),
     ),
@@ -170,7 +171,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
   }, [form, paymentMethods]);
 
   useEffect(() => {
-    if (!isAddressDelivery || !deliveryAddress || isPrivateHouse) {
+    if (!isAddressDelivery || !deliveryAddress) {
       return;
     }
 
@@ -179,13 +180,16 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
         "apartment" | "comment" | "entrance" | "floor" | "intercom",
         string | null | undefined,
       ]
-    > = [
-      ["apartment", deliveryAddress.apartment],
-      ["entrance", deliveryAddress.entrance],
-      ["intercom", deliveryAddress.intercom],
-      ["floor", deliveryAddress.floor],
-      ["comment", deliveryAddress.comment],
-    ];
+    > = [["comment", deliveryAddress.comment]];
+
+    if (showsAddressMetaFields && !isPrivateHouse) {
+      draftFields.unshift(
+        ["apartment", deliveryAddress.apartment],
+        ["entrance", deliveryAddress.entrance],
+        ["intercom", deliveryAddress.intercom],
+        ["floor", deliveryAddress.floor],
+      );
+    }
 
     draftFields.forEach(([fieldName, value]) => {
       if (!value?.trim() || form.getValues(fieldName)?.trim()) {
@@ -196,7 +200,41 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
         shouldDirty: false,
       });
     });
-  }, [deliveryAddress, form, isAddressDelivery, isPrivateHouse]);
+  }, [
+    deliveryAddress,
+    form,
+    isAddressDelivery,
+    isPrivateHouse,
+    showsAddressMetaFields,
+  ]);
+
+  useEffect(() => {
+    if (showsAddressMetaFields) {
+      return;
+    }
+
+    (["apartment", "entrance", "floor", "intercom"] as const).forEach(
+      (fieldName) => {
+        if (form.getValues(fieldName) !== "") {
+          form.setValue(fieldName, "", {
+            shouldDirty: false,
+            shouldValidate: false,
+          });
+        }
+
+        form.clearErrors(fieldName);
+      },
+    );
+
+    if (form.getValues("isPrivateHouse")) {
+      form.setValue("isPrivateHouse", false, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
+    }
+
+    form.clearErrors("isPrivateHouse");
+  }, [form, showsAddressMetaFields]);
 
   if (isLoading && !storefrontCart) {
     return <CheckoutFormSkeleton />;
@@ -244,7 +282,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
         <CardTitle>{t("checkout.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="border-border/70 rounded-2xl border bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(246,239,228,0.92))] p-5 shadow-[0_22px_55px_-42px_rgba(31,26,23,0.45)]">
+        <div className="rounded-3xl border border-white/70 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_93%,white),color-mix(in_srgb,var(--secondary)_48%,white))] p-5 shadow-[0_24px_70px_-40px_rgba(24,19,15,0.42)] sm:p-6">
           <p className="text-muted-foreground text-xs font-semibold tracking-[0.22em] uppercase">
             {t(
               isPickupDelivery
@@ -264,6 +302,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
               try {
                 const checkoutRequest = buildCheckoutRequest(values, {
                   deliveryAddress: isAddressDelivery ? deliveryAddress : null,
+                  includeAddressMetaFields: showsAddressMetaFields,
                 });
                 const order =
                   await checkoutMutation.mutateAsync(checkoutRequest);
@@ -324,7 +363,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
               </>
             ) : null}
 
-            {isAddressDelivery ? (
+            {showsAddressMetaFields ? (
               <div className="grid gap-4">
                 <FormField
                   control={form.control}

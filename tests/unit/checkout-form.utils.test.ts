@@ -270,6 +270,58 @@ describe("checkout form utils", () => {
     });
   });
 
+  it("omits address metadata in the checkout payload when checkout fields are hidden", () => {
+    expect(
+      buildCheckoutRequest(
+        {
+          apartment: "12",
+          comment: "Позвоните за 5 минут",
+          entrance: "3",
+          floor: "7",
+          fullName: "",
+          isPrivateHouse: false,
+          intercom: "45",
+          paymentMethodCode: "CARD_ON_DELIVERY",
+          phone: "",
+        },
+        {
+          deliveryAddress: {
+            apartment: "12",
+            city: "Екатеринбург",
+            comment: null,
+            country: "Россия",
+            entrance: "3",
+            floor: "7",
+            house: "10",
+            intercom: "45",
+            postalCode: "620014",
+            region: "Свердловская область",
+            street: "ул. Радищева",
+          },
+          includeAddressMetaFields: false,
+        },
+      ),
+    ).toEqual({
+      address: {
+        apartment: null,
+        city: "Екатеринбург",
+        comment: "Позвоните за 5 минут",
+        country: "Россия",
+        entrance: null,
+        floor: null,
+        house: "10",
+        intercom: null,
+        postalCode: "620014",
+        region: "Свердловская область",
+        street: "ул. Радищева",
+      },
+      comment: "Позвоните за 5 минут",
+      customerName: null,
+      customerPhone: null,
+      paymentMethodCode: "CARD_ON_DELIVERY",
+    });
+  });
+
   it("detects pickup checkout delivery methods", () => {
     expect(isPickupCheckoutDelivery("PICKUP")).toBe(true);
     expect(isPickupCheckoutDelivery("YANDEX_PICKUP_POINT")).toBe(true);
@@ -283,12 +335,12 @@ describe("checkout form utils", () => {
     );
   });
 
-  it("requires apartment only for courier checkout", () => {
+  it("requires apartment only when checkout metadata fields are enabled", () => {
     const courierSchema = createCheckoutFormSchema({
       requiresApartment: true,
       requiresContactDetails: false,
     });
-    const pickupSchema = createCheckoutFormSchema({
+    const customAddressSchema = createCheckoutFormSchema({
       requiresApartment: false,
       requiresContactDetails: false,
     });
@@ -308,7 +360,7 @@ describe("checkout form utils", () => {
     ).toBe(false);
 
     expect(
-      pickupSchema.safeParse({
+      customAddressSchema.safeParse({
         apartment: "",
         comment: "",
         entrance: "",
