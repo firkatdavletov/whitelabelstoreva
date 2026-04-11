@@ -369,6 +369,47 @@ const productWithTransitioningVariantImages: Product = {
   ],
 };
 
+const productWithVariantMissingImage: Product = {
+  ...baseProduct,
+  defaultVariantId: "variant-regular",
+  optionGroups: [
+    {
+      id: "size",
+      title: "Размер",
+      values: [
+        {
+          id: "size-regular",
+          title: "Обычный",
+        },
+        {
+          id: "size-large",
+          title: "Большой",
+        },
+      ],
+    },
+  ],
+  variants: [
+    {
+      id: "variant-regular",
+      imageUrl: "https://example.com/poke-regular.jpg",
+      imageUrls: ["https://example.com/poke-regular.jpg"],
+      isActive: true,
+      optionValueIds: ["size-regular"],
+      price: 14.9,
+      title: "Обычный",
+    },
+    {
+      id: "variant-large",
+      imageUrl: null,
+      imageUrls: [],
+      isActive: true,
+      optionValueIds: ["size-large"],
+      price: 16.9,
+      title: "Большой",
+    },
+  ],
+};
+
 function renderProductDetails(product: Product = baseProduct) {
   return render(
     React.createElement(ProductDetailsPage, {
@@ -559,6 +600,32 @@ describe("ProductDetailsPage", () => {
     );
   });
 
+  it("does not switch the main image when the selected variant has no photos", async () => {
+    const user = userEvent.setup();
+
+    mocks.useMenuProductDetailsQuery.mockReturnValue({
+      data: productWithVariantMissingImage,
+      error: null,
+      isError: false,
+      isPending: false,
+      refetch: mocks.productDetailsRefetch,
+    });
+
+    renderProductDetails(productWithVariantMissingImage);
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke.jpg",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Большой" }));
+
+    expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
+      "src",
+      "https://example.com/poke.jpg",
+    );
+  });
+
   it("renders a gallery with thumbnails and arrow navigation", async () => {
     const user = userEvent.setup();
 
@@ -585,6 +652,12 @@ describe("ProductDetailsPage", () => {
     const secondProductThumbnail = screen.getByRole("button", {
       name: "Основное фото 2",
     });
+    const regularVariantThumbnail = screen.getByRole("button", {
+      name: "Фото варианта: Обычный",
+    });
+    const secondRegularVariantThumbnail = screen.getByRole("button", {
+      name: "Фото варианта: Обычный 2",
+    });
     const variantThumbnail = screen.getByRole("button", {
       name: "Фото варианта: Большой",
     });
@@ -594,6 +667,8 @@ describe("ProductDetailsPage", () => {
 
     expect(variantThumbnail).toHaveAttribute("aria-pressed", "true");
     expect(secondProductThumbnail).toBeInTheDocument();
+    expect(regularVariantThumbnail).toBeInTheDocument();
+    expect(secondRegularVariantThumbnail).toBeInTheDocument();
     expect(secondVariantThumbnail).toBeInTheDocument();
 
     await user.click(productThumbnail);
@@ -615,7 +690,7 @@ describe("ProductDetailsPage", () => {
 
     expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
       "src",
-      "https://example.com/poke-large.jpg",
+      "https://example.com/poke-regular.jpg",
     );
 
     await user.click(screen.getByRole("button", { name: "Предыдущее фото" }));

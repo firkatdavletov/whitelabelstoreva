@@ -97,21 +97,6 @@ function mergeGalleryImages(...groups: ProductGalleryImage[][]) {
   );
 }
 
-function areGalleryImagesEqual(
-  left: ProductGalleryImage[],
-  right: ProductGalleryImage[],
-) {
-  return (
-    left.length === right.length &&
-    left.every(
-      (image, index) =>
-        image.id === right[index]?.id &&
-        image.src === right[index]?.src &&
-        image.thumbnailLabel === right[index]?.thumbnailLabel,
-    )
-  );
-}
-
 function describeModifierGroup(
   group: ProductModifierGroup,
   t: (key: string, options?: Record<string, unknown>) => string,
@@ -159,8 +144,6 @@ export function ProductDetailsPage({
   );
   const [hasSelectedVariantOption, setHasSelectedVariantOption] =
     useState(false);
-  const [displayedVariantGalleryImages, setDisplayedVariantGalleryImages] =
-    useState<ProductGalleryImage[]>([]);
   const autoSelectedVariantIdRef = useRef<string | null>(null);
   const [imageSizeBySrc, setImageSizeBySrc] = useState<
     Record<string, { height: number; width: number }>
@@ -177,7 +160,6 @@ export function ProductDetailsPage({
       createInitialModifierSelection(resolvedProduct),
     );
     setHasSelectedVariantOption(false);
-    setDisplayedVariantGalleryImages([]);
     autoSelectedVariantIdRef.current = null;
     setSelectedGalleryImageId(`product:${resolvedProduct.id}:0`);
   }, [resolvedProduct]);
@@ -253,24 +235,33 @@ export function ProductDetailsPage({
   const selectedHeaderSummary =
     selectedVariantLabel ??
     (selectedOptionSummary.length ? selectedOptionSummary.join(" · ") : null);
+  const allVariantGalleryImages = activeVariants.flatMap((variant) => {
+    const variantImageSources = getProductVariantImageSources(variant);
+
+    if (!variantImageSources.length) {
+      return [];
+    }
+
+    const variantLabel = resolveVariantLabel(resolvedProduct, variant);
+
+    return createGalleryImages(
+      variantImageSources,
+      `variant:${variant.id}`,
+      variantLabel
+        ? `${t("product.variantImage")}: ${variantLabel}`
+        : t("product.variantImage"),
+    );
+  });
   const selectedVariantImageSources = selectedVariant
     ? getProductVariantImageSources(selectedVariant)
     : [];
-  const selectedVariantGalleryImages =
+  const selectedVariantPrimaryGalleryImageId =
     selectedVariant && selectedVariantImageSources.length
-      ? createGalleryImages(
-          selectedVariantImageSources,
-          `variant:${selectedVariant.id}`,
-          selectedVariantLabel
-            ? `${t("product.variantImage")}: ${selectedVariantLabel}`
-            : t("product.variantImage"),
-        )
-      : [];
+      ? `variant:${selectedVariant.id}:0`
+      : null;
   const galleryImages = mergeGalleryImages(
     productGalleryImages,
-    selectedVariant
-      ? selectedVariantGalleryImages
-      : displayedVariantGalleryImages,
+    allVariantGalleryImages,
   );
   const activeGalleryImage =
     galleryImages.find((image) => image.id === selectedGalleryImageId) ??
@@ -332,27 +323,6 @@ export function ProductDetailsPage({
 
   useEffect(() => {
     if (!selectedVariant) {
-      return;
-    }
-
-    if (!selectedVariantGalleryImages.length) {
-      setDisplayedVariantGalleryImages((currentState) =>
-        currentState.length ? [] : currentState,
-      );
-      return;
-    }
-
-    setDisplayedVariantGalleryImages((currentState) => {
-      if (areGalleryImagesEqual(currentState, selectedVariantGalleryImages)) {
-        return currentState;
-      }
-
-      return selectedVariantGalleryImages;
-    });
-  }, [selectedVariant, selectedVariantGalleryImages]);
-
-  useEffect(() => {
-    if (!selectedVariant) {
       autoSelectedVariantIdRef.current = null;
     }
   }, [selectedVariant]);
@@ -366,20 +336,21 @@ export function ProductDetailsPage({
       return;
     }
 
-    const nextSelectedGalleryImageId =
-      selectedVariantGalleryImages[0]?.id ?? firstProductGalleryImageId;
+    if (!selectedVariantPrimaryGalleryImageId) {
+      autoSelectedVariantIdRef.current = selectedVariant.id;
+      return;
+    }
 
     autoSelectedVariantIdRef.current = selectedVariant.id;
     setSelectedGalleryImageId((currentState) =>
-      currentState === nextSelectedGalleryImageId
+      currentState === selectedVariantPrimaryGalleryImageId
         ? currentState
-        : nextSelectedGalleryImageId,
+        : selectedVariantPrimaryGalleryImageId,
     );
   }, [
-    firstProductGalleryImageId,
     hasSelectedVariantOption,
     selectedVariant,
-    selectedVariantGalleryImages,
+    selectedVariantPrimaryGalleryImageId,
   ]);
 
   function addConfiguredProduct({ showToast }: { showToast: boolean }) {
