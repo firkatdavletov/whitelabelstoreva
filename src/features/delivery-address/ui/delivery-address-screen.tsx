@@ -539,7 +539,7 @@ export function DeliveryAddressScreen() {
             </div>
           ) : deliveryMethodsQuery.data?.methods.length ? (
             <SegmentedControl
-              className="border-border/70 bg-background/82 pointer-events-auto shadow-lg backdrop-blur-xl"
+              className="border-border/70 bg-background/82 pointer-events-auto w-full max-w-md justify-center shadow-lg backdrop-blur-xl"
               onValueChange={(value) => {
                 const nextMethodCode =
                   value as PutCartDeliveryRequestDto["deliveryMethod"];
