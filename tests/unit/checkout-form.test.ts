@@ -13,8 +13,16 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: (props: { children: React.ReactNode; href: string }) =>
-    React.createElement("a", { href: props.href }, props.children),
+  default: (
+    props: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+      children: React.ReactNode;
+      href: string;
+    },
+  ) => {
+    const { children, href, ...rest } = props;
+
+    return React.createElement("a", { href, ...rest }, children);
+  },
 }));
 
 vi.mock("next/navigation", () => ({
@@ -54,8 +62,20 @@ vi.mock("react-i18next", () => ({
           return "Частный дом";
         case "checkout.comment":
           return "Комментарий к заказу";
+        case "checkout.legalAgreementLabel":
+          return "Подтверждаю, что ознакомлен(а) с документами";
+        case "checkout.legalAgreementRequired":
+          return "Чтобы оформить заказ, подтвердите ознакомление с документами.";
+        case "checkout.and":
+          return "и";
         case "checkout.submit":
           return "Оформить заказ";
+        case "footer.publicOffer":
+          return "Публичная оферта";
+        case "footer.personalDataPolicy":
+          return "Политика обработки персональных данных";
+        case "footer.personalDataConsent":
+          return "Согласие на обработку персональных данных";
         default:
           return key;
       }
@@ -286,6 +306,32 @@ describe("CheckoutForm", () => {
     expect(screen.getByLabelText("Комментарий к заказу")).not.toHaveAttribute(
       "placeholder",
     );
+  });
+
+  it("disables submit when legal agreement is unchecked", async () => {
+    const user = userEvent.setup();
+
+    render(React.createElement(CheckoutForm, { isAuthorized: true }));
+
+    const submitButton = screen.getByRole("button", {
+      name: "Оформить заказ",
+    });
+    const legalAgreementCheckbox = screen.getByRole("checkbox", {
+      name: "Подтверждаю, что ознакомлен(а) с документами",
+    });
+
+    expect(legalAgreementCheckbox).toBeChecked();
+    expect(submitButton).toBeEnabled();
+
+    await user.click(legalAgreementCheckbox);
+
+    expect(legalAgreementCheckbox).not.toBeChecked();
+    expect(submitButton).toBeDisabled();
+    expect(
+      screen.getByText(
+        "Чтобы оформить заказ, подтвердите ознакомление с документами.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("restores guest contact fields from localStorage", async () => {

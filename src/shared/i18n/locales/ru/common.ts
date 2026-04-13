@@ -26,6 +26,7 @@ export const ruMessages = {
     title: "Корзина",
   },
   checkout: {
+    and: "и",
     address: "Адрес доставки",
     apartment: "Квартира",
     comment: "Комментарий к заказу",
@@ -48,6 +49,9 @@ export const ruMessages = {
     phone: "Телефон",
     privateHouse: "Частный дом",
     pickupLocation: "Откуда забрать",
+    legalAgreementLabel: "Подтверждаю, что ознакомлен(а) с документами",
+    legalAgreementRequired:
+      "Чтобы оформить заказ, подтвердите ознакомление с документами.",
     submit: "Оформить заказ",
     title: "Оформление заказа",
   },

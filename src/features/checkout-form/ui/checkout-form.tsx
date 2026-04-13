@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useId, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { type StorefrontCartItem, isAddressDeliveryMethod } from "@/entities/cart";
+import {
+  type StorefrontCartItem,
+  isAddressDeliveryMethod,
+} from "@/entities/cart";
 import { getTenantConfig } from "@/entities/tenant";
 import { useStorefrontCartQuery } from "@/features/cart-summary/hooks/use-storefront-cart-query";
 import { useCheckoutMutation } from "@/features/checkout-form/hooks/use-checkout-mutation";
@@ -85,7 +88,10 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
   const { t } = useTranslation();
   const tenantConfig = getTenantConfig(tenantSlug);
   const currency = tenantConfig?.currency ?? "RUB";
+  const legalConsentId = useId();
   const beginCheckoutSignatureRef = useRef<string | null>(null);
+  const [hasAcceptedLegalDocuments, setHasAcceptedLegalDocuments] =
+    useState(true);
   const { data: storefrontCart, isLoading } =
     useStorefrontCartQuery(tenantSlug);
 
@@ -110,6 +116,20 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
     isAddressDeliveryMethod(delivery?.deliveryMethod);
   const showsAddressMetaFields = delivery?.deliveryMethod === "COURIER";
   const selectedAddressLabel = formatCheckoutDeliveryAddress(delivery);
+  const legalDocumentLinks = [
+    {
+      href: href("/legal/public-offer"),
+      label: t("footer.publicOffer"),
+    },
+    {
+      href: href("/legal/personal-data-policy"),
+      label: t("footer.personalDataPolicy"),
+    },
+    {
+      href: href("/legal/personal-data-consent"),
+      label: t("footer.personalDataConsent"),
+    },
+  ];
 
   const form = useForm<CheckoutFormValues>({
     defaultValues: {
@@ -654,9 +674,72 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
               )}
             />
 
+            <div
+              className={`rounded-2xl border p-4 transition-colors ${
+                hasAcceptedLegalDocuments
+                  ? "border-border/70 bg-background/65"
+                  : "border-destructive/25 bg-destructive/5"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <input
+                  checked={hasAcceptedLegalDocuments}
+                  className="border-border accent-primary mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded"
+                  id={legalConsentId}
+                  onChange={(event) =>
+                    setHasAcceptedLegalDocuments(event.target.checked)
+                  }
+                  type="checkbox"
+                />
+                <div className="min-w-0">
+                  <label
+                    className="cursor-pointer text-sm font-medium"
+                    htmlFor={legalConsentId}
+                  >
+                    {t("checkout.legalAgreementLabel")}
+                  </label>
+                  <p className="text-muted-foreground mt-1 text-sm leading-6">
+                    <Link
+                      className="decoration-border hover:text-foreground underline underline-offset-4 transition"
+                      href={legalDocumentLinks[0].href}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {legalDocumentLinks[0].label}
+                    </Link>
+                    {", "}
+                    <Link
+                      className="decoration-border hover:text-foreground underline underline-offset-4 transition"
+                      href={legalDocumentLinks[1].href}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {legalDocumentLinks[1].label}
+                    </Link>{" "}
+                    {t("checkout.and").toLowerCase()}{" "}
+                    <Link
+                      className="decoration-border hover:text-foreground underline underline-offset-4 transition"
+                      href={legalDocumentLinks[2].href}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {legalDocumentLinks[2].label}
+                    </Link>
+                    .
+                  </p>
+                </div>
+              </div>
+              {!hasAcceptedLegalDocuments ? (
+                <p className="text-destructive mt-3 text-sm">
+                  {t("checkout.legalAgreementRequired")}
+                </p>
+              ) : null}
+            </div>
+
             <Button
               className="mt-1 w-full sm:w-fit"
               disabled={
+                !hasAcceptedLegalDocuments ||
                 checkoutMutation.isPending ||
                 checkoutOptionsQuery.isLoading ||
                 !paymentMethods.length

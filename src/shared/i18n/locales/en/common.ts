@@ -24,6 +24,7 @@ export const enMessages = {
     title: "Cart",
   },
   checkout: {
+    and: "and",
     address: "Delivery address",
     apartment: "Apartment",
     comment: "Courier note",
@@ -46,6 +47,9 @@ export const enMessages = {
     phone: "Phone number",
     privateHouse: "Private house",
     pickupLocation: "Pick up from",
+    legalAgreementLabel: "I confirm that I have read the documents",
+    legalAgreementRequired:
+      "Confirm that you have read the documents to place the order.",
     submit: "Place order",
     title: "Checkout",
   },
