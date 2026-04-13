@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 
-import type { TenantConfig } from "@/entities/tenant";
 import { env } from "@/shared/config/env";
-import { buildStorefrontPath, SUPPORTED_LOCALES } from "@/shared/config/routing";
+import {
+  buildStorefrontPath,
+  getTenantPrimaryHostname,
+  SUPPORTED_LOCALES,
+} from "@/shared/config/routing";
 import type { Locale } from "@/shared/types/common";
 
 const DEFAULT_SITE_DESCRIPTION =
@@ -24,6 +27,15 @@ export function getMetadataBase() {
 
 export function toAbsoluteUrl(pathOrUrl: string) {
   return new URL(pathOrUrl, getMetadataBase()).toString();
+}
+
+export function toAbsoluteUrlForHostname(pathOrUrl: string, hostname: string) {
+  const metadataBase = getMetadataBase();
+  const protocol = hostname.startsWith("localhost")
+    ? "http:"
+    : metadataBase.protocol;
+
+  return new URL(pathOrUrl, `${protocol}//${hostname}`).toString();
 }
 
 export function buildTenantSocialImagePath(tenantSlug?: string) {
@@ -52,17 +64,36 @@ function getOpenGraphLocale(locale: Locale) {
 }
 
 function buildLanguageAlternates(tenantSlug: string, pathname = "") {
+  const primaryHostname = getTenantPrimaryHostname(tenantSlug);
+
   return Object.fromEntries(
     SUPPORTED_LOCALES.map((locale) => [
       locale,
-      buildStorefrontPath({
-        locale,
-        pathname,
-        tenantSlug,
-      }),
+      primaryHostname
+        ? toAbsoluteUrlForHostname(
+            buildStorefrontPath({
+              hostname: primaryHostname,
+              locale,
+              pathname,
+              tenantSlug,
+            }),
+            primaryHostname,
+          )
+        : buildStorefrontPath({
+            locale,
+            pathname,
+            tenantSlug,
+          }),
     ]),
   );
 }
+
+type StorefrontMetadataTenantConfig = {
+  description: string;
+  faviconUrl?: string;
+  slug: string;
+  title: string;
+};
 
 type StorefrontMetadataInput = {
   description: string;
@@ -70,7 +101,7 @@ type StorefrontMetadataInput = {
   keywords?: string[];
   locale: Locale;
   pathname?: string;
-  tenantConfig: TenantConfig;
+  tenantConfig: StorefrontMetadataTenantConfig;
   title: string;
 };
 
@@ -115,16 +146,21 @@ export function createStorefrontMetadata({
   tenantConfig,
   title,
 }: StorefrontMetadataInput): Metadata {
+  const primaryHostname = getTenantPrimaryHostname(tenantConfig.slug);
   const canonical = buildStorefrontPath({
+    hostname: primaryHostname,
     locale,
     pathname,
     tenantSlug: tenantConfig.slug,
   });
+  const canonicalUrl = primaryHostname
+    ? toAbsoluteUrlForHostname(canonical, primaryHostname)
+    : canonical;
   const socialImage = resolveSocialImageUrl(image, tenantConfig.slug);
 
   return {
     alternates: {
-      canonical,
+      canonical: canonicalUrl,
       languages: buildLanguageAlternates(tenantConfig.slug, pathname),
     },
     description,
@@ -142,7 +178,7 @@ export function createStorefrontMetadata({
       siteName: tenantConfig.title,
       title,
       type: "website",
-      url: canonical,
+      url: canonicalUrl,
     },
     title,
     twitter: {

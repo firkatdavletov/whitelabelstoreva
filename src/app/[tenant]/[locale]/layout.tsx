@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { RootProviders } from "@/app/providers/root-providers";
@@ -6,6 +7,7 @@ import { tenantConfigs } from "@/entities/tenant";
 import { resolveLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { SUPPORTED_LOCALES } from "@/shared/config/routing";
+import { getRequestHostnameFromHeaders } from "@/shared/config/routing";
 import {
   createStorefrontMetadata,
   nonIndexableMetadata,
@@ -59,13 +61,18 @@ export default async function StorefrontLayout({
   const { locale, tenant } = await params;
   const resolvedLocale = resolveLocale(locale);
   const tenantConfig = resolveTenant(tenant);
+  const requestHostname = getRequestHostnameFromHeaders(await headers());
 
   if (!resolvedLocale || !tenantConfig) {
     notFound();
   }
 
   return (
-    <RootProviders locale={resolvedLocale} tenantConfig={tenantConfig}>
+    <RootProviders
+      locale={resolvedLocale}
+      requestHostname={requestHostname}
+      tenantConfig={tenantConfig}
+    >
       <div className="bg-background relative min-h-dvh">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,_color-mix(in_srgb,var(--primary)_16%,transparent),transparent_60%)]" />
         <StorefrontHeader />

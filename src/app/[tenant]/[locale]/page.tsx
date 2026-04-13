@@ -1,11 +1,15 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 
 import { CurrentOrderCard, getCurrentOrder } from "@/features/order-tracking";
 import { getMenuCatalog } from "@/features/menu-catalog";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { buildServerRequestContext } from "@/shared/api/server-auth";
-import { buildStorefrontPath } from "@/shared/config/routing";
+import {
+  buildStorefrontPath,
+  getRequestHostnameFromHeaders,
+} from "@/shared/config/routing";
 import type { RouteParams } from "@/shared/types/common";
 import { getHomeCategoryCards } from "@/widgets/home/lib/home-placeholders";
 import { getHeroBanners } from "@/widgets/home/api/get-hero-banners";
@@ -29,12 +33,14 @@ export default async function HomePage({ params }: HomePageProps) {
   }
 
   const requestContext = await buildServerRequestContext();
+  const requestHostname = getRequestHostnameFromHeaders(await headers());
   const [menuCatalog, currentOrder, heroBanners] = await Promise.all([
     getMenuCatalog(tenant),
     getCurrentOrder(tenant, requestContext).catch(() => null),
     getHeroBanners(tenant, localeContext.locale).catch(() => []),
   ]);
   const menuHref = buildStorefrontPath({
+    hostname: requestHostname,
     locale: localeContext.locale,
     pathname: "/menu",
     tenantSlug: tenantConfig.slug,

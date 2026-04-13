@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { getMenuCatalog, ProductDetailsPage } from "@/features/menu-catalog";
@@ -9,7 +10,10 @@ import {
 } from "@/features/menu-catalog/lib/catalog-navigation";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
-import { buildStorefrontPath } from "@/shared/config/routing";
+import {
+  buildStorefrontPath,
+  getRequestHostnameFromHeaders,
+} from "@/shared/config/routing";
 import {
   createStorefrontMetadata,
   nonIndexableMetadata,
@@ -98,7 +102,9 @@ export default async function ProductPage({
     activeCategory?.id === data.product.categoryId
       ? activeCategory
       : data.productCategory;
+  const requestHostname = getRequestHostnameFromHeaders(await headers());
   const menuHref = buildStorefrontPath({
+    hostname: requestHostname,
     locale: data.localeContext.locale,
     pathname: "/menu",
     tenantSlug: data.tenantConfig.slug,

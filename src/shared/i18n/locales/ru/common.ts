@@ -240,7 +240,7 @@ export const ruMessages = {
       CREATED: "Заказ создан",
       ON_HOLD: "Заказ на паузе",
       OUT_FOR_DELIVERY: "Передан в доставку",
-      PREPARING: "Заказ готовят",
+      PREPARING: "Заказ собирают",
       READY_FOR_PICKUP: "Готов к выдаче",
     },
   },

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import {
@@ -9,7 +10,10 @@ import {
 import { resolveLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { ApiError } from "@/shared/api";
-import { buildStorefrontPath } from "@/shared/config/routing";
+import {
+  buildStorefrontPath,
+  getRequestHostnameFromHeaders,
+} from "@/shared/config/routing";
 import { getDictionary } from "@/shared/i18n/dictionary";
 import type { Locale, RouteParams } from "@/shared/types/common";
 import { Badge } from "@/shared/ui/badge";
@@ -56,7 +60,9 @@ export default async function LegalDocumentPage({
 
   try {
     const document = await getLegalDocument(type);
+    const requestHostname = getRequestHostnameFromHeaders(await headers());
     const storefrontHref = buildStorefrontPath({
+      hostname: requestHostname,
       locale: resolvedLocale,
       tenantSlug: tenantConfig.slug,
     });

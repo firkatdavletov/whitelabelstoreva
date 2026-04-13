@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 
 import { searchCatalogProducts } from "@/features/menu-catalog/api/search-catalog-products";
 import {
@@ -7,7 +8,10 @@ import {
 } from "@/features/menu-catalog/lib/catalog-search";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
-import { buildStorefrontPath } from "@/shared/config/routing";
+import {
+  buildStorefrontPath,
+  getRequestHostnameFromHeaders,
+} from "@/shared/config/routing";
 import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
 import { CatalogSearchShell } from "@/widgets/catalog-search";
@@ -54,6 +58,7 @@ export default async function SearchPage({
           },
         )
       : [];
+  const requestHostname = getRequestHostnameFromHeaders(await headers());
 
   return (
     <div className="flex min-h-[calc(100dvh-11rem)] flex-col lg:min-h-[calc(100dvh-9.5rem)]">
@@ -63,6 +68,7 @@ export default async function SearchPage({
         initialQuery={normalizedSearchQuery}
         locale={localeContext.locale}
         menuHref={buildStorefrontPath({
+          hostname: requestHostname,
           locale: localeContext.locale,
           pathname: "/menu",
           tenantSlug: tenantConfig.slug,

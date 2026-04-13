@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 
 import type { TenantSocialLinks } from "@/entities/tenant";
-import { buildStorefrontPath } from "@/shared/config/routing";
+import {
+  buildStorefrontPath,
+  getRequestHostnameFromHeaders,
+} from "@/shared/config/routing";
 import { getDictionary } from "@/shared/i18n/dictionary";
 import type { Locale } from "@/shared/types/common";
 import { FooterVisibility } from "@/widgets/footer/ui/footer-visibility";
@@ -22,9 +26,11 @@ export async function Footer({
   tenantTitle,
 }: FooterProps) {
   const dictionary = await getDictionary(locale);
+  const requestHostname = getRequestHostnameFromHeaders(await headers());
   const legalLinks = [
     {
       href: buildStorefrontPath({
+        hostname: requestHostname,
         locale,
         pathname: "/legal/public-offer",
         tenantSlug,
@@ -33,6 +39,7 @@ export async function Footer({
     },
     {
       href: buildStorefrontPath({
+        hostname: requestHostname,
         locale,
         pathname: "/legal/personal-data-policy",
         tenantSlug,
@@ -41,6 +48,7 @@ export async function Footer({
     },
     {
       href: buildStorefrontPath({
+        hostname: requestHostname,
         locale,
         pathname: "/legal/personal-data-consent",
         tenantSlug,
@@ -61,7 +69,9 @@ export async function Footer({
       href: socialLinks.instagram?.trim(),
       label: "Instagram",
     },
-  ].filter((link): link is { href: string; label: string } => Boolean(link.href));
+  ].filter((link): link is { href: string; label: string } =>
+    Boolean(link.href),
+  );
 
   return (
     <FooterVisibility>

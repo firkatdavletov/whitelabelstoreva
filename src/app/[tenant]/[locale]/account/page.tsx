@@ -1,9 +1,13 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
-import { buildStorefrontPath } from "@/shared/config/routing";
+import {
+  buildStorefrontPath,
+  getRequestHostnameFromHeaders,
+} from "@/shared/config/routing";
 import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
 import { Badge } from "@/shared/ui/badge";
@@ -34,6 +38,8 @@ export default async function AccountPage({ params }: AccountPageProps) {
     notFound();
   }
 
+  const requestHostname = getRequestHostnameFromHeaders(await headers());
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <div className="space-y-3">
@@ -57,6 +63,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
           <Button asChild variant="outline">
             <Link
               href={buildStorefrontPath({
+                hostname: requestHostname,
                 locale: localeContext.locale,
                 tenantSlug: tenantConfig.slug,
               })}
