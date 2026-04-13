@@ -154,7 +154,7 @@ export const ruMessages = {
   home: {
     bannerNext: "Следующий баннер",
     bannerPrevious: "Предыдущий баннер",
-    browseMenu: "Открыть меню",
+    browseMenu: "Посмотреть все",
     checkout: "Перейти к checkout",
     eyebrow: "White label платформа заказа еды",
     featured: "Популярные позиции",
