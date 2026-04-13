@@ -230,52 +230,31 @@ export function DeliveryAddressScreen() {
     initialSearchHint,
   });
 
-  const handleYandexLocateMe = useCallback(() => {
-    if (typeof window === "undefined" || !window.navigator.geolocation) {
-      toast.error(t("deliveryAddress.locationError"));
-      return;
-    }
+  const handleYandexLocate = useCallback(
+    async (position: GeolocationPosition) => {
+      setIsDetectingNearbyCity(true);
 
-    window.navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        setIsDetectingNearbyCity(true);
+      try {
+        const { city } = await detectYandexCity({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        const cityQuery = city?.trim();
 
-        try {
-          const { city } = await detectYandexCity({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-          const cityQuery = city?.trim();
-
-          if (!cityQuery) {
-            throw new Error("Missing city");
-          }
-
-          yandexPickup.setSearchQuery(cityQuery);
-          yandexPickup.submitSearch(cityQuery);
-        } catch {
-          toast.error(t("deliveryAddress.yandexLocationError"));
-        } finally {
-          setIsDetectingNearbyCity(false);
+        if (!cityQuery) {
+          throw new Error("Missing city");
         }
-      },
-      () => {
-        toast.error(t("deliveryAddress.locationError"));
-      },
-      {
-        enableHighAccuracy: false,
-        maximumAge: 60_000,
-        timeout: 10_000,
-      },
-    );
-  }, [t, yandexPickup]);
 
-  const handleYandexUseCourierAddress = useCallback(() => {
-    if (courierAddressHint) {
-      yandexPickup.setSearchQuery(courierAddressHint);
-      yandexPickup.submitSearch(courierAddressHint);
-    }
-  }, [courierAddressHint, yandexPickup]);
+        yandexPickup.setSearchQuery(cityQuery);
+        yandexPickup.submitSearch(cityQuery);
+      } catch {
+        toast.error(t("deliveryAddress.yandexLocationError"));
+      } finally {
+        setIsDetectingNearbyCity(false);
+      }
+    },
+    [t, yandexPickup],
+  );
 
   // Store pickup points
   const pickupPoints = pickupPointsQuery.data?.pickupPoints ?? [];
@@ -490,6 +469,7 @@ export function DeliveryAddressScreen() {
               }
             : undefined
         }
+        onLocate={isYandexPickup ? handleYandexLocate : undefined}
         selectedMarkerId={activeSelectedMarkerId}
         showHint={false}
       />
@@ -539,7 +519,7 @@ export function DeliveryAddressScreen() {
             </div>
           ) : deliveryMethodsQuery.data?.methods.length ? (
             <SegmentedControl
-              className="border-border/70 bg-background/82 pointer-events-auto w-full max-w-md justify-center shadow-lg backdrop-blur-xl"
+              className="border-border/70 bg-background/82 pointer-events-auto mx-auto shadow-lg backdrop-blur-xl"
               onValueChange={(value) => {
                 const nextMethodCode =
                   value as PutCartDeliveryRequestDto["deliveryMethod"];
@@ -564,25 +544,6 @@ export function DeliveryAddressScreen() {
             </div>
           )}
         </div>
-
-        {isYandexPickup ? (
-          <div className="flex justify-center">
-            <YandexPickupSearch
-              courierAddressHint={courierAddressHint}
-              isLoadingLocation={
-                isDetectingNearbyCity || yandexPickup.isLoadingLocation
-              }
-              locationVariants={yandexPickup.locationVariants}
-              onDismissVariants={yandexPickup.dismissVariants}
-              onLocateMe={handleYandexLocateMe}
-              onSelectVariant={yandexPickup.selectVariant}
-              onSubmitSearch={yandexPickup.submitSearch}
-              onUseCourierAddress={handleYandexUseCourierAddress}
-              searchQuery={yandexPickup.searchQuery}
-              setSearchQuery={yandexPickup.setSearchQuery}
-            />
-          </div>
-        ) : null}
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 p-3 sm:p-5">
@@ -724,13 +685,15 @@ export function DeliveryAddressScreen() {
               </div>
             ) : null}
 
-            {isYandexPickup &&
-            yandexPickup.geoId === null &&
-            !yandexPickup.isLoadingLocation &&
-            !yandexPickup.locationError ? (
-              <div className="border-border/70 bg-background/70 text-muted-foreground rounded-2xl border px-4 py-3 text-sm">
-                {t("deliveryAddress.yandexSearchHint")}
-              </div>
+            {isYandexPickup ? (
+              <YandexPickupSearch
+                isLoadingLocation={
+                  isDetectingNearbyCity || yandexPickup.isLoadingLocation
+                }
+                onSubmitSearch={yandexPickup.submitSearch}
+                searchQuery={yandexPickup.searchQuery}
+                setSearchQuery={yandexPickup.setSearchQuery}
+              />
             ) : null}
 
             {!env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? (

@@ -12,10 +12,7 @@ import {
   mapYandexPickupPointDto,
   yandexPickupPointToMapMarker,
 } from "@/features/delivery-address/lib/yandex-pickup.mapper";
-import type {
-  YandexLocationVariant,
-  YandexPickupPoint,
-} from "@/features/delivery-address/model/yandex-pickup.types";
+import type { YandexPickupPoint } from "@/features/delivery-address/model/yandex-pickup.types";
 import type { MapPickupMarker } from "@/features/delivery-address/lib/delivery-address.utils";
 
 type UseYandexPickupFlowOptions = {
@@ -29,13 +26,8 @@ export function useYandexPickupFlow({
   initialExternalId,
   initialSearchHint,
 }: UseYandexPickupFlowOptions) {
-  const [searchQuery, setSearchQuery] = useState(
-    () => initialSearchHint ?? "",
-  );
+  const [searchQuery, setSearchQuery] = useState(() => initialSearchHint ?? "");
   const [geoId, setGeoId] = useState<number | null>(null);
-  const [locationVariants, setLocationVariants] = useState<
-    YandexLocationVariant[]
-  >([]);
   const [selectedPointId, setSelectedPointId] = useState<string | null>(
     initialExternalId ?? null,
   );
@@ -45,19 +37,15 @@ export function useYandexPickupFlow({
     mutationFn: (query: string) => detectYandexLocations(query),
     onSuccess: (data) => {
       const variants = data.variants.map(mapYandexLocationVariantDto);
+      const firstVariant = variants[0] ?? null;
 
-      if (variants.length === 1) {
-        setGeoId(variants[0].geoId);
-        setLocationVariants([]);
+      if (firstVariant) {
+        setGeoId(firstVariant.geoId);
+        setSearchQuery(firstVariant.address);
         return;
       }
 
-      if (variants.length > 1) {
-        setLocationVariants(variants);
-        return;
-      }
-
-      setLocationVariants([]);
+      setGeoId(null);
     },
   });
 
@@ -112,45 +100,28 @@ export function useYandexPickupFlow({
         return;
       }
 
-      setLocationVariants([]);
+      setGeoId(null);
       setSelectedPointId(null);
       locationDetectMutation.mutate(trimmed);
     },
     [locationDetectMutation],
   );
 
-  const selectVariant = useCallback(
-    (variant: YandexLocationVariant) => {
-      setGeoId(variant.geoId);
-      setLocationVariants([]);
-      setSearchQuery(variant.address);
-      setSelectedPointId(null);
-    },
-    [],
-  );
-
-  const dismissVariants = useCallback(() => {
-    setLocationVariants([]);
-  }, []);
-
   const selectPoint = useCallback((pointId: string) => {
     setSelectedPointId(pointId);
   }, []);
 
   return {
-    dismissVariants,
     geoId,
     isLoadingLocation: locationDetectMutation.isPending,
     isLoadingPoints: pickupPointsQuery.isLoading && geoId !== null,
     locationError: locationDetectMutation.error,
-    locationVariants,
     markers,
     pickupPoints,
     pointsError: pickupPointsQuery.error,
     refetchPoints: pickupPointsQuery.refetch,
     searchQuery,
     selectPoint,
-    selectVariant,
     selectedPoint,
     selectedPointId: resolvedSelectedPointId,
     setSearchQuery,

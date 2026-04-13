@@ -210,6 +210,7 @@ type YandexMapPickerProps = {
   locale: Locale;
   markers?: MapPickupMarker[];
   onCenterChange: (center: DeliveryMapCenter) => void;
+  onLocate?: (position: GeolocationPosition) => void | Promise<void>;
   onMarkerSelect?: (markerId: string) => void;
   selectedMarkerId?: string | null;
   showHint?: boolean;
@@ -221,6 +222,7 @@ export function YandexMapPicker({
   locale,
   markers = [],
   onCenterChange,
+  onLocate,
   onMarkerSelect,
   selectedMarkerId = null,
   showHint = true,
@@ -234,6 +236,7 @@ export function YandexMapPicker({
   const clustererRef = useRef<unknown | null>(null);
   const fallbackMarkersRef = useRef<unknown[]>([]);
   const onCenterChangeRef = useRef(onCenterChange);
+  const onLocateRef = useRef(onLocate);
   const onMarkerSelectRef = useRef(onMarkerSelect);
   const [status, setStatus] = useState<MapStatus>(() =>
     env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY ? "loading" : "missing-key",
@@ -244,6 +247,10 @@ export function YandexMapPicker({
   useEffect(() => {
     onCenterChangeRef.current = onCenterChange;
   }, [onCenterChange]);
+
+  useEffect(() => {
+    onLocateRef.current = onLocate;
+  }, [onLocate]);
 
   useEffect(() => {
     onMarkerSelectRef.current = onMarkerSelect;
@@ -553,7 +560,7 @@ export function YandexMapPicker({
     setIsLocating(true);
 
     window.navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const nextCenter = normalizeMapCenter(
           position.coords.latitude,
           position.coords.longitude,
@@ -573,7 +580,14 @@ export function YandexMapPicker({
 
         onCenterChangeRef.current(nextCenter);
         setZoom(nextZoom);
-        setIsLocating(false);
+
+        try {
+          await onLocateRef.current?.(position);
+        } catch {
+          // The caller is responsible for any user-facing error handling.
+        } finally {
+          setIsLocating(false);
+        }
       },
       () => {
         setIsLocating(false);
