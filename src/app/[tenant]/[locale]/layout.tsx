@@ -48,7 +48,7 @@ export async function generateMetadata({
     description: tenantConfig.description,
     locale: resolvedLocale,
     tenantConfig,
-    title: `${tenantConfig.title} Storefront`,
+    title: tenantConfig.title,
   });
 }
 

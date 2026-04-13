@@ -41,7 +41,7 @@ export async function generateMetadata({
     locale: localeContext.locale,
     pathname: "/menu",
     tenantConfig,
-    title: `${tenantConfig.title} Menu`,
+    title: tenantConfig.title,
   });
 }
 
