@@ -6,6 +6,7 @@ import {
 import { apiRequest } from "@/shared/api";
 import { env } from "@/shared/config/env";
 
+import { PUBLIC_CATALOG_REQUEST_CONTEXT } from "@/features/menu-catalog/api/catalog-public-request";
 import { createMockCatalogProductDetailsDto } from "@/features/menu-catalog/api/menu-catalog.mock";
 
 export async function getMenuProductDetails(
@@ -22,6 +23,7 @@ export async function getMenuProductDetails(
   const dto = await apiRequest<ProductDetailsDto>(
     `/v1/catalog/products/${product.id}`,
     {
+      ...PUBLIC_CATALOG_REQUEST_CONTEXT,
       cache: "no-store",
     },
   );

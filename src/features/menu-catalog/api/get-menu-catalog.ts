@@ -10,6 +10,7 @@ import type {
   CatalogCategoryDto,
   CatalogProductDto,
 } from "@/features/menu-catalog/api/catalog.types";
+import { PUBLIC_CATALOG_REQUEST_CONTEXT } from "@/features/menu-catalog/api/catalog-public-request";
 import {
   createMockCatalogCategoriesDto,
   createMockCatalogProductsDto,
@@ -32,6 +33,7 @@ async function getCatalogCategories(tenantSlug: string) {
   }
 
   return apiRequest<CatalogCategoryDto[]>("/v1/catalog/categories", {
+    ...PUBLIC_CATALOG_REQUEST_CONTEXT,
     cache: "no-store",
     query: {
       activeOnly: true,
@@ -45,6 +47,7 @@ async function getCatalogProducts(tenantSlug: string) {
   }
 
   return apiRequest<CatalogProductDto[]>("/v1/catalog/products", {
+    ...PUBLIC_CATALOG_REQUEST_CONTEXT,
     cache: "no-store",
   });
 }

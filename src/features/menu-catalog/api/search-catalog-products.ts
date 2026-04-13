@@ -4,6 +4,7 @@ import { apiRequest } from "@/shared/api";
 import { env } from "@/shared/config/env";
 
 import type { CatalogProductDto } from "@/features/menu-catalog/api/catalog.types";
+import { PUBLIC_CATALOG_REQUEST_CONTEXT } from "@/features/menu-catalog/api/catalog-public-request";
 import { createMockCatalogProductsDto } from "@/features/menu-catalog/api/menu-catalog.mock";
 import {
   isCatalogSearchQueryEligible,
@@ -39,6 +40,7 @@ export async function searchCatalogProducts(
         normalizedQuery,
       )
     : await apiRequest<CatalogProductDto[]>("/v1/catalog/products", {
+        ...PUBLIC_CATALOG_REQUEST_CONTEXT,
         cache: "no-store",
         query: {
           query: normalizedQuery,
