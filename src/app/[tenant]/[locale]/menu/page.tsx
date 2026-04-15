@@ -27,10 +27,10 @@ type MenuPageProps = {
 
 function buildMenuPageDescription(locale: Locale, tenantTitle: string): string {
   if (locale === "ru") {
-    return `Меню ${tenantTitle}: выбирайте блюда по категориям и оформляйте заказ онлайн с доставкой или самовывозом.`;
+    return `Каталог ${tenantTitle}: выбирайте украшения и аксессуары по категориям и оформляйте заказ онлайн с доставкой или самовывозом.`;
   }
 
-  return `${tenantTitle} menu: browse categories and place an online order for delivery or pickup.`;
+  return `${tenantTitle} catalog: browse categories and place an online order for delivery or pickup.`;
 }
 
 export async function generateMetadata({
