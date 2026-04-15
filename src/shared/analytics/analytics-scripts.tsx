@@ -48,13 +48,16 @@ function createYandexMetrikaSnippet(yandexMetrikaId: string) {
       k.async=1;
       k.src=r;
       a.parentNode.insertBefore(k,a);
-    })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+    })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=${yandexMetrikaId}', 'ym');
     ym(${yandexMetrikaId}, 'init', {
-      accurateTrackBounce: true,
+      ssr: true,
+      webvisor: true,
       clickmap: true,
       ecommerce: 'dataLayer',
+      referrer: document.referrer,
+      url: location.href,
+      accurateTrackBounce: true,
       trackLinks: true,
-      webvisor: true,
     });
   `;
 }
@@ -85,9 +88,20 @@ export function AnalyticsScripts() {
       ) : null}
 
       {yandexMetrikaId ? (
-        <Script id="storeva-yandex-metrika" strategy="afterInteractive">
-          {createYandexMetrikaSnippet(yandexMetrikaId)}
-        </Script>
+        <>
+          <Script id="storeva-yandex-metrika" strategy="afterInteractive">
+            {createYandexMetrikaSnippet(yandexMetrikaId)}
+          </Script>
+          <noscript>
+            <div>
+              <img
+                alt=""
+                src={`https://mc.yandex.ru/watch/${yandexMetrikaId}`}
+                style={{ left: "-9999px", position: "absolute" }}
+              />
+            </div>
+          </noscript>
+        </>
       ) : null}
     </>
   );
