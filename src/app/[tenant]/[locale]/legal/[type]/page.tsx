@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -15,6 +16,10 @@ import {
   getRequestHostnameFromHeaders,
 } from "@/shared/config/routing";
 import { getDictionary } from "@/shared/i18n/dictionary";
+import {
+  createStorefrontMetadata,
+  nonIndexableMetadata,
+} from "@/shared/lib/storefront-metadata";
 import type { Locale, RouteParams } from "@/shared/types/common";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -30,6 +35,40 @@ type LegalDocumentPageProps = {
 
 export function generateStaticParams() {
   return LEGAL_DOCUMENT_TYPES.map((type) => ({ type }));
+}
+
+export async function generateMetadata({
+  params,
+}: LegalDocumentPageProps): Promise<Metadata> {
+  const { locale, tenant, type } = await params;
+  const resolvedLocale = resolveLocale(locale);
+  const tenantConfig = resolveTenant(tenant);
+
+  if (!resolvedLocale || !tenantConfig || !isLegalDocumentType(type)) {
+    return nonIndexableMetadata;
+  }
+
+  try {
+    const document = await getLegalDocument(type);
+    const fallbackDescription =
+      resolvedLocale === "ru"
+        ? `${document.title} для ${tenantConfig.title}.`
+        : `${document.title} for ${tenantConfig.title}.`;
+
+    return createStorefrontMetadata({
+      description: document.subtitle || fallbackDescription,
+      locale: resolvedLocale,
+      pathname: `/legal/${type}`,
+      tenantConfig,
+      title: `${document.title} | ${tenantConfig.title}`,
+    });
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 400) {
+      return nonIndexableMetadata;
+    }
+
+    throw error;
+  }
 }
 
 function formatUpdatedAt(value: string, locale: Locale) {

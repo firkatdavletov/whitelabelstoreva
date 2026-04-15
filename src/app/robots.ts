@@ -7,14 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     host: getMetadataBase().host,
     rules: {
       allow: "/",
-      disallow: [
-        "/*/account",
-        "/*/cart",
-        "/*/checkout",
-        "/*/delivery",
-        "/*/orders/",
-        "/*/search",
-      ],
+      disallow: ["/api/"],
       userAgent: "*",
     },
     sitemap: toAbsoluteUrl("/sitemap.xml"),

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 
@@ -12,11 +13,12 @@ import {
   buildStorefrontPath,
   getRequestHostnameFromHeaders,
 } from "@/shared/config/routing";
-import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
+import {
+  createNonIndexableStorefrontMetadata,
+  nonIndexableMetadata,
+} from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
 import { CatalogSearchShell } from "@/widgets/catalog-search";
-
-export const metadata = nonIndexableMetadata;
 
 type SearchPageProps = {
   params: RouteParams<{
@@ -27,6 +29,34 @@ type SearchPageProps = {
     query?: string | string[];
   }>;
 };
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: SearchPageProps): Promise<Metadata> {
+  const { locale, tenant } = await params;
+  const localeContext = await bootstrapLocale(locale);
+  const tenantConfig = resolveTenant(tenant);
+
+  if (!localeContext || !tenantConfig) {
+    return nonIndexableMetadata;
+  }
+
+  const searchQuery = normalizeCatalogSearchQuery((await searchParams).query);
+  const pageDescription = searchQuery
+    ? localeContext.locale === "ru"
+      ? `Результаты поиска «${searchQuery}» в каталоге ${tenantConfig.title}.`
+      : `Search results for "${searchQuery}" in the ${tenantConfig.title} catalog.`
+    : localeContext.dictionary.search.errorDescription;
+
+  return createNonIndexableStorefrontMetadata({
+    description: pageDescription,
+    locale: localeContext.locale,
+    pathname: "/search",
+    tenantConfig,
+    title: `${localeContext.dictionary.search.title} | ${tenantConfig.title}`,
+  });
+}
 
 export default async function SearchPage({
   params,

@@ -96,7 +96,7 @@ type StorefrontMetadataTenantConfig = {
 };
 
 type StorefrontMetadataInput = {
-  description: string;
+  description: string | null | undefined;
   image?: string | null;
   keywords?: string[];
   locale: Locale;
@@ -104,6 +104,19 @@ type StorefrontMetadataInput = {
   tenantConfig: StorefrontMetadataTenantConfig;
   title: string;
 };
+
+function normalizeMetadataDescription(
+  description: string | null | undefined,
+  fallback: string,
+) {
+  const normalizedDescription = description?.replace(/\s+/g, " ").trim();
+
+  if (!normalizedDescription) {
+    return fallback;
+  }
+
+  return normalizedDescription;
+}
 
 export function createSiteMetadata(): Metadata {
   const socialImage = resolveSocialImageUrl(null);
@@ -146,6 +159,10 @@ export function createStorefrontMetadata({
   tenantConfig,
   title,
 }: StorefrontMetadataInput): Metadata {
+  const resolvedDescription = normalizeMetadataDescription(
+    description,
+    tenantConfig.description,
+  );
   const primaryHostname = getTenantPrimaryHostname(tenantConfig.slug);
   const canonical = buildStorefrontPath({
     hostname: primaryHostname,
@@ -163,7 +180,7 @@ export function createStorefrontMetadata({
       canonical: canonicalUrl,
       languages: buildLanguageAlternates(tenantConfig.slug, pathname),
     },
-    description,
+    description: resolvedDescription,
     icons: tenantConfig.faviconUrl
       ? {
           icon: tenantConfig.faviconUrl,
@@ -172,7 +189,7 @@ export function createStorefrontMetadata({
       : undefined,
     keywords,
     openGraph: {
-      description,
+      description: resolvedDescription,
       images: [socialImage],
       locale: getOpenGraphLocale(locale),
       siteName: tenantConfig.title,
@@ -183,9 +200,18 @@ export function createStorefrontMetadata({
     title,
     twitter: {
       card: "summary_large_image",
-      description,
+      description: resolvedDescription,
       images: [socialImage],
       title,
     },
+  };
+}
+
+export function createNonIndexableStorefrontMetadata(
+  input: StorefrontMetadataInput,
+): Metadata {
+  return {
+    ...createStorefrontMetadata(input),
+    ...nonIndexableMetadata,
   };
 }

@@ -1,12 +1,14 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { DeliveryAddressScreen } from "@/features/delivery-address";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
-import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
+import {
+  createNonIndexableStorefrontMetadata,
+  nonIndexableMetadata,
+} from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
-
-export const metadata = nonIndexableMetadata;
 
 type DeliveryPageProps = {
   params: RouteParams<{
@@ -14,6 +16,26 @@ type DeliveryPageProps = {
     tenant: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: DeliveryPageProps): Promise<Metadata> {
+  const { locale, tenant } = await params;
+  const localeContext = await bootstrapLocale(locale);
+  const tenantConfig = resolveTenant(tenant);
+
+  if (!localeContext || !tenantConfig) {
+    return nonIndexableMetadata;
+  }
+
+  return createNonIndexableStorefrontMetadata({
+    description: localeContext.dictionary.deliveryAddress.subtitle,
+    locale: localeContext.locale,
+    pathname: "/delivery",
+    tenantConfig,
+    title: `${localeContext.dictionary.deliveryAddress.title} | ${tenantConfig.title}`,
+  });
+}
 
 export default async function DeliveryPage({ params }: DeliveryPageProps) {
   const { locale, tenant } = await params;

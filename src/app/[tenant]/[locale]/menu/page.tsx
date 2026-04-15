@@ -12,7 +12,7 @@ import {
   createStorefrontMetadata,
   nonIndexableMetadata,
 } from "@/shared/lib/storefront-metadata";
-import type { RouteParams } from "@/shared/types/common";
+import type { Locale, RouteParams } from "@/shared/types/common";
 import { MenuGrid } from "@/widgets/menu-grid";
 
 type MenuPageProps = {
@@ -24,6 +24,14 @@ type MenuPageProps = {
     category?: string | string[];
   }>;
 };
+
+function buildMenuPageDescription(locale: Locale, tenantTitle: string): string {
+  if (locale === "ru") {
+    return `Меню ${tenantTitle}: выбирайте блюда по категориям и оформляйте заказ онлайн с доставкой или самовывозом.`;
+  }
+
+  return `${tenantTitle} menu: browse categories and place an online order for delivery or pickup.`;
+}
 
 export async function generateMetadata({
   params,
@@ -37,11 +45,14 @@ export async function generateMetadata({
   }
 
   return createStorefrontMetadata({
-    description: tenantConfig.heroCopy,
+    description: buildMenuPageDescription(
+      localeContext.locale,
+      tenantConfig.title,
+    ),
     locale: localeContext.locale,
     pathname: "/menu",
     tenantConfig,
-    title: tenantConfig.title,
+    title: `${localeContext.dictionary.navigation.menu} | ${tenantConfig.title}`,
   });
 }
 

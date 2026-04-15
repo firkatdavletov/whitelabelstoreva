@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -8,7 +9,10 @@ import {
   buildStorefrontPath,
   getRequestHostnameFromHeaders,
 } from "@/shared/config/routing";
-import { nonIndexableMetadata } from "@/shared/lib/storefront-metadata";
+import {
+  createNonIndexableStorefrontMetadata,
+  nonIndexableMetadata,
+} from "@/shared/lib/storefront-metadata";
 import type { RouteParams } from "@/shared/types/common";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -20,14 +24,32 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 
-export const metadata = nonIndexableMetadata;
-
 type AccountPageProps = {
   params: RouteParams<{
     locale: string;
     tenant: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: AccountPageProps): Promise<Metadata> {
+  const { locale, tenant } = await params;
+  const localeContext = await bootstrapLocale(locale);
+  const tenantConfig = resolveTenant(tenant);
+
+  if (!localeContext || !tenantConfig) {
+    return nonIndexableMetadata;
+  }
+
+  return createNonIndexableStorefrontMetadata({
+    description: localeContext.dictionary.account.subtitle,
+    locale: localeContext.locale,
+    pathname: "/account",
+    tenantConfig,
+    title: `${localeContext.dictionary.account.title} | ${tenantConfig.title}`,
+  });
+}
 
 export default async function AccountPage({ params }: AccountPageProps) {
   const { locale, tenant } = await params;
