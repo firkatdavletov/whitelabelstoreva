@@ -15,6 +15,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const SITEMAP_EXCLUDED_TENANTS = new Set([
+  "storeva-street",
+  "storeva-mass",
+  "storeva-premium",
+]);
+
 function toTenantUrl(pathname: string, tenantSlug: string) {
   const primaryHostname = getTenantPrimaryHostname(tenantSlug);
 
@@ -25,7 +31,11 @@ function toTenantUrl(pathname: string, tenantSlug: string) {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
-  const baseEntries = tenantConfigs.flatMap((tenantConfig) =>
+  const sitemapTenantConfigs = tenantConfigs.filter(
+    (tenantConfig) => !SITEMAP_EXCLUDED_TENANTS.has(tenantConfig.slug),
+  );
+
+  const baseEntries = sitemapTenantConfigs.flatMap((tenantConfig) =>
     SUPPORTED_LOCALES.flatMap((locale) => [
       {
         changeFrequency: "daily" as const,
@@ -72,7 +82,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
   const productEntries = (
     await Promise.all(
-      tenantConfigs.map(async (tenantConfig) => {
+      sitemapTenantConfigs.map(async (tenantConfig) => {
         const menuCatalog = await getMenuCatalog(tenantConfig.slug).catch(
           () => null,
         );
