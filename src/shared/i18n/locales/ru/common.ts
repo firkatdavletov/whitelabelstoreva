@@ -12,7 +12,7 @@ export const ruMessages = {
     back: "Назад",
     checkoutSubtitle: "Проверьте состав заказа перед подтверждением.",
     checkout: "Перейти к оформлению",
-    continue: "Открыть меню",
+    continue: "Открыть каталог",
     deliveryCalculatedIndividually:
       "Стоимость доставки рассчитывается индивидуально",
     delivery: "Доставка",
@@ -153,7 +153,7 @@ export const ruMessages = {
     pickup: "Самовывоз",
     pickupAddressLabel: "Самовывоз: {{address}}",
     search: "Поиск",
-    searchPlaceholder: "Поиск по меню",
+    searchPlaceholder: "Поиск по каталогу",
   },
   home: {
     bannerNext: "Следующий баннер",
@@ -171,16 +171,16 @@ export const ruMessages = {
     updatedAt: "Обновлено",
   },
   menu: {
-    empty: "Для этого tenant каталог пока пуст.",
+    empty: "Каталог пока пуст.",
     subtitle:
       "Каталог проходит через typed API layer и tenant-specific mapping перед рендерингом.",
-    title: "Меню",
+    title: "Каталог",
   },
   navigation: {
     cart: "Корзина",
     checkout: "Checkout",
     home: "Главная",
-    menu: "Меню",
+    menu: "Каталог",
     orders: "Заказы",
   },
   order: {
@@ -276,7 +276,7 @@ export const ruMessages = {
   search: {
     empty: "По запросу «{{query}}» ничего не найдено.",
     errorDescription:
-      "Попробуйте изменить запрос или перейти в полное меню каталога.",
+      "Попробуйте изменить запрос или перейти в каталог.",
     errorTitle: "Не удалось загрузить результаты поиска",
     inputPlaceholder: "Найти",
     loading: "Ищем по каталогу...",
