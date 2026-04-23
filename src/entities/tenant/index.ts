@@ -1,10 +1,16 @@
 export type {
   CategoryCardVariant,
+  CurrentOrderCardVariant,
+  HeroBannersVariant,
   ProductCardVariant,
   TenantCatalogConfig,
   TenantConfig,
+  TenantHomeConfig,
   TenantSocialLinks,
   TenantTheme,
 } from "@/entities/tenant/model/tenant.types";
-export { tenantConfigMap, tenantConfigs } from "@/entities/tenant/config/tenant-config";
+export {
+  tenantConfigMap,
+  tenantConfigs,
+} from "@/entities/tenant/config/tenant-config";
 export { getTenantConfig } from "@/entities/tenant/lib/get-tenant";

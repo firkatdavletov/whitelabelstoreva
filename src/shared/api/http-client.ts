@@ -1,10 +1,16 @@
 import { ApiError } from "@/shared/api/api-error";
 import { createApiUrl } from "@/shared/api/create-url";
-import { getClientInstallId, INSTALL_ID_COOKIE_NAME } from "@/shared/api/install-id";
+import {
+  getClientInstallId,
+  INSTALL_ID_COOKIE_NAME,
+} from "@/shared/api/install-id";
 import { safeJson } from "@/shared/lib/safe-json";
 import type { ApiMethod, ApiQueryParams } from "@/shared/types/api";
 
-type ApiRequestOptions<TBody> = Omit<RequestInit, "body" | "headers" | "method"> & {
+type ApiRequestOptions<TBody> = Omit<
+  RequestInit,
+  "body" | "headers" | "method"
+> & {
   accessToken?: string;
   body?: TBody;
   cookie?: string;
@@ -33,7 +39,8 @@ function createHeaders(
     requestHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
-  const resolvedInstallId = installId ?? (!accessToken ? getClientInstallId() : undefined);
+  const resolvedInstallId =
+    installId ?? (!accessToken ? getClientInstallId() : undefined);
 
   if (resolvedInstallId) {
     requestHeaders.set("X-Install-Id", resolvedInstallId);
@@ -90,7 +97,10 @@ async function resolveDefaultServerRequestContext({
 
   try {
     const { cookies, headers } = await import("next/headers");
-    const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
+    const [cookieStore, headerStore] = await Promise.all([
+      cookies(),
+      headers(),
+    ]);
 
     const authorizationHeader = headerStore.get("authorization");
 
@@ -127,15 +137,12 @@ export async function apiRequest<TResponse, TBody = undefined>(
     ...rest
   } = options;
 
-  const {
-    accessToken,
-    cookie,
-    installId,
-  } = await resolveDefaultServerRequestContext({
-    accessToken: inputAccessToken,
-    cookie: inputCookie,
-    installId: inputInstallId,
-  });
+  const { accessToken, cookie, installId } =
+    await resolveDefaultServerRequestContext({
+      accessToken: inputAccessToken,
+      cookie: inputCookie,
+      installId: inputInstallId,
+    });
 
   const resolvedCredentials = credentials ?? "same-origin";
   const requestUrl = createApiUrl(pathname, query);
@@ -167,18 +174,17 @@ export async function apiRequest<TResponse, TBody = undefined>(
       url: requestUrl,
     });
 
-    throw new ApiError(
-      message,
-      0,
-    );
+    throw new ApiError(message, 0);
   }
 
-  const payload = await safeJson<TResponse | { error?: string; message?: string }>(response);
+  const payload = await safeJson<
+    TResponse | { error?: string; message?: string }
+  >(response);
 
   if (!response.ok) {
     const message =
       payload && typeof payload === "object" && "message" in payload
-        ? payload.message ?? "Request failed."
+        ? (payload.message ?? "Request failed.")
         : "Request failed.";
 
     logApiFailure({
@@ -194,7 +200,7 @@ export async function apiRequest<TResponse, TBody = undefined>(
     throw new ApiError(message, response.status, {
       error:
         payload && typeof payload === "object" && "error" in payload
-          ? payload.error ?? "API_ERROR"
+          ? (payload.error ?? "API_ERROR")
           : "API_ERROR",
       message,
       statusCode: response.status,

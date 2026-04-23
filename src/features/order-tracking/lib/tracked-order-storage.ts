@@ -25,7 +25,9 @@ function readTrackedOrders() {
       Object.entries(parsedValue).map(([tenantSlug, orderIds]) => [
         tenantSlug,
         Array.isArray(orderIds)
-          ? orderIds.filter((orderId): orderId is string => typeof orderId === "string")
+          ? orderIds.filter(
+              (orderId): orderId is string => typeof orderId === "string",
+            )
           : [],
       ]),
     );
@@ -40,7 +42,10 @@ function writeTrackedOrders(value: TrackedOrdersByTenant) {
   }
 
   try {
-    window.localStorage.setItem(TRACKED_ORDERS_STORAGE_KEY, JSON.stringify(value));
+    window.localStorage.setItem(
+      TRACKED_ORDERS_STORAGE_KEY,
+      JSON.stringify(value),
+    );
   } catch {
     // Ignore storage write failures and keep the app functional.
   }
@@ -55,9 +60,9 @@ export function rememberTrackedOrderId(tenantSlug: string, orderId: string) {
   const trackedOrders = readTrackedOrders();
   const nextOrderIds = [
     orderId,
-    ...((trackedOrders[tenantSlug] ?? []).filter(
+    ...(trackedOrders[tenantSlug] ?? []).filter(
       (trackedOrderId) => trackedOrderId !== orderId,
-    )),
+    ),
   ].slice(0, MAX_TRACKED_ORDERS_PER_TENANT);
 
   writeTrackedOrders({

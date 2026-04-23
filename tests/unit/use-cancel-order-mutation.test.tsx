@@ -64,9 +64,7 @@ describe("useCancelOrderMutation", () => {
     queryClient.setQueryData(getCurrentOrderQueryKey(tenantSlug), activeOrder);
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
     const { result } = renderHook(
       () => useCancelOrderMutation(orderId, tenantSlug),

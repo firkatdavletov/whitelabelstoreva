@@ -109,8 +109,7 @@ export function CartPageContent({
     storefrontCart,
   });
   const deliveryMethod = storefrontCart?.delivery?.deliveryMethod;
-  const isCustomAddressDelivery =
-    deliveryMethod === "CUSTOM_DELIVERY_ADDRESS";
+  const isCustomAddressDelivery = deliveryMethod === "CUSTOM_DELIVERY_ADDRESS";
   const shouldShowDeliveryPrice =
     Boolean(deliveryMethod) && deliveryMethod !== "PICKUP";
   const isFreeDelivery =

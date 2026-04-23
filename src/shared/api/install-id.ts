@@ -55,7 +55,10 @@ function writeInstallIdStorage(installId: string) {
 }
 
 export function createInstallId() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
 

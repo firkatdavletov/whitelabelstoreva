@@ -30,12 +30,7 @@ const eslintConfig = defineConfig([
       "no-restricted-imports": [
         "error",
         {
-          patterns: [
-            "@/features/*",
-            "@/widgets/*",
-            "@/app/*",
-            "@/processes/*",
-          ],
+          patterns: ["@/features/*", "@/widgets/*", "@/app/*", "@/processes/*"],
         },
       ],
     },

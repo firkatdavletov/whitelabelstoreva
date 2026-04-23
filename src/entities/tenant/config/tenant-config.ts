@@ -13,15 +13,19 @@ export const tenantConfigMap = {
     faviconUrl: "/tenants/storeva-mass/favicon.svg",
     heroCopy:
       "Быстрая доставка любимой еды без лишних шагов: популярные блюда, выгодные комбо и простой путь от выбора до оформления заказа.",
+    home: {
+      currentOrderCard: "current-order-classic",
+      heroBanners: "hero-classic",
+    },
     logoText: "STOREVA",
     logoUrl: "/tenants/storeva-mass/logo.svg",
     restaurantId: "rest-storeva-mass",
     slug: "storeva-mass",
     supportEmail: "hello@storeva.test",
     socialLinks: {
-        max: "",
-        telegram: "",
-        instagram: ""
+      max: "",
+      telegram: "",
+      instagram: "",
     },
     tagline: "Любимая еда рядом",
     theme: {
@@ -59,15 +63,19 @@ export const tenantConfigMap = {
     faviconUrl: "/tenants/storeva-premium/favicon.svg",
     heroCopy:
       "Элегантный food delivery experience: спокойная палитра, аккуратные карточки, выразительная гастро-витрина и мягкий путь к заказу любимых блюд.",
+    home: {
+      currentOrderCard: "current-order-classic",
+      heroBanners: "hero-classic",
+    },
     logoText: "STOREVA",
     logoUrl: "/tenants/storeva-premium/logo.svg",
     restaurantId: "rest-storeva-premium",
     slug: "storeva-premium",
     supportEmail: "hello@storeva.test",
     socialLinks: {
-        max: "",
-        telegram: "",
-        instagram: ""
+      max: "",
+      telegram: "",
+      instagram: "",
     },
     tagline: "Современная еда с красивой подачей",
     theme: {
@@ -105,15 +113,19 @@ export const tenantConfigMap = {
     faviconUrl: "/tenants/storeva-street/favicon.svg",
     heroCopy:
       "Смелый и быстрый фуд-опыт: бургеры, роллы, пицца, комбо и новинки — всё, чтобы пользователь выбрал еду за минуты и сразу оформил заказ.",
+    home: {
+      currentOrderCard: "current-order-classic",
+      heroBanners: "hero-classic",
+    },
     logoText: "STOREVA",
     logoUrl: "/tenants/storeva-street/logo.svg",
     restaurantId: "rest-storeva-street",
     slug: "storeva-street",
     supportEmail: "hello@storeva.test",
     socialLinks: {
-        max: "",
-        telegram: "",
-        instagram: ""
+      max: "",
+      telegram: "",
+      instagram: "",
     },
     tagline: "Яркий вкус. Быстрый заказ.",
     theme: {
@@ -139,7 +151,7 @@ export const tenantConfigMap = {
     title: "Storeva Street",
   },
 
-  "aiymbrand": {
+  aiymbrand: {
     allowGuestCheckout: true,
     catalog: {
       categoryCard: "category-fashion",
@@ -151,15 +163,20 @@ export const tenantConfigMap = {
     faviconUrl: "/tenants/aiymbrand/favicon.svg",
     heroCopy:
       "Этно украшения и аксессуары в современном прочтении — для тех, кто ценит эстетику, глубину образа и выразительные детали. Коллекция акцентов, в которых чувствуется характер и культурное вдохновение.",
+    home: {
+      currentOrderCard: "current-order-fashion",
+      heroBanners: "hero-fashion",
+    },
     logoText: "",
     logoUrl: "/tenants/aiymbrand/logo.png",
     restaurantId: "aiymbrand",
     slug: "aiymbrand",
     supportEmail: "kiranova@bk.ru",
     socialLinks: {
-        max: "https://max.ru/u/f9LHodD0cOJMqo_yXqDJc3vYMY8TLXpIKrvC9qcK9VAml2ym5LVrYcDUEfo",
-        telegram: "https://t.me/aiymbrand",
-        instagram: "https://www.instagram.com/aigulkiranova?igsh=MXdrbDdmdzd3djdycQ=="
+      max: "https://max.ru/u/f9LHodD0cOJMqo_yXqDJc3vYMY8TLXpIKrvC9qcK9VAml2ym5LVrYcDUEfo",
+      telegram: "https://t.me/aiymbrand",
+      instagram:
+        "https://www.instagram.com/aigulkiranova?igsh=MXdrbDdmdzd3djdycQ==",
     },
     tagline: "Этно украшения и аксессуары в современном премиальном стиле",
     theme: {

@@ -25,7 +25,12 @@ type HeaderBrandProps = {
   title: string;
 };
 
-export function HeaderBrand({ href, logoText, logoUrl, title }: HeaderBrandProps) {
+export function HeaderBrand({
+  href,
+  logoText,
+  logoUrl,
+  title,
+}: HeaderBrandProps) {
   return (
     <Link className="flex min-w-0 items-center gap-3" href={href}>
       {logoUrl ? (

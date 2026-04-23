@@ -6,8 +6,8 @@ import { getHomeBanners } from "@/widgets/home/lib/home-placeholders";
 
 export type HeroBanner = components["schemas"]["HeroBannerStorefrontResponse"];
 
-function getMockHeroBanners(locale: Locale): HeroBanner[] {
-  return getHomeBanners(locale).map((banner, index) => ({
+function getMockHeroBanners(tenantSlug: string, locale: Locale): HeroBanner[] {
+  return getHomeBanners(locale, tenantSlug).map((banner, index) => ({
     id: banner.id,
     code: banner.id,
     placement: "HOME_HERO" as const,
@@ -33,7 +33,7 @@ export async function getHeroBanners(
   locale: Locale,
 ): Promise<HeroBanner[]> {
   if (env.apiMocksEnabled) {
-    return getMockHeroBanners(locale);
+    return getMockHeroBanners(tenantSlug, locale);
   }
 
   return apiRequest<HeroBanner[]>("/v1/public/hero-banners", {

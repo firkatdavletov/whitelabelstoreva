@@ -17,7 +17,10 @@ const publicEnvKeys = [
 type PublicEnvKey = (typeof publicEnvKeys)[number];
 
 const publicEnvSchema = z.object({
-  NEXT_PUBLIC_API_BASE_URL: z.string().url().default("http://localhost:8080/api"),
+  NEXT_PUBLIC_API_BASE_URL: z
+    .string()
+    .url()
+    .default("http://localhost:8080/api"),
   NEXT_PUBLIC_API_MOCKING: z.enum(["disabled", "enabled"]).default("enabled"),
   NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(["en", "ru"]).default("en"),
   NEXT_PUBLIC_DEFAULT_TENANT: z.string().min(1).default("urban-bites"),

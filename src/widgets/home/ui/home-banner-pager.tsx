@@ -16,6 +16,8 @@ type HomeBannerPagerProps = {
   previousLabel: string;
 };
 
+export type { HomeBannerPagerProps };
+
 const interactiveElementSelector = [
   "a",
   "button",
@@ -156,23 +158,25 @@ export function HomeBannerPager({
                 </p>
               )}
 
-              {(currentBanner.primaryActionLabel && currentBanner.primaryActionUrl) && (
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <Button asChild>
-                    <Link href={currentBanner.primaryActionUrl}>
-                      {currentBanner.primaryActionLabel}
-                    </Link>
-                  </Button>
-
-                  {currentBanner.secondaryActionLabel && currentBanner.secondaryActionUrl && (
-                    <Button asChild variant="outline">
-                      <Link href={currentBanner.secondaryActionUrl}>
-                        {currentBanner.secondaryActionLabel}
+              {currentBanner.primaryActionLabel &&
+                currentBanner.primaryActionUrl && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button asChild>
+                      <Link href={currentBanner.primaryActionUrl}>
+                        {currentBanner.primaryActionLabel}
                       </Link>
                     </Button>
-                  )}
-                </div>
-              )}
+
+                    {currentBanner.secondaryActionLabel &&
+                      currentBanner.secondaryActionUrl && (
+                        <Button asChild variant="outline">
+                          <Link href={currentBanner.secondaryActionUrl}>
+                            {currentBanner.secondaryActionLabel}
+                          </Link>
+                        </Button>
+                      )}
+                  </div>
+                )}
             </div>
           </div>
 

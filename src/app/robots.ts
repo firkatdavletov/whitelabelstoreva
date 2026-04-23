@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 
-import { getMetadataBase, toAbsoluteUrl } from "@/shared/lib/storefront-metadata";
+import {
+  getMetadataBase,
+  toAbsoluteUrl,
+} from "@/shared/lib/storefront-metadata";
 
 export default function robots(): MetadataRoute.Robots {
   return {

@@ -10,6 +10,11 @@ import { getProductCardImageSrc } from "@/entities/product/lib/product-card";
 import { formatCurrency } from "@/shared/lib/currency";
 import type { Locale } from "@/shared/types/common";
 import { Card } from "@/shared/ui/card";
+import {
+  FashionMediaFrame,
+  FashionSurface,
+  FashionTitle,
+} from "@/shared/ui/fashion-storefront";
 
 export type ProductCardProps = {
   locale: Locale;
@@ -87,7 +92,7 @@ export function FashionProductCard({
   const { t } = useTranslation();
 
   return (
-    <div className="group relative flex w-full flex-col">
+    <FashionSurface className="group flex w-full flex-col" interactive>
       <Link
         aria-label={`${t("product.preview")} ${product.name}`}
         className="focus-visible:ring-ring absolute inset-0 z-10 outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
@@ -96,7 +101,7 @@ export function FashionProductCard({
         <span className="sr-only">{`${t("product.preview")} ${product.name}`}</span>
       </Link>
 
-      <div className="bg-muted/38 relative aspect-[3/4] w-full overflow-hidden">
+      <FashionMediaFrame className="w-full" ratio="poster">
         <Image
           alt={product.name}
           className="object-cover transition duration-700 group-hover:scale-[1.03]"
@@ -105,25 +110,26 @@ export function FashionProductCard({
           src={getProductCardImageSrc(product)}
           unoptimized
         />
-      </div>
+      </FashionMediaFrame>
 
-      <div className="space-y-1.5 px-1 pt-3 pb-2 md:space-y-2 md:px-0">
-        <h3 className="font-heading [display:-webkit-box] overflow-hidden text-sm leading-5 font-medium tracking-tight [-webkit-box-orient:vertical] [-webkit-line-clamp:2] md:text-base md:leading-5">
+      <div className="space-y-2 px-4 pt-4 pb-4">
+        <FashionTitle
+          as="h3"
+          className="[display:-webkit-box] overflow-hidden [-webkit-box-orient:vertical] [-webkit-line-clamp:2]"
+          size="product"
+          weight="medium"
+        >
           {product.name}
-        </h3>
+        </FashionTitle>
 
-        <p className="font-heading text-sm leading-none font-semibold md:text-base">
+        <p className="font-heading text-base leading-none font-medium">
           {product.isConfigured
             ? t("product.priceFrom", {
-                price: formatCurrency(
-                  product.price,
-                  product.currency,
-                  locale,
-                ),
+                price: formatCurrency(product.price, product.currency, locale),
               })
             : formatCurrency(product.price, product.currency, locale)}
         </p>
       </div>
-    </div>
+    </FashionSurface>
   );
 }

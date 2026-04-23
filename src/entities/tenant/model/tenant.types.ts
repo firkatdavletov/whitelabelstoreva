@@ -4,9 +4,20 @@ export type ProductCardVariant = "clothes-fashion" | "food-classic";
 
 export type CategoryCardVariant = "category-classic" | "category-fashion";
 
+export type HeroBannersVariant = "hero-classic" | "hero-fashion";
+
+export type CurrentOrderCardVariant =
+  | "current-order-classic"
+  | "current-order-fashion";
+
 export type TenantCatalogConfig = {
   categoryCard: CategoryCardVariant;
   productCard: ProductCardVariant;
+};
+
+export type TenantHomeConfig = {
+  currentOrderCard: CurrentOrderCardVariant;
+  heroBanners: HeroBannersVariant;
 };
 
 export type TenantSocialLinks = {
@@ -43,6 +54,7 @@ export type TenantConfig = {
   description: string;
   faviconUrl?: string;
   heroCopy: string;
+  home: TenantHomeConfig;
   logoText: string;
   logoUrl?: string;
   restaurantId: string;

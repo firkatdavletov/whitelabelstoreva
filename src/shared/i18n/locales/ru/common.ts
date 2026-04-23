@@ -275,8 +275,7 @@ export const ruMessages = {
   },
   search: {
     empty: "По запросу «{{query}}» ничего не найдено.",
-    errorDescription:
-      "Попробуйте изменить запрос или перейти в каталог.",
+    errorDescription: "Попробуйте изменить запрос или перейти в каталог.",
     errorTitle: "Не удалось загрузить результаты поиска",
     inputPlaceholder: "Найти",
     loading: "Ищем по каталогу...",

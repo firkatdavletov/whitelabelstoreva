@@ -62,99 +62,97 @@ export async function GET(request: Request) {
   const brand = getBrandSnapshot(tenantSlug);
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        alignItems: "stretch",
+        background: `linear-gradient(135deg, ${brand.background} 0%, ${withAlpha(
+          brand.primary,
+          0.14,
+        )} 100%)`,
+        color: brand.foreground,
+        display: "flex",
+        fontFamily: "Arial, sans-serif",
+        height: "100%",
+        justifyContent: "space-between",
+        padding: "56px",
+        position: "relative",
+        width: "100%",
+      }}
+    >
       <div
         style={{
-          alignItems: "stretch",
-          background: `linear-gradient(135deg, ${brand.background} 0%, ${withAlpha(
+          background: `radial-gradient(circle at center, ${withAlpha(
             brand.primary,
-            0.14,
-          )} 100%)`,
-          color: brand.foreground,
+            0.22,
+          )} 0%, transparent 68%)`,
+          borderRadius: "999px",
+          height: "320px",
+          position: "absolute",
+          right: "-72px",
+          top: "-56px",
+          width: "320px",
+        }}
+      />
+      <div
+        style={{
+          background: `radial-gradient(circle at center, ${withAlpha(
+            brand.accent,
+            0.18,
+          )} 0%, transparent 72%)`,
+          borderRadius: "999px",
+          bottom: "-112px",
+          height: "360px",
+          left: "-120px",
+          position: "absolute",
+          width: "360px",
+        }}
+      />
+
+      <div
+        style={{
+          border: `1px solid ${withAlpha(brand.foreground, 0.12)}`,
+          borderRadius: "36px",
           display: "flex",
-          fontFamily: "Arial, sans-serif",
-          height: "100%",
-          justifyContent: "space-between",
-          padding: "56px",
+          flex: 1,
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "44px",
           position: "relative",
-          width: "100%",
+          zIndex: 1,
         }}
       >
         <div
           style={{
-            background: `radial-gradient(circle at center, ${withAlpha(
-              brand.primary,
-              0.22,
-            )} 0%, transparent 68%)`,
-            borderRadius: "999px",
-            height: "320px",
-            position: "absolute",
-            right: "-72px",
-            top: "-56px",
-            width: "320px",
-          }}
-        />
-        <div
-          style={{
-            background: `radial-gradient(circle at center, ${withAlpha(
-              brand.accent,
-              0.18,
-            )} 0%, transparent 72%)`,
-            borderRadius: "999px",
-            bottom: "-112px",
-            height: "360px",
-            left: "-120px",
-            position: "absolute",
-            width: "360px",
-          }}
-        />
-
-        <div
-          style={{
-            border: `1px solid ${withAlpha(brand.foreground, 0.12)}`,
-            borderRadius: "36px",
             display: "flex",
-            flex: 1,
             flexDirection: "column",
-            justifyContent: "center",
-            padding: "44px",
-            position: "relative",
-            zIndex: 1,
+            gap: "26px",
+            maxWidth: "820px",
           }}
         >
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              gap: "26px",
-              maxWidth: "820px",
+              fontSize: "78px",
+              fontWeight: 700,
+              letterSpacing: "-0.05em",
+              lineHeight: 1,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                fontSize: "78px",
-                fontWeight: 700,
-                letterSpacing: "-0.05em",
-                lineHeight: 1,
-              }}
-            >
-              {brand.title}
-            </div>
-            <div
-              style={{
-                color: withAlpha(brand.foreground, 0.76),
-                display: "flex",
-                fontSize: "34px",
-                lineHeight: 1.3,
-              }}
-            >
-              {brand.description}
-            </div>
+            {brand.title}
+          </div>
+          <div
+            style={{
+              color: withAlpha(brand.foreground, 0.76),
+              display: "flex",
+              fontSize: "34px",
+              lineHeight: 1.3,
+            }}
+          >
+            {brand.description}
           </div>
         </div>
       </div>
-    ),
+    </div>,
     imageSize,
   );
 }

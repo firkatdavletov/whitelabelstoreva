@@ -1,12 +1,12 @@
-import {
-  mapOrderDtoToOrder,
-  selectCurrentOrderDto,
-} from "@/entities/order";
+import { mapOrderDtoToOrder, selectCurrentOrderDto } from "@/entities/order";
 import { apiRequest } from "@/shared/api";
 import { env } from "@/shared/config/env";
 
 import type { CurrentOrderListDto } from "@/entities/order";
-import { getOrderTracking, isOrderVisibilityError } from "@/features/order-tracking/api/get-order-tracking";
+import {
+  getOrderTracking,
+  isOrderVisibilityError,
+} from "@/features/order-tracking/api/get-order-tracking";
 import { createMockOrderDto } from "@/features/order-tracking/lib/order-mocks";
 import {
   forgetTrackedOrderId,

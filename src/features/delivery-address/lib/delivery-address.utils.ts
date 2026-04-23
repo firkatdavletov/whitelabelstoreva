@@ -93,7 +93,10 @@ export function formatDeliveryDraftAddress(
 }
 
 export function canSubmitAddressDeliveryDraft(
-  deliveryMethod: PutCartDeliveryRequestDto["deliveryMethod"] | null | undefined,
+  deliveryMethod:
+    | PutCartDeliveryRequestDto["deliveryMethod"]
+    | null
+    | undefined,
   draft: CartDeliveryDraftResponseDto | null | undefined,
   quoteAvailability: boolean | null,
 ) {

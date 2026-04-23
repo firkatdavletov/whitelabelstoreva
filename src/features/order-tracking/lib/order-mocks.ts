@@ -114,7 +114,9 @@ export function createMockOrderDto({
         ? createdAt
         : index === statusHistoryStates.length - 1
           ? statusChangedAt
-          : new Date(now.getTime() - (30 - index * 6) * 60 * 1000).toISOString();
+          : new Date(
+              now.getTime() - (30 - index * 6) * 60 * 1000,
+            ).toISOString();
 
     return {
       code,

@@ -1,6 +1,8 @@
 import type { StorefrontCart, StorefrontCartDelivery } from "@/entities/cart";
 
-function hasCourierAddress(delivery: StorefrontCartDelivery | null | undefined) {
+function hasCourierAddress(
+  delivery: StorefrontCartDelivery | null | undefined,
+) {
   const address = delivery?.address;
 
   if (!address) {

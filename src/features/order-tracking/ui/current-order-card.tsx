@@ -6,10 +6,16 @@ import { useTranslation } from "react-i18next";
 
 import type { Order, OrderTimelineStep } from "@/entities/order";
 import { useCurrentOrderQuery } from "@/features/order-tracking/hooks/use-current-order-query";
+import { useTenantTheme } from "@/features/tenant-theme";
 import { useStorefrontRoute } from "@/shared/hooks/use-storefront-route";
 import { cn } from "@/shared/lib/styles";
 import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
+import {
+  FashionMetaLabel,
+  FashionSurface,
+  FashionTitle,
+} from "@/shared/ui/fashion-storefront";
 
 type CurrentOrderCardProps = {
   initialData?: Order | null;
@@ -68,18 +74,21 @@ function resolveStepLabel(
   return translated !== translationKey ? translated : (step.label ?? step.code);
 }
 
-export function CurrentOrderCard({ initialData }: CurrentOrderCardProps) {
-  const { href, locale, tenantSlug } = useStorefrontRoute();
-  const { t } = useTranslation();
-  const { data } = useCurrentOrderQuery(tenantSlug, initialData);
-
-  if (!data) {
-    return null;
-  }
-
-  const currentStep = resolveCurrentStep(data);
-  const progress = resolveTimelineProgress(data);
-
+function ClassicCurrentOrderCardView({
+  currentStep,
+  data,
+  href,
+  locale,
+  progress,
+  t,
+}: {
+  currentStep: OrderTimelineStep | null;
+  data: Order;
+  href: ReturnType<typeof useStorefrontRoute>["href"];
+  locale: string;
+  progress: number;
+  t: ReturnType<typeof useTranslation>["t"];
+}) {
   return (
     <Link className="group block" href={href(`/orders/${data.id}`)}>
       <Card className="border-border/60 relative overflow-hidden rounded-3xl bg-[linear-gradient(135deg,color-mix(in_srgb,var(--card)_96%,white),color-mix(in_srgb,var(--secondary)_62%,white)_58%,color-mix(in_srgb,var(--background)_84%,white))] shadow-[0_32px_80px_-46px_rgba(31,26,23,0.48)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_40px_96px_-44px_rgba(31,26,23,0.42)]">
@@ -167,5 +176,106 @@ export function CurrentOrderCard({ initialData }: CurrentOrderCardProps) {
         </div>
       </Card>
     </Link>
+  );
+}
+
+function FashionCurrentOrderCardView({
+  currentStep,
+  data,
+  href,
+  locale,
+  t,
+}: {
+  currentStep: OrderTimelineStep | null;
+  data: Order;
+  href: ReturnType<typeof useStorefrontRoute>["href"];
+  locale: string;
+  t: ReturnType<typeof useTranslation>["t"];
+}) {
+  return (
+    <FashionSurface asChild interactive>
+      <Link className="group block" href={href(`/orders/${data.id}`)}>
+        <div className="relative space-y-4 p-5 sm:p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <FashionMetaLabel
+                tone={
+                  resolveStatusBadgeVariant(data) === "default"
+                    ? "accent"
+                    : "neutral"
+                }
+                style={
+                  data.stateColor
+                    ? {
+                        backgroundColor: `${data.stateColor}14`,
+                        borderColor: `${data.stateColor}36`,
+                        color: data.stateColor,
+                      }
+                    : undefined
+                }
+              >
+                {data.statusLabel}
+              </FashionMetaLabel>
+
+              <ArrowUpRight className="text-primary mt-0.5 h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </div>
+
+            <div className="space-y-3">
+              <FashionTitle as="h2" size="order" weight="medium">
+                {t("order.orderNumber", { number: data.orderNumber })}
+              </FashionTitle>
+
+              <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
+                {currentStep ? (
+                  <>
+                    <span>{resolveStepLabel(currentStep, t)}</span>
+                    <span className="bg-border h-1 w-1 rounded-full" />
+                  </>
+                ) : null}
+                <Clock3 className="h-4 w-4" />
+                <span>{formatOrderDateTime(data.statusChangedAt, locale)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </FashionSurface>
+  );
+}
+
+export function CurrentOrderCard({ initialData }: CurrentOrderCardProps) {
+  const { href, locale, tenantSlug } = useStorefrontRoute();
+  const tenantConfig = useTenantTheme();
+  const { t } = useTranslation();
+  const { data } = useCurrentOrderQuery(tenantSlug, initialData);
+
+  if (!data) {
+    return null;
+  }
+
+  const currentStep = resolveCurrentStep(data);
+  const progress = resolveTimelineProgress(data);
+
+  if (tenantConfig.home.currentOrderCard === "current-order-fashion") {
+    return (
+      <FashionCurrentOrderCardView
+        currentStep={currentStep}
+        data={data}
+        href={href}
+        locale={locale}
+        t={t}
+      />
+    );
+  }
+
+  return (
+    <ClassicCurrentOrderCardView
+      currentStep={currentStep}
+      data={data}
+      href={href}
+      locale={locale}
+      progress={progress}
+      t={t}
+    />
   );
 }

@@ -18,7 +18,7 @@ type HomeCategoryGridProps = {
 
 const gridClassByVariant: Record<CategoryCardVariant, string> = {
   "category-classic": "grid gap-4 sm:grid-cols-2 xl:grid-cols-3",
-  "category-fashion": "grid sm:grid-cols-2 xl:grid-cols-2",
+  "category-fashion": "grid gap-4 sm:grid-cols-2 xl:grid-cols-2",
 };
 
 export function HomeCategoryGrid({

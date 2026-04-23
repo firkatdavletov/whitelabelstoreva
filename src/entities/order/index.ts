@@ -12,4 +12,8 @@ export {
   mapOrderDtoToOrder,
   selectCurrentOrderDto,
 } from "@/entities/order/lib/order.mapper";
-export type { Order, OrderItem, OrderTimelineStep } from "@/entities/order/model/order.types";
+export type {
+  Order,
+  OrderItem,
+  OrderTimelineStep,
+} from "@/entities/order/model/order.types";

@@ -18,6 +18,7 @@ import {
 import type { RouteParams } from "@/shared/types/common";
 import { getHomeCategoryCards } from "@/widgets/home/lib/home-placeholders";
 import { getHeroBanners } from "@/widgets/home/api/get-hero-banners";
+import { FashionHeroBanners } from "@/widgets/home/ui/fashion-hero-banners";
 import { HomeBannerPager } from "@/widgets/home/ui/home-banner-pager";
 import { HomeCategoryGrid } from "@/widgets/home/ui/home-category-grid";
 
@@ -69,10 +70,14 @@ export default async function HomePage({ params }: HomePageProps) {
     pathname: "/menu",
     tenantSlug: tenantConfig.slug,
   });
+  const HeroBannersComponent =
+    tenantConfig.home.heroBanners === "hero-fashion"
+      ? FashionHeroBanners
+      : HomeBannerPager;
 
   return (
     <div className="flex flex-col gap-6 lg:gap-8">
-      <HomeBannerPager
+      <HeroBannersComponent
         banners={heroBanners}
         nextLabel={localeContext.dictionary.home.bannerNext}
         previousLabel={localeContext.dictionary.home.bannerPrevious}

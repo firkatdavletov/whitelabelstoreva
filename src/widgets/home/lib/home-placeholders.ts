@@ -16,7 +16,7 @@ export type HomeCategoryCard = {
   slug: string;
 };
 
-const bannerContent = {
+const defaultBannerContent = {
   en: [
     {
       description:
@@ -47,6 +47,37 @@ const bannerContent = {
   ],
 } satisfies Record<Locale, Array<Omit<HomeBanner, "id" | "imageSrc">>>;
 
+const fashionBannerContent = {
+  en: [
+    {
+      description:
+        "Clean compositions, warm metallic accents, and statement pieces for layered looks that still feel restrained.",
+      eyebrow: "New collection",
+      title: "Ethnic jewelry framed in a modern, minimalist silhouette",
+    },
+    {
+      description:
+        "A calm first screen for premium drops, capsule styling, and accessories that complete a daily wardrobe.",
+      eyebrow: "Premium edit",
+      title: "Accent details for everyday outfits and occasion styling",
+    },
+  ],
+  ru: [
+    {
+      description:
+        "Лаконичные силуэты, тёплый металлический акцент и выразительные украшения для образов, которые остаются собранными и спокойными.",
+      eyebrow: "Новая коллекция",
+      title: "Этно украшения в современном минималистичном силуэте",
+    },
+    {
+      description:
+        "Спокойный первый экран для премиальных дропов, капсульных сочетаний и аксессуаров, которые завершают образ.",
+      eyebrow: "Премиальная подборка",
+      title: "Акцентные детали для повседневных и вечерних образов",
+    },
+  ],
+} satisfies Record<Locale, Array<Omit<HomeBanner, "id" | "imageSrc">>>;
+
 const bannerPalettes = [
   {
     accent: "#E64A19",
@@ -61,6 +92,23 @@ const bannerPalettes = [
     dark: "#22302B",
     panel: "#FAFCFB",
     soft: "#CDE6E0",
+  },
+] as const;
+
+const fashionBannerPalettes = [
+  {
+    accent: "#CFA74E",
+    background: "#FDF8EF",
+    dark: "#201811",
+    panel: "#FFFCF5",
+    soft: "#EAD9B0",
+  },
+  {
+    accent: "#8D7242",
+    background: "#FBF5EA",
+    dark: "#211A12",
+    panel: "#FFFDF7",
+    soft: "#E6D5B3",
   },
 ] as const;
 
@@ -89,7 +137,7 @@ function svgToDataUri(svg: string) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-function createBannerSvg(index: number) {
+function createDefaultBannerSvg(index: number) {
   const palette = bannerPalettes[index % bannerPalettes.length];
 
   return svgToDataUri(`
@@ -117,6 +165,28 @@ function createBannerSvg(index: number) {
       <rect x="194" y="372" width="402" height="18" rx="9" fill="${palette.accent}" fill-opacity="0.22" />
       <rect x="194" y="410" width="362" height="18" rx="9" fill="${palette.dark}" fill-opacity="0.08" />
       <rect x="194" y="448" width="322" height="18" rx="9" fill="${palette.dark}" fill-opacity="0.08" />
+    </svg>
+  `);
+}
+
+function createFashionBannerSvg(index: number) {
+  const palette = fashionBannerPalettes[index % fashionBannerPalettes.length];
+
+  return svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" fill="none">
+      <rect width="960" height="720" fill="${palette.background}" />
+      <rect x="88" y="72" width="784" height="576" fill="${palette.panel}" />
+      <rect x="520" y="104" width="260" height="456" fill="${palette.soft}" fill-opacity="0.34" />
+      <rect x="556" y="146" width="188" height="372" fill="${palette.panel}" />
+      <path d="M650 186C611 186 580 219 580 258V286C580 354 610 412 650 444C690 412 720 354 720 286V258C720 219 689 186 650 186Z" stroke="${palette.dark}" stroke-width="8" />
+      <path d="M606 266C620 308 635 338 650 356C665 338 680 308 694 266" stroke="${palette.accent}" stroke-width="8" stroke-linecap="square" />
+      <rect x="162" y="190" width="116" height="8" fill="${palette.accent}" fill-opacity="0.72" />
+      <rect x="162" y="238" width="286" height="12" fill="${palette.dark}" fill-opacity="0.14" />
+      <rect x="162" y="274" width="250" height="12" fill="${palette.dark}" fill-opacity="0.1" />
+      <rect x="162" y="362" width="198" height="2" fill="${palette.dark}" fill-opacity="0.28" />
+      <rect x="162" y="398" width="236" height="2" fill="${palette.dark}" fill-opacity="0.14" />
+      <rect x="162" y="434" width="214" height="2" fill="${palette.dark}" fill-opacity="0.14" />
+      <rect x="142" y="126" width="678" height="468" stroke="${palette.dark}" stroke-opacity="0.08" stroke-width="2" />
     </svg>
   `);
 }
@@ -160,7 +230,17 @@ function createCategorySvg(name: string, index: number) {
   `);
 }
 
-export function getHomeBanners(locale: Locale): HomeBanner[] {
+export function getHomeBanners(
+  locale: Locale,
+  tenantSlug?: string,
+): HomeBanner[] {
+  const bannerContent =
+    tenantSlug === "aiymbrand" ? fashionBannerContent : defaultBannerContent;
+  const createBannerSvg =
+    tenantSlug === "aiymbrand"
+      ? createFashionBannerSvg
+      : createDefaultBannerSvg;
+
   return bannerContent[locale].map((banner, index) => ({
     ...banner,
     id: `home-banner-${index + 1}`,

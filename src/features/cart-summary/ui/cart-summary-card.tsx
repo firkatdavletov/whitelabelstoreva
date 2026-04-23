@@ -65,12 +65,9 @@ export function CartSummaryCard({
     ? t("cart.subtitle")
     : t("cart.checkoutSubtitle");
   const deliveryMethod = storefrontCart?.delivery?.deliveryMethod;
-  const isCustomAddressDelivery =
-    deliveryMethod === "CUSTOM_DELIVERY_ADDRESS";
+  const isCustomAddressDelivery = deliveryMethod === "CUSTOM_DELIVERY_ADDRESS";
   const shouldShowDeliveryPrice =
-    !editable &&
-    Boolean(deliveryMethod) &&
-    deliveryMethod !== "PICKUP";
+    !editable && Boolean(deliveryMethod) && deliveryMethod !== "PICKUP";
   const isFreeDelivery =
     shouldShowDeliveryPrice &&
     !isCustomAddressDelivery &&

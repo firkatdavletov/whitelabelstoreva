@@ -4,9 +4,7 @@ import { ApiError } from "@/shared/api/api-error";
 import { env } from "@/shared/config/env";
 
 import { createMockOrderDto } from "@/features/order-tracking/lib/order-mocks";
-import {
-  syncTrackedOrderId,
-} from "@/features/order-tracking/lib/tracked-order-storage";
+import { syncTrackedOrderId } from "@/features/order-tracking/lib/tracked-order-storage";
 import type { OrderDto } from "@/entities/order";
 
 export type OrderRequestContext = {
@@ -40,5 +38,7 @@ export async function getOrderTracking(
 }
 
 export function isOrderVisibilityError(error: unknown) {
-  return error instanceof ApiError && [401, 403, 404].includes(error.statusCode);
+  return (
+    error instanceof ApiError && [401, 403, 404].includes(error.statusCode)
+  );
 }

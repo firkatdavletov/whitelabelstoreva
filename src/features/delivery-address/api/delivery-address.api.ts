@@ -251,21 +251,19 @@ export async function detectYandexLocations(query: string) {
   });
 }
 
-export async function detectYandexCity(
-  input: YandexCityDetectRequestDto,
-) {
+export async function detectYandexCity(input: YandexCityDetectRequestDto) {
   if (env.apiMocksEnabled) {
     return createMockYandexCityDetectResponse();
   }
 
-  return apiRequest<
-    YandexCityDetectResponseDto,
-    YandexCityDetectRequestDto
-  >("/v1/delivery/yandex/city-detect", {
-    body: input,
-    cache: "no-store",
-    method: "POST",
-  });
+  return apiRequest<YandexCityDetectResponseDto, YandexCityDetectRequestDto>(
+    "/v1/delivery/yandex/city-detect",
+    {
+      body: input,
+      cache: "no-store",
+      method: "POST",
+    },
+  );
 }
 
 export async function getYandexPickupPoints(geoId: number) {

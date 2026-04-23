@@ -8,7 +8,7 @@ export default function OrderLoadingPage() {
         <Skeleton className="h-5 w-96 max-w-full rounded-full" />
       </div>
 
-      <div className="rounded-2xl border border-border/70 bg-card/90 p-6 shadow-[0_24px_80px_-40px_rgba(31,26,23,0.4)]">
+      <div className="border-border/70 bg-card/90 rounded-2xl border p-6 shadow-[0_24px_80px_-40px_rgba(31,26,23,0.4)]">
         <div className="grid gap-3 lg:grid-cols-4">
           <Skeleton className="h-28 rounded-2xl" />
           <Skeleton className="h-28 rounded-2xl" />

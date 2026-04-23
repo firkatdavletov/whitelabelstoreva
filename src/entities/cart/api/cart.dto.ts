@@ -11,7 +11,8 @@ export type CartDeliveryDraftResponseDto =
 export type DeliveryAddressResponseDto =
   components["schemas"]["DeliveryAddressResponse"];
 
-export type DeliveryQuoteResponseDto = components["schemas"]["DeliveryQuoteResponse"];
+export type DeliveryQuoteResponseDto =
+  components["schemas"]["DeliveryQuoteResponse"];
 
 export type AddCartItemRequestDto =
   paths["/api/v1/cart/items"]["post"]["requestBody"]["content"]["application/json"];

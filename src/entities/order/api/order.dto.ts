@@ -14,4 +14,5 @@ export type OrderDeliveryMethod = components["schemas"]["DeliveryMethodType"];
 
 export type OrderStateType = components["schemas"]["OrderStateType"];
 
-export type OrderStatusSummaryDto = components["schemas"]["OrderStatusSummaryResponse"];
+export type OrderStatusSummaryDto =
+  components["schemas"]["OrderStatusSummaryResponse"];

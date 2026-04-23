@@ -22,7 +22,9 @@ function resolveIconPath(iconUrl: string) {
 }
 
 function resolveContentType(iconUrl: string) {
-  return CONTENT_TYPE_BY_EXTENSION[extname(iconUrl).toLowerCase()] ?? "image/x-icon";
+  return (
+    CONTENT_TYPE_BY_EXTENSION[extname(iconUrl).toLowerCase()] ?? "image/x-icon"
+  );
 }
 
 export default async function Icon({ params }: TenantIconProps) {

@@ -23,7 +23,7 @@ export function TenantThemeProvider({
   return (
     <TenantThemeContext.Provider value={{ tenantConfig }}>
       <div
-        className="min-h-dvh text-foreground"
+        className="text-foreground min-h-dvh"
         data-tenant={tenantConfig.slug}
         style={createTenantCssVariables(tenantConfig.theme)}
       >
