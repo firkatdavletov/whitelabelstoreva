@@ -18,6 +18,7 @@ import { createCartConfigurationKey } from "@/entities/cart";
 import type { Product, ProductModifierGroup } from "@/entities/product";
 import {
   getProductImageSources,
+  getProductThumbnailImageSrc,
   getProductVariantImageSources,
 } from "@/entities/product/lib/product-card";
 import {
@@ -67,6 +68,11 @@ type ProductGalleryImage = {
   thumbnailLabel: string;
 };
 
+type GalleryThumbnailImageProps = {
+  alt: string;
+  src: string;
+};
+
 function createGalleryImageLabel(label: string, index: number) {
   return index === 0 ? label : `${label} ${index + 1}`;
 }
@@ -95,6 +101,31 @@ function mergeGalleryImages(...groups: ProductGalleryImage[][]) {
       seenSources.add(image.src);
       return true;
     }),
+  );
+}
+
+function GalleryThumbnailImage({ alt, src }: GalleryThumbnailImageProps) {
+  const thumbnailSrc = getProductThumbnailImageSrc(src);
+  const [resolvedSrc, setResolvedSrc] = useState(thumbnailSrc);
+
+  useEffect(() => {
+    setResolvedSrc(thumbnailSrc);
+  }, [thumbnailSrc]);
+
+  return (
+    <Image
+      alt={alt}
+      className="block h-full w-full object-contain"
+      height={128}
+      onError={() => {
+        setResolvedSrc((currentSrc) =>
+          currentSrc === src ? currentSrc : src,
+        );
+      }}
+      src={resolvedSrc}
+      unoptimized
+      width={96}
+    />
   );
 }
 
@@ -264,23 +295,6 @@ export function ProductDetailsPage({
   const selectedHeaderSummary =
     selectedVariantLabel ??
     (selectedOptionSummary.length ? selectedOptionSummary.join(" · ") : null);
-  const allVariantGalleryImages = activeVariants.flatMap((variant) => {
-    const variantImageSources = getProductVariantImageSources(variant);
-
-    if (!variantImageSources.length) {
-      return [];
-    }
-
-    const variantLabel = resolveVariantLabel(resolvedProduct, variant);
-
-    return createGalleryImages(
-      variantImageSources,
-      `variant:${variant.id}`,
-      variantLabel
-        ? `${t("product.variantImage")}: ${variantLabel}`
-        : t("product.variantImage"),
-    );
-  });
   const selectedVariantImageSources = selectedVariant
     ? getProductVariantImageSources(selectedVariant)
     : [];
@@ -288,12 +302,47 @@ export function ProductDetailsPage({
     selectedVariant && selectedVariantImageSources.length
       ? `variant:${selectedVariant.id}:0`
       : null;
+  const selectedVariantGalleryImages =
+    selectedVariant && selectedVariantImageSources.length
+      ? createGalleryImages(
+          selectedVariantImageSources,
+          `variant:${selectedVariant.id}`,
+          selectedVariantLabel
+            ? `${t("product.variantImage")}: ${selectedVariantLabel}`
+            : t("product.variantImage"),
+        )
+      : [];
+  const allGalleryImages = mergeGalleryImages(
+    productGalleryImages,
+    activeVariants.flatMap((variant) => {
+      const variantImageSources = getProductVariantImageSources(variant);
+
+      if (!variantImageSources.length) {
+        return [];
+      }
+
+      const variantLabel = resolveVariantLabel(resolvedProduct, variant);
+
+      return createGalleryImages(
+        variantImageSources,
+        `variant:${variant.id}`,
+        variantLabel
+          ? `${t("product.variantImage")}: ${variantLabel}`
+          : t("product.variantImage"),
+      );
+    }),
+  );
+  const selectedGalleryImage =
+    allGalleryImages.find((image) => image.id === selectedGalleryImageId) ??
+    null;
   const galleryImages = mergeGalleryImages(
     productGalleryImages,
-    allVariantGalleryImages,
+    selectedGalleryImage ? [selectedGalleryImage] : [],
+    selectedVariantGalleryImages,
   );
   const activeGalleryImage =
     galleryImages.find((image) => image.id === selectedGalleryImageId) ??
+    selectedGalleryImage ??
     galleryImages.find((image) => image.id === firstProductGalleryImageId) ??
     galleryImages[0];
   const activeGalleryIndex = Math.max(
@@ -553,14 +602,7 @@ export function ProductDetailsPage({
                 onClick={() => showGalleryImage(image.id)}
                 type="button"
               >
-                <Image
-                  alt=""
-                  className="block h-full w-full object-contain"
-                  height={128}
-                  src={image.src}
-                  unoptimized
-                  width={96}
-                />
+                <GalleryThumbnailImage alt="" src={image.src} />
               </button>
             );
           })}

@@ -652,12 +652,6 @@ describe("ProductDetailsPage", () => {
     const secondProductThumbnail = screen.getByRole("button", {
       name: "Основное фото 2",
     });
-    const regularVariantThumbnail = screen.getByRole("button", {
-      name: "Фото варианта: Обычный",
-    });
-    const secondRegularVariantThumbnail = screen.getByRole("button", {
-      name: "Фото варианта: Обычный 2",
-    });
     const variantThumbnail = screen.getByRole("button", {
       name: "Фото варианта: Большой",
     });
@@ -667,9 +661,13 @@ describe("ProductDetailsPage", () => {
 
     expect(variantThumbnail).toHaveAttribute("aria-pressed", "true");
     expect(secondProductThumbnail).toBeInTheDocument();
-    expect(regularVariantThumbnail).toBeInTheDocument();
-    expect(secondRegularVariantThumbnail).toBeInTheDocument();
     expect(secondVariantThumbnail).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Фото варианта: Обычный" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Фото варианта: Обычный 2" }),
+    ).not.toBeInTheDocument();
 
     await user.click(productThumbnail);
 
@@ -690,7 +688,7 @@ describe("ProductDetailsPage", () => {
 
     expect(screen.getByRole("img", { name: "Поке" })).toHaveAttribute(
       "src",
-      "https://example.com/poke-regular.jpg",
+      "https://example.com/poke-large.jpg",
     );
 
     await user.click(screen.getByRole("button", { name: "Предыдущее фото" }));
@@ -773,6 +771,41 @@ describe("ProductDetailsPage", () => {
     expect(productThumbnail).toHaveClass("aspect-[3/4]");
     expect(productThumbnail).not.toHaveClass("rounded-2xl");
     expect(thumbnailImage).toHaveClass("h-full", "w-full", "object-contain");
+  });
+
+  it("uses thumb urls for gallery previews while keeping the main image source unchanged", () => {
+    const productWithThumbVariants: Product = {
+      ...baseProduct,
+      imageUrl: "https://example.com/poke_card.webp",
+      imageUrls: [
+        "https://example.com/poke_card.webp",
+        "https://example.com/poke-2_card.webp",
+      ],
+    };
+
+    mocks.useMenuProductDetailsQuery.mockReturnValue({
+      data: productWithThumbVariants,
+      error: null,
+      isError: false,
+      isPending: false,
+      refetch: mocks.productDetailsRefetch,
+    });
+
+    renderProductDetails(productWithThumbVariants);
+
+    const mainImage = screen.getByRole("img", { name: "Поке" });
+    const thumbnailImage = screen
+      .getByRole("button", { name: "Основное фото" })
+      .querySelector("img");
+
+    expect(mainImage).toHaveAttribute(
+      "src",
+      "https://example.com/poke_card.webp",
+    );
+    expect(thumbnailImage).toHaveAttribute(
+      "src",
+      "https://example.com/poke_thumb.webp",
+    );
   });
 
   it("shows unavailable text when the selected option combination has no variant", async () => {

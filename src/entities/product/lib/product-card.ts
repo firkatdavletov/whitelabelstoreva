@@ -77,6 +77,10 @@ export function getProductVariantImageSources(
   return normalizeImageSources(variant.imageUrls, variant.imageUrl);
 }
 
+export function getProductThumbnailImageSrc(imageUrl: string) {
+  return imageUrl.replace(/_card(?=\.webp(?:$|[?#]))/, "_thumb");
+}
+
 export function getProductCardMeta(
   product: Pick<Product, "description" | "tags">,
 ) {
