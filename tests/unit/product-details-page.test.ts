@@ -738,15 +738,16 @@ describe("ProductDetailsPage", () => {
     );
   });
 
-  it("renders the product image without crop classes", () => {
+  it("renders the product image edge-to-edge in a 4:5 frame", () => {
     renderProductDetails();
 
     const productImage = screen.getByRole("img", { name: "Поке" });
 
-    expect(productImage).toHaveClass("object-contain");
-    expect(productImage).not.toHaveClass("object-cover");
+    expect(productImage).toHaveClass("object-cover", "object-center");
+    expect(productImage).not.toHaveClass("object-contain");
     expect(productImage).toHaveClass("w-full", "h-full");
-    expect(productImage.parentElement).toHaveClass("aspect-[3/4]");
+    expect(productImage.parentElement).toHaveClass("aspect-[4/5]");
+    expect(productImage.parentElement).not.toHaveClass("px-4", "py-5");
   });
 
   it("renders gallery thumbnails in a 3:4 frame without rounded corners", async () => {

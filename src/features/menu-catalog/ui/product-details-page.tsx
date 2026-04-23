@@ -494,10 +494,10 @@ export function ProductDetailsPage({
               </>
             ) : null}
 
-            <div className="aspect-[3/4] w-full overflow-hidden px-4 py-5 sm:px-6 sm:py-7">
+            <div className="aspect-[4/5] w-full overflow-hidden">
               <Image
                 alt={resolvedProduct.name}
-                className="block h-full w-full max-w-full object-contain"
+                className="block h-full w-full object-cover object-center"
                 height={activeImageSize.height}
                 onLoad={(event) => {
                   const nextHeight = event.currentTarget.naturalHeight;
