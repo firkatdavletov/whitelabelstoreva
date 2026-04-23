@@ -443,8 +443,19 @@ export function DeliveryAddressScreen() {
   return (
     <section className="relative min-h-dvh overflow-hidden bg-[radial-gradient(circle_at_top,_color-mix(in_srgb,var(--primary)_12%,transparent),transparent_48%),linear-gradient(180deg,color-mix(in_srgb,var(--background)_94%,transparent),color-mix(in_srgb,var(--background)_78%,transparent))]">
       <YandexMapPicker
+        autoLocateOnReady={
+          isYandexPickup &&
+          yandexPickup.geoId === null &&
+          yandexPickup.pickupPoints.length === 0
+        }
+        autoFitMarkers={!isAddressDelivery}
         center={activeMapCenter}
         className="bg-muted/20 h-dvh rounded-none border-0"
+        emptyStateHint={
+          isYandexPickup
+            ? t("deliveryAddress.yandexEmptyMapSearchHint")
+            : null
+        }
         locale={locale}
         markers={activeMarkers}
         onCenterChange={(nextCenter) => {

@@ -15,10 +15,12 @@ import type {
 } from "@/features/delivery-address/lib/delivery-address.utils";
 import {
   fromYandexMapCenter,
+  resolveMarkerClusterViewport,
   toYandexMapCenter,
 } from "@/features/delivery-address/lib/delivery-address.utils";
 
 const DEFAULT_MAP_ZOOM = 16;
+const AUTO_FIT_MAX_ZOOM = 14;
 const CLUSTER_CLICK_ZOOM_DELTA = 2;
 const CLUSTER_DATA_SOURCE_ID = "pickup-points";
 const CLUSTER_GRID_SIZE = 64;
@@ -205,8 +207,11 @@ async function loadYandexMapsApi(apiKey: string, locale: Locale) {
 }
 
 type YandexMapPickerProps = {
+  autoLocateOnReady?: boolean;
+  autoFitMarkers?: boolean;
   center: DeliveryMapCenter;
   className?: string;
+  emptyStateHint?: string | null;
   locale: Locale;
   markers?: MapPickupMarker[];
   onCenterChange: (center: DeliveryMapCenter) => void;
@@ -217,8 +222,11 @@ type YandexMapPickerProps = {
 };
 
 export function YandexMapPicker({
+  autoLocateOnReady = false,
+  autoFitMarkers = false,
   center,
   className,
+  emptyStateHint = null,
   locale,
   markers = [],
   onCenterChange,
@@ -234,6 +242,8 @@ export function YandexMapPicker({
   const latestZoomRef = useRef(DEFAULT_MAP_ZOOM);
   const clustererModuleRef = useRef<YandexClustererModule | null>(null);
   const clustererRef = useRef<unknown | null>(null);
+  const autoFitMarkersKeyRef = useRef<string | null>(null);
+  const didAutoLocateRef = useRef(false);
   const fallbackMarkersRef = useRef<unknown[]>([]);
   const onCenterChangeRef = useRef(onCenterChange);
   const onLocateRef = useRef(onLocate);
@@ -243,6 +253,8 @@ export function YandexMapPicker({
   );
   const [zoom, setZoom] = useState(DEFAULT_MAP_ZOOM);
   const [isLocating, setIsLocating] = useState(false);
+  const [showEmptyStateSearchHint, setShowEmptyStateSearchHint] =
+    useState(false);
 
   useEffect(() => {
     onCenterChangeRef.current = onCenterChange;
@@ -261,6 +273,10 @@ export function YandexMapPicker({
       return;
     }
 
+    if (autoFitMarkers && markers.length > 1) {
+      return;
+    }
+
     if (hasSameCenter(latestCenterRef.current, center)) {
       return;
     }
@@ -273,7 +289,53 @@ export function YandexMapPicker({
         zoom: latestZoomRef.current,
       },
     });
-  }, [center, status]);
+  }, [autoFitMarkers, center, markers.length, status]);
+
+  useEffect(() => {
+    if (
+      !autoFitMarkers ||
+      !mapRef.current ||
+      status !== "ready" ||
+      markers.length <= 1
+    ) {
+      return;
+    }
+
+    const markersKey = markers
+      .map((marker) => marker.id)
+      .sort()
+      .join("|");
+
+    if (autoFitMarkersKeyRef.current === markersKey) {
+      return;
+    }
+
+    const viewport = resolveMarkerClusterViewport(markers, {
+      heightPx: containerRef.current?.clientHeight ?? 420,
+      maxZoom: AUTO_FIT_MAX_ZOOM,
+      minZoom: MIN_MAP_ZOOM,
+      widthPx: containerRef.current?.clientWidth ?? 420,
+    });
+
+    if (!viewport) {
+      return;
+    }
+
+    autoFitMarkersKeyRef.current = markersKey;
+    latestCenterRef.current = viewport.center;
+    latestZoomRef.current = viewport.zoom;
+
+    mapRef.current.update({
+      location: {
+        center: toYandexMapCenter(viewport.center),
+        duration: 220,
+        zoom: viewport.zoom,
+      },
+    });
+
+    setZoom(viewport.zoom);
+    onCenterChangeRef.current(viewport.center);
+  }, [autoFitMarkers, markers, status]);
 
   useEffect(() => {
     latestZoomRef.current = zoom;
@@ -537,6 +599,7 @@ export function YandexMapPicker({
 
     return () => {
       cancelled = true;
+      autoFitMarkersKeyRef.current = null;
       clustererRef.current = null;
       fallbackMarkersRef.current = [];
       mapRef.current?.destroy?.();
@@ -551,12 +614,21 @@ export function YandexMapPicker({
     setZoom((currentZoom) => clampMapZoom(currentZoom + delta));
   };
 
-  const handleLocateMe = () => {
+  const handleLocateMe = ({
+    silentError = false,
+    triggeredAutomatically = false,
+  }: {
+    silentError?: boolean;
+    triggeredAutomatically?: boolean;
+  } = {}) => {
     if (typeof window === "undefined" || !window.navigator.geolocation) {
-      toast.error(t("deliveryAddress.locationError"));
+      if (!silentError) {
+        toast.error(t("deliveryAddress.locationError"));
+      }
       return;
     }
 
+    setShowEmptyStateSearchHint(false);
     setIsLocating(true);
 
     window.navigator.geolocation.getCurrentPosition(
@@ -589,9 +661,16 @@ export function YandexMapPicker({
           setIsLocating(false);
         }
       },
-      () => {
+      (error) => {
         setIsLocating(false);
-        toast.error(t("deliveryAddress.locationError"));
+
+        if (triggeredAutomatically && error.code === 1) {
+          setShowEmptyStateSearchHint(true);
+        }
+
+        if (!silentError) {
+          toast.error(t("deliveryAddress.locationError"));
+        }
       },
       {
         enableHighAccuracy: true,
@@ -600,6 +679,29 @@ export function YandexMapPicker({
       },
     );
   };
+
+  useEffect(() => {
+    if (!autoLocateOnReady) {
+      didAutoLocateRef.current = false;
+      setShowEmptyStateSearchHint(false);
+      return;
+    }
+
+    if (
+      status !== "ready" ||
+      isLocating ||
+      didAutoLocateRef.current ||
+      !onLocateRef.current
+    ) {
+      return;
+    }
+
+    didAutoLocateRef.current = true;
+    handleLocateMe({
+      silentError: true,
+      triggeredAutomatically: true,
+    });
+  }, [autoLocateOnReady, isLocating, status]);
 
   return (
     <div
@@ -649,7 +751,7 @@ export function YandexMapPicker({
             aria-label={t("deliveryAddress.locateMe")}
             className="border-border/70 bg-background/90 text-foreground hover:bg-background flex h-11 w-11 items-center justify-center rounded-2xl border shadow-lg backdrop-blur-sm transition disabled:cursor-wait disabled:opacity-70"
             disabled={isLocating}
-            onClick={handleLocateMe}
+            onClick={() => handleLocateMe()}
             title={t("deliveryAddress.locateMe")}
             type="button"
           >
@@ -688,11 +790,19 @@ export function YandexMapPicker({
 
       {status === "ready" && markers.length === 0 ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="relative flex h-14 w-14 items-center justify-center">
-            <div className="bg-primary/12 absolute bottom-1 h-3 w-3 rounded-full blur-[2px]" />
-            <div className="bg-background border-border/80 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg">
-              <MapPin className="text-primary h-5 w-5" />
+          <div className="relative flex items-center gap-3 px-4">
+            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+              <div className="bg-primary/12 absolute bottom-1 h-3 w-3 rounded-full blur-[2px]" />
+              <div className="bg-background border-border/80 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg">
+                <MapPin className="text-primary h-5 w-5" />
+              </div>
             </div>
+
+            {showEmptyStateSearchHint && emptyStateHint ? (
+              <div className="bg-background/94 border-border/80 text-foreground max-w-[16rem] rounded-2xl border px-3 py-2 text-sm shadow-lg backdrop-blur-sm">
+                {emptyStateHint}
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}

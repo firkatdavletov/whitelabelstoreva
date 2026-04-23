@@ -22,6 +22,39 @@ export type MapPickupMarker = {
   longitude: number;
 };
 
+export type DeliveryMapViewport = {
+  center: DeliveryMapCenter;
+  zoom: number;
+};
+
+const WORLD_DIMENSION_PX = 256;
+
+function clampLatitude(latitude: number) {
+  return Math.min(85.05112878, Math.max(-85.05112878, latitude));
+}
+
+function toMercatorLatitude(latitude: number) {
+  const sin = Math.sin((clampLatitude(latitude) * Math.PI) / 180);
+
+  return 0.5 * Math.log((1 + sin) / (1 - sin));
+}
+
+function normalizeLongitudeSpan(span: number) {
+  if (span <= 180) {
+    return span;
+  }
+
+  return 360 - span;
+}
+
+function resolveFractionZoom(mapDimensionPx: number, fraction: number) {
+  if (fraction <= 0) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return Math.log2(mapDimensionPx / WORLD_DIMENSION_PX / fraction);
+}
+
 function buildAddressLine(parts: Array<string | null | undefined>) {
   return (
     parts
@@ -62,6 +95,67 @@ export function fromYandexMapCenter(
   return {
     latitude: Number(center[1].toFixed(6)),
     longitude: Number(center[0].toFixed(6)),
+  };
+}
+
+export function resolveMarkerClusterViewport(
+  markers: MapPickupMarker[],
+  {
+    heightPx,
+    maxZoom,
+    minZoom,
+    paddingPx = 48,
+    widthPx,
+  }: {
+    heightPx: number;
+    maxZoom: number;
+    minZoom: number;
+    paddingPx?: number;
+    widthPx: number;
+  },
+): DeliveryMapViewport | null {
+  if (!markers.length) {
+    return null;
+  }
+
+  const latitudes = markers.map((marker) => marker.latitude);
+  const longitudes = markers.map((marker) => marker.longitude);
+  const minLatitude = Math.min(...latitudes);
+  const maxLatitude = Math.max(...latitudes);
+  const minLongitude = Math.min(...longitudes);
+  const maxLongitude = Math.max(...longitudes);
+  const center = {
+    latitude: Number(((minLatitude + maxLatitude) / 2).toFixed(6)),
+    longitude: Number(((minLongitude + maxLongitude) / 2).toFixed(6)),
+  };
+
+  if (markers.length === 1) {
+    return {
+      center,
+      zoom: maxZoom,
+    };
+  }
+
+  const effectiveWidth = Math.max(1, widthPx - paddingPx * 2);
+  const effectiveHeight = Math.max(1, heightPx - paddingPx * 2);
+  const longitudeFraction =
+    normalizeLongitudeSpan(maxLongitude - minLongitude) / 360;
+  const latitudeFraction =
+    Math.abs(
+      toMercatorLatitude(maxLatitude) - toMercatorLatitude(minLatitude),
+    ) /
+    (2 * Math.PI);
+  const resolvedZoom = Math.floor(
+    Math.min(
+      resolveFractionZoom(effectiveWidth, longitudeFraction),
+      resolveFractionZoom(effectiveHeight, latitudeFraction),
+      maxZoom,
+    ),
+  );
+
+  return {
+    center,
+    zoom: Math.min(maxZoom, Math.max(minZoom, resolvedZoom)),
   };
 }
 

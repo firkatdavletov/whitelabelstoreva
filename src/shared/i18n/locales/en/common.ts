@@ -117,6 +117,7 @@ export const enMessages = {
     yandexClarifyLocation: "Clarify location",
     yandexConfirm: "Select pickup point",
     yandexDismissVariants: "Cancel",
+    yandexEmptyMapSearchHint: "Enter a city to search pickup points.",
     yandexEmptyPoints:
       "No pickup points found for this address. Try a different query.",
     yandexInstruction: "How to find",

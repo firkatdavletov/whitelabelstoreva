@@ -5,6 +5,7 @@ import {
   buildYandexPickupDeliveryRequest,
   canSubmitAddressDeliveryDraft,
   formatDeliveryDraftAddress,
+  resolveMarkerClusterViewport,
 } from "@/features/delivery-address/lib/delivery-address.utils";
 
 describe("delivery address utils", () => {
@@ -241,6 +242,39 @@ describe("delivery address utils", () => {
       deliveryMethod: "YANDEX_PICKUP_POINT",
       pickupPointExternalId: "yandex-pvz-1",
       pickupPointId: null,
+    });
+  });
+
+  it("builds a wider pickup viewport for multiple markers so clusters can appear", () => {
+    const viewport = resolveMarkerClusterViewport(
+      [
+        {
+          id: "pickup-center",
+          label: "Storeva Центр",
+          latitude: 56.851972,
+          longitude: 60.612427,
+        },
+        {
+          id: "pickup-park",
+          label: "Storeva Парк",
+          latitude: 56.858129,
+          longitude: 60.632941,
+        },
+      ],
+      {
+        heightPx: 420,
+        maxZoom: 14,
+        minZoom: 10,
+        widthPx: 420,
+      },
+    );
+
+    expect(viewport).toEqual({
+      center: {
+        latitude: 56.855051,
+        longitude: 60.622684,
+      },
+      zoom: 14,
     });
   });
 });

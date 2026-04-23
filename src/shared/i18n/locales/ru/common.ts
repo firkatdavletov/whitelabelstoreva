@@ -118,6 +118,7 @@ export const ruMessages = {
     yandexClarifyLocation: "Уточните местоположение",
     yandexConfirm: "Выбрать пункт выдачи",
     yandexDismissVariants: "Отмена",
+    yandexEmptyMapSearchHint: "Введи город для поиска пунктов выдачи",
     yandexEmptyPoints:
       "По указанному адресу не найдено пунктов выдачи. Попробуйте изменить запрос.",
     yandexInstruction: "Как найти",
