@@ -13,15 +13,12 @@ export function formatCurrency(
 ) {
   const formatOptions: Intl.NumberFormatOptions = {
     currency,
+    minimumFractionDigits: options.minimumFractionDigits ?? 0,
     style: "currency",
   };
 
   if (options.maximumFractionDigits !== undefined) {
     formatOptions.maximumFractionDigits = options.maximumFractionDigits;
-  }
-
-  if (options.minimumFractionDigits !== undefined) {
-    formatOptions.minimumFractionDigits = options.minimumFractionDigits;
   }
 
   return new Intl.NumberFormat(locale, formatOptions).format(amount);

@@ -133,7 +133,7 @@ export function CartPageContent({
       <section className="space-y-6">
         <Button
           asChild
-          className="w-fit rounded-full px-4"
+          className="w-fit rounded-[var(--radius-pill)] px-4"
           size="sm"
           variant="outline"
         >
@@ -160,7 +160,7 @@ export function CartPageContent({
 
             <Button
               asChild
-              className="text-primary-foreground hover:text-primary-foreground mt-8 rounded-full px-5"
+              className="text-primary-foreground hover:text-primary-foreground mt-8 rounded-[var(--radius-pill)] px-5"
               size="lg"
             >
               <Link href={href("/menu")}>{t("cart.continue")}</Link>
@@ -193,7 +193,7 @@ export function CartPageContent({
       <div className="flex flex-wrap items-center gap-3">
         <Button
           asChild
-          className="w-fit rounded-full px-4"
+          className="w-fit rounded-[var(--radius-pill)] px-4"
           size="sm"
           variant="outline"
         >
@@ -279,10 +279,10 @@ export function CartPageContent({
                         )}
                       </p>
 
-                      <div className="bg-secondary/72 flex items-center gap-1 rounded-full p-1">
+                      <div className="bg-secondary/72 flex items-center gap-1 rounded-[var(--radius-pill)] p-1">
                         <Button
                           aria-label={t("product.decreaseQuantity")}
-                          className="h-9 w-9 rounded-full"
+                          className="h-9 w-9 rounded-[var(--radius-pill)]"
                           disabled={isActionPending}
                           onClick={() => {
                             const nextQuantity = item.quantity - quantityStep;
@@ -314,7 +314,7 @@ export function CartPageContent({
 
                         <Button
                           aria-label={t("product.increaseQuantity")}
-                          className="h-9 w-9 rounded-full"
+                          className="h-9 w-9 rounded-[var(--radius-pill)]"
                           disabled={isActionPending}
                           onClick={() =>
                             changeCartItemQuantityMutation.mutate({

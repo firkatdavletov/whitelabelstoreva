@@ -455,27 +455,28 @@ export function ProductDetailsPage({
   }
 
   return (
-    <section className="relative grid min-w-0 items-start gap-6 pb-32 xl:grid-cols-[minmax(0,1.04fr)_minmax(21rem,0.96fr)] xl:gap-8 xl:pb-10">
-      <div className="min-w-0 space-y-4">
-        <Button
-          asChild
-          className="w-fit rounded-full px-4"
-          size="sm"
-          variant="outline"
-        >
-          <Link href={backHref}>
-            <ChevronLeft className="h-4 w-4" />
-            {t("cart.back")}
-          </Link>
-        </Button>
+    <section className="relative space-y-4 pb-32 xl:pb-10">
+      <Button
+        asChild
+        className="w-fit rounded-[var(--radius-pill)] px-4"
+        size="sm"
+        variant="outline"
+      >
+        <Link href={backHref}>
+          <ChevronLeft className="h-4 w-4" />
+          {t("cart.back")}
+        </Link>
+      </Button>
 
+      <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.04fr)_minmax(21rem,0.96fr)] xl:gap-8">
+        <div className="min-w-0 space-y-4">
         <Card className="overflow-hidden rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_90%,white),color-mix(in_srgb,var(--secondary)_58%,white))]">
           <div className="relative">
             {galleryImages.length > 1 ? (
               <>
                 <button
                   aria-label={t("product.previousImage")}
-                  className="bg-background/84 text-foreground hover:bg-background absolute top-1/2 left-3 z-10 -translate-y-1/2 rounded-full border border-white/70 p-2 shadow-[0_12px_30px_-18px_rgba(22,15,11,0.45)] backdrop-blur-sm transition"
+                  className="bg-background/84 text-foreground hover:bg-background absolute top-1/2 left-3 z-10 -translate-y-1/2 rounded-[var(--radius-pill)] border border-white/70 p-2 shadow-[0_12px_30px_-18px_rgba(22,15,11,0.45)] backdrop-blur-sm transition"
                   onClick={() => stepGallery(-1)}
                   type="button"
                 >
@@ -484,7 +485,7 @@ export function ProductDetailsPage({
 
                 <button
                   aria-label={t("product.nextImage")}
-                  className="bg-background/84 text-foreground hover:bg-background absolute top-1/2 right-3 z-10 -translate-y-1/2 rounded-full border border-white/70 p-2 shadow-[0_12px_30px_-18px_rgba(22,15,11,0.45)] backdrop-blur-sm transition"
+                  className="bg-background/84 text-foreground hover:bg-background absolute top-1/2 right-3 z-10 -translate-y-1/2 rounded-[var(--radius-pill)] border border-white/70 p-2 shadow-[0_12px_30px_-18px_rgba(22,15,11,0.45)] backdrop-blur-sm transition"
                   onClick={() => stepGallery(1)}
                   type="button"
                 >
@@ -496,7 +497,7 @@ export function ProductDetailsPage({
             <div className="aspect-[3/4] w-full overflow-hidden px-4 py-5 sm:px-6 sm:py-7">
               <Image
                 alt={resolvedProduct.name}
-                className="block h-full max-w-full object-contain"
+                className="block h-full w-full max-w-full object-contain"
                 height={activeImageSize.height}
                 onLoad={(event) => {
                   const nextHeight = event.currentTarget.naturalHeight;
@@ -564,239 +565,240 @@ export function ProductDetailsPage({
             );
           })}
         </div>
-      </div>
+        </div>
 
-      <div className="min-w-0 space-y-4">
-        <Card className="rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_92%,white),color-mix(in_srgb,var(--secondary)_48%,white))]">
-          <CardContent className="space-y-4 p-5 sm:p-7">
-            <div className="space-y-3">
-              <h1 className="font-heading text-4xl leading-none font-semibold tracking-tight sm:text-5xl">
-                {resolvedProduct.name}
-              </h1>
+        <div className="min-w-0 space-y-4">
+          <Card className="rounded-3xl border-white/60 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_92%,white),color-mix(in_srgb,var(--secondary)_48%,white))]">
+            <CardContent className="space-y-4 p-5 sm:p-7">
+              <div className="space-y-3">
+                <h1 className="font-heading text-4xl leading-none font-semibold tracking-tight sm:text-5xl">
+                  {resolvedProduct.name}
+                </h1>
 
-              <div className="flex flex-wrap items-end gap-3">
-                <p className="font-heading text-foreground text-3xl leading-none font-semibold sm:text-[2.35rem]">
-                  {formatCurrency(totalPrice, resolvedProduct.currency, locale)}
-                </p>
+                <div className="flex flex-wrap items-end gap-3">
+                  <p className="font-heading text-foreground text-3xl leading-none font-semibold sm:text-[2.35rem]">
+                    {formatCurrency(totalPrice, resolvedProduct.currency, locale)}
+                  </p>
 
-                {selectedHeaderSummary ? (
+                  {selectedHeaderSummary ? (
+                    <p className="text-muted-foreground text-sm leading-5">
+                      {selectedHeaderSummary}
+                    </p>
+                  ) : null}
+                </div>
+
+                {modifiersTotal > 0 ? (
                   <p className="text-muted-foreground text-sm leading-5">
-                    {selectedHeaderSummary}
+                    {t("product.modifiersTotal")}:{" "}
+                    {formatCurrency(
+                      modifiersTotal,
+                      resolvedProduct.currency,
+                      locale,
+                    )}
                   </p>
                 ) : null}
               </div>
 
-              {modifiersTotal > 0 ? (
-                <p className="text-muted-foreground text-sm leading-5">
-                  {t("product.modifiersTotal")}:{" "}
-                  {formatCurrency(
-                    modifiersTotal,
-                    resolvedProduct.currency,
-                    locale,
-                  )}
+              {resolvedProduct.description ? (
+                <p className="text-muted-foreground max-w-2xl text-sm leading-6 sm:text-base">
+                  {resolvedProduct.description}
                 </p>
               ) : null}
-            </div>
-
-            {resolvedProduct.description ? (
-              <p className="text-muted-foreground max-w-2xl text-sm leading-6 sm:text-base">
-                {resolvedProduct.description}
-              </p>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        {isDetailsLoading ? (
-          <>
-            <Card className="rounded-3xl">
-              <CardContent className="space-y-3 p-5 sm:p-6">
-                <Skeleton className="h-6 w-40 rounded-full" />
-                <Skeleton className="h-16 rounded-lg" />
-                <Skeleton className="h-16 rounded-lg" />
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-3xl">
-              <CardContent className="space-y-3 p-5 sm:p-6">
-                <Skeleton className="h-6 w-36 rounded-full" />
-                <Skeleton className="h-14 rounded-lg" />
-                <Skeleton className="h-14 rounded-lg" />
-                <Skeleton className="h-14 rounded-lg" />
-              </CardContent>
-            </Card>
-          </>
-        ) : isDetailsError ? (
-          <Card className="rounded-3xl">
-            <CardContent className="space-y-5 p-5 sm:p-6">
-              <div className="space-y-2">
-                <p className="font-heading text-foreground text-2xl font-semibold">
-                  {resolvedProduct.name}
-                </p>
-                <p className="text-muted-foreground text-sm leading-6">
-                  {productDetailsQuery.error instanceof Error
-                    ? productDetailsQuery.error.message
-                    : t("product.loadError")}
-                </p>
-              </div>
-
-              <Button
-                className="rounded-2xl"
-                onClick={() => productDetailsQuery.refetch()}
-                size="lg"
-                variant="outline"
-              >
-                <RefreshCw className="h-4 w-4" />
-                {t("shared.retry")}
-              </Button>
             </CardContent>
           </Card>
-        ) : (
-          <>
-            {resolvedProduct.optionGroups.map((group) => {
-              const selectedValueId = selectedOptionIdByGroup[group.id] ?? null;
 
-              return (
-                <Card className="rounded-3xl" key={group.id}>
-                  <CardContent className="space-y-4 p-5 sm:p-6">
-                    <div className="space-y-1">
-                      <h2 className="font-heading text-foreground text-2xl font-semibold">
-                        {group.title}
-                      </h2>
-                      <p className="text-muted-foreground text-sm">
-                        {t("product.selectOne")}
-                      </p>
-                    </div>
+          {isDetailsLoading ? (
+            <>
+              <Card className="rounded-3xl">
+                <CardContent className="space-y-3 p-5 sm:p-6">
+                  <Skeleton className="h-6 w-40 rounded-full" />
+                  <Skeleton className="h-16 rounded-lg" />
+                  <Skeleton className="h-16 rounded-lg" />
+                </CardContent>
+              </Card>
 
-                    <div className="grid gap-2">
-                      {group.values.map((value) => {
-                        const isSelected = value.id === selectedValueId;
+              <Card className="rounded-3xl">
+                <CardContent className="space-y-3 p-5 sm:p-6">
+                  <Skeleton className="h-6 w-36 rounded-full" />
+                  <Skeleton className="h-14 rounded-lg" />
+                  <Skeleton className="h-14 rounded-lg" />
+                  <Skeleton className="h-14 rounded-lg" />
+                </CardContent>
+              </Card>
+            </>
+          ) : isDetailsError ? (
+            <Card className="rounded-3xl">
+              <CardContent className="space-y-5 p-5 sm:p-6">
+                <div className="space-y-2">
+                  <p className="font-heading text-foreground text-2xl font-semibold">
+                    {resolvedProduct.name}
+                  </p>
+                  <p className="text-muted-foreground text-sm leading-6">
+                    {productDetailsQuery.error instanceof Error
+                      ? productDetailsQuery.error.message
+                      : t("product.loadError")}
+                  </p>
+                </div>
 
-                        return (
-                          <SelectableCard
-                            key={value.id}
-                            onClick={() => {
-                              if (value.id === selectedValueId) {
-                                return;
-                              }
+                <Button
+                  className="rounded-2xl"
+                  onClick={() => productDetailsQuery.refetch()}
+                  size="lg"
+                  variant="outline"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  {t("shared.retry")}
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {resolvedProduct.optionGroups.map((group) => {
+                const selectedValueId = selectedOptionIdByGroup[group.id] ?? null;
 
-                              setHasSelectedVariantOption(true);
-                              setSelectedOptionIdByGroup((currentState) => ({
-                                ...currentState,
-                                [group.id]: value.id,
-                              }));
-                            }}
-                            selected={isSelected}
-                          >
-                            <div className="min-w-0">
-                              <p className="text-foreground font-medium">
-                                {value.title}
-                              </p>
-                            </div>
-
-                            <SelectableCardIndicator
-                              selected={isSelected}
-                              size="md"
-                            />
-                          </SelectableCard>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-
-            {modifierGroups.map((group) => {
-              const selectedIds = selectedModifierIdsByGroup[group.id] ?? [];
-              const requiredSelections = getRequiredSelections(group);
-              const isGroupInvalid = missingRequiredGroups.some(
-                (candidate) => candidate.id === group.id,
-              );
-
-              return (
-                <Card className="rounded-3xl" key={group.id}>
-                  <CardContent className="space-y-4 p-5 sm:p-6">
-                    <div className="flex items-start justify-between gap-4">
+                return (
+                  <Card className="rounded-3xl" key={group.id}>
+                    <CardContent className="space-y-4 p-5 sm:p-6">
                       <div className="space-y-1">
                         <h2 className="font-heading text-foreground text-2xl font-semibold">
-                          {group.name}
+                          {group.title}
                         </h2>
-                        <p
-                          className={cn(
-                            "text-sm",
-                            isGroupInvalid
-                              ? "text-destructive"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          {describeModifierGroup(group, t)}
+                        <p className="text-muted-foreground text-sm">
+                          {t("product.selectOne")}
                         </p>
                       </div>
 
-                      <Badge
-                        variant={requiredSelections > 0 ? "default" : "outline"}
-                      >
-                        {requiredSelections > 0
-                          ? t("product.required")
-                          : t("product.optional")}
-                      </Badge>
-                    </div>
+                      <div className="grid gap-2">
+                        {group.values.map((value) => {
+                          const isSelected = value.id === selectedValueId;
 
-                    <div className="grid gap-2">
-                      {group.options.map((option) => {
-                        const isSelected = selectedIds.includes(option.id);
+                          return (
+                            <SelectableCard
+                              key={value.id}
+                              onClick={() => {
+                                if (value.id === selectedValueId) {
+                                  return;
+                                }
 
-                        return (
-                          <SelectableCard
-                            key={option.id}
-                            onClick={() =>
-                              setSelectedModifierIdsByGroup((currentState) => ({
-                                ...currentState,
-                                [group.id]: getNextSelectedModifierIds(
-                                  group,
-                                  currentState[group.id] ?? [],
-                                  option.id,
-                                ),
-                              }))
-                            }
-                            selected={isSelected}
-                          >
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="text-foreground font-medium">
-                                  {option.name}
-                                </span>
-                                <SelectableCardIndicator
-                                  selected={isSelected}
-                                />
+                                setHasSelectedVariantOption(true);
+                                setSelectedOptionIdByGroup((currentState) => ({
+                                  ...currentState,
+                                  [group.id]: value.id,
+                                }));
+                              }}
+                              selected={isSelected}
+                            >
+                              <div className="min-w-0">
+                                <p className="text-foreground font-medium">
+                                  {value.title}
+                                </p>
                               </div>
 
-                              {option.description ? (
-                                <p className="text-muted-foreground mt-1 text-sm">
-                                  {option.description}
-                                </p>
-                              ) : null}
-                            </div>
+                              <SelectableCardIndicator
+                                selected={isSelected}
+                                size="md"
+                              />
+                            </SelectableCard>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
 
-                            <span className="text-foreground shrink-0 text-sm font-semibold">
-                              {option.price > 0
-                                ? `+${formatCurrency(
-                                    option.price,
-                                    resolvedProduct.currency,
-                                    locale,
-                                  )}`
-                                : t("product.included")}
-                            </span>
-                          </SelectableCard>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </>
-        )}
+              {modifierGroups.map((group) => {
+                const selectedIds = selectedModifierIdsByGroup[group.id] ?? [];
+                const requiredSelections = getRequiredSelections(group);
+                const isGroupInvalid = missingRequiredGroups.some(
+                  (candidate) => candidate.id === group.id,
+                );
+
+                return (
+                  <Card className="rounded-3xl" key={group.id}>
+                    <CardContent className="space-y-4 p-5 sm:p-6">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <h2 className="font-heading text-foreground text-2xl font-semibold">
+                            {group.name}
+                          </h2>
+                          <p
+                            className={cn(
+                              "text-sm",
+                              isGroupInvalid
+                                ? "text-destructive"
+                                : "text-muted-foreground",
+                            )}
+                          >
+                            {describeModifierGroup(group, t)}
+                          </p>
+                        </div>
+
+                        <Badge
+                          variant={requiredSelections > 0 ? "default" : "outline"}
+                        >
+                          {requiredSelections > 0
+                            ? t("product.required")
+                            : t("product.optional")}
+                        </Badge>
+                      </div>
+
+                      <div className="grid gap-2">
+                        {group.options.map((option) => {
+                          const isSelected = selectedIds.includes(option.id);
+
+                          return (
+                            <SelectableCard
+                              key={option.id}
+                              onClick={() =>
+                                setSelectedModifierIdsByGroup((currentState) => ({
+                                  ...currentState,
+                                  [group.id]: getNextSelectedModifierIds(
+                                    group,
+                                    currentState[group.id] ?? [],
+                                    option.id,
+                                  ),
+                                }))
+                              }
+                              selected={isSelected}
+                            >
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-foreground font-medium">
+                                    {option.name}
+                                  </span>
+                                  <SelectableCardIndicator
+                                    selected={isSelected}
+                                  />
+                                </div>
+
+                                {option.description ? (
+                                  <p className="text-muted-foreground mt-1 text-sm">
+                                    {option.description}
+                                  </p>
+                                ) : null}
+                              </div>
+
+                              <span className="text-foreground shrink-0 text-sm font-semibold">
+                                {option.price > 0
+                                  ? `+${formatCurrency(
+                                      option.price,
+                                      resolvedProduct.currency,
+                                      locale,
+                                    )}`
+                                  : t("product.included")}
+                              </span>
+                            </SelectableCard>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </>
+          )}
+        </div>
       </div>
 
       <div className="fixed inset-x-4 bottom-4 z-40 sm:inset-x-auto sm:right-6 sm:w-[min(26rem,calc(100vw-3rem))]">

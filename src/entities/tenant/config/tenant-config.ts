@@ -194,7 +194,7 @@ export const tenantConfigMap = {
       popoverForeground: "#211A12",
       primary: "#CFA74E",
       primaryForeground: "#2A200F",
-      radius: "1.25rem",
+      radius: "0rem",
       ring: "#D5AF5D",
       secondary: "#F2E8CC",
       secondaryForeground: "#5B4923",
