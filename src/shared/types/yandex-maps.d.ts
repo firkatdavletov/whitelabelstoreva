@@ -32,8 +32,13 @@ declare global {
     zIndex?: number;
   }
 
+  interface YandexMapsImport {
+    <T = unknown>(packageName: string): Promise<T>;
+    registerCdn?: (template: string, packages: string[]) => void;
+  }
+
   interface YandexMapsNamespace {
-    import<T = unknown>(packageName: string): Promise<T>;
+    import: YandexMapsImport;
     ready: Promise<void>;
     YMap: new (
       container: HTMLElement,
@@ -60,6 +65,7 @@ declare global {
   }
 
   interface Window {
+    __yandexMapsCdnRegistered__?: boolean;
     __yandexMapsPromise__?: Promise<YandexMapsNamespace>;
     ymaps3?: YandexMapsNamespace;
   }

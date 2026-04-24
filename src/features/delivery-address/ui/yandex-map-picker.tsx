@@ -27,6 +27,9 @@ const CLUSTER_GRID_SIZE = 64;
 const MIN_MAP_ZOOM = 10;
 const MAX_MAP_ZOOM = 19;
 const SCRIPT_ID = "yandex-maps-v3-script";
+const YANDEX_MAPS_CDN_TEMPLATE = "https://cdn.jsdelivr.net/npm/{package}";
+const YANDEX_CLUSTERER_PACKAGE = "@yandex/ymaps3-clusterer";
+const YANDEX_CLUSTERER_CDN_PACKAGE = "@yandex/ymaps3-clusterer@0.012";
 
 type MapStatus = "error" | "loading" | "missing-key" | "ready";
 
@@ -57,6 +60,21 @@ type YandexClustererModule = {
 
 function getYandexMapsLang(locale: Locale) {
   return locale === "ru" ? "ru_RU" : "en_US";
+}
+
+function registerYandexMapsCdnPackages(ymaps3: YandexMapsNamespace) {
+  if (window.__yandexMapsCdnRegistered__) {
+    return;
+  }
+
+  if (typeof ymaps3.import.registerCdn !== "function") {
+    return;
+  }
+
+  ymaps3.import.registerCdn(YANDEX_MAPS_CDN_TEMPLATE, [
+    YANDEX_CLUSTERER_CDN_PACKAGE,
+  ]);
+  window.__yandexMapsCdnRegistered__ = true;
 }
 
 function hasSameCenter(a: DeliveryMapCenter, b: DeliveryMapCenter) {
@@ -158,7 +176,14 @@ async function loadYandexMapsApi(apiKey: string, locale: Locale) {
             return;
           }
 
-          window.ymaps3.ready.then(() => resolve(window.ymaps3!)).catch(reject);
+          window.ymaps3.ready
+            .then(() => {
+              const ymaps3 = window.ymaps3!;
+
+              registerYandexMapsCdnPackages(ymaps3);
+              resolve(ymaps3);
+            })
+            .catch(reject);
         };
 
         if (window.ymaps3) {
@@ -426,7 +451,7 @@ export function YandexMapPicker({
         const clustererModule =
           clustererModuleRef.current ??
           (await ymaps3.import<YandexClustererModule>(
-            "@yandex/ymaps3-clusterer",
+            YANDEX_CLUSTERER_PACKAGE,
           ));
 
         if (cancelled || !mapRef.current) {
