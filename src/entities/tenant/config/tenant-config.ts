@@ -98,7 +98,7 @@ export const tenantConfigMap = {
       secondary: "#EAD9CA",
       secondaryForeground: "#4D3427",
     },
-    title: "Storeva Food Hall",
+    title: "Storeva Demo",
   },
 
   "storeva-street": {
