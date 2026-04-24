@@ -29,7 +29,7 @@ const MAX_MAP_ZOOM = 19;
 const SCRIPT_ID = "yandex-maps-v3-script";
 const YANDEX_MAPS_CDN_TEMPLATE = "https://cdn.jsdelivr.net/npm/{package}";
 const YANDEX_CLUSTERER_PACKAGE = "@yandex/ymaps3-clusterer";
-const YANDEX_CLUSTERER_CDN_PACKAGE = "@yandex/ymaps3-clusterer@0.012";
+const YANDEX_CLUSTERER_CDN_PACKAGE = "@yandex/ymaps3-clusterer@0.0.12";
 
 type MapStatus = "error" | "loading" | "missing-key" | "ready";
 
