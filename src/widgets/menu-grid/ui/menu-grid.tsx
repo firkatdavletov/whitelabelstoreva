@@ -99,7 +99,7 @@ export function MenuGrid({
         <div>
           <div
             aria-label="Catalog categories"
-            className="flex gap-2 overflow-x-auto pb-1"
+            className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {categories.map((category) => {
               const isActive = category.id === selectedCategory?.id;

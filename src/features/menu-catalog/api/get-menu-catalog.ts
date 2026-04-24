@@ -7,6 +7,7 @@ import { apiRequest } from "@/shared/api";
 import { env } from "@/shared/config/env";
 
 import type {
+  CatalogCategoriesQuery,
   CatalogCategoryDto,
   CatalogProductDto,
 } from "@/features/menu-catalog/api/catalog.types";
@@ -27,17 +28,33 @@ export type MenuCatalog = {
   restaurant: Restaurant;
 };
 
-async function getCatalogCategories(tenantSlug: string) {
+type GetMenuCatalogOptions = {
+  categoryLimit?: number;
+};
+
+async function getCatalogCategories(
+  tenantSlug: string,
+  options: GetMenuCatalogOptions = {},
+) {
+  const { categoryLimit } = options;
+
   if (env.apiMocksEnabled) {
-    return createMockCatalogCategoriesDto(tenantSlug);
+    const categories = createMockCatalogCategoriesDto(tenantSlug);
+
+    return categoryLimit === undefined
+      ? categories
+      : categories.slice(0, categoryLimit);
   }
+
+  const query: CatalogCategoriesQuery = {
+    activeOnly: true,
+    limit: categoryLimit,
+  };
 
   return apiRequest<CatalogCategoryDto[]>("/v1/catalog/categories", {
     ...PUBLIC_CATALOG_REQUEST_CONTEXT,
     cache: "no-store",
-    query: {
-      activeOnly: true,
-    },
+    query,
   });
 }
 
@@ -54,10 +71,13 @@ async function getCatalogProducts(tenantSlug: string) {
 
 // Catalog flow now composes the storefront from /api/v1/catalog collections.
 // Restaurant meta is still mock-backed until a dedicated storefront/restaurant endpoint exists.
-export async function getMenuCatalog(tenantSlug: string): Promise<MenuCatalog> {
+export async function getMenuCatalog(
+  tenantSlug: string,
+  options: GetMenuCatalogOptions = {},
+): Promise<MenuCatalog> {
   const tenantConfig = getTenantConfig(tenantSlug);
   const [categoryDtos, productDtos] = await Promise.all([
-    getCatalogCategories(tenantSlug),
+    getCatalogCategories(tenantSlug, options),
     getCatalogProducts(tenantSlug),
   ]);
 

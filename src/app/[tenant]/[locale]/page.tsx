@@ -29,6 +29,8 @@ type HomePageProps = {
   }>;
 };
 
+const HOME_CATEGORY_LIMIT = 6;
+
 export async function generateMetadata({
   params,
 }: HomePageProps): Promise<Metadata> {
@@ -60,7 +62,7 @@ export default async function HomePage({ params }: HomePageProps) {
   const requestContext = await buildServerRequestContext();
   const requestHostname = getRequestHostnameFromHeaders(await headers());
   const [menuCatalog, currentOrder, heroBanners] = await Promise.all([
-    getMenuCatalog(tenant),
+    getMenuCatalog(tenant, { categoryLimit: HOME_CATEGORY_LIMIT }),
     getCurrentOrder(tenant, requestContext).catch(() => null),
     getHeroBanners(tenant, localeContext.locale).catch(() => []),
   ]);
