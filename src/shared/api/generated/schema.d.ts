@@ -367,6 +367,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/products/popular": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List popular catalog products
+         * @description Returns active products selected for the "Popular" collection, sorted by manual popularity score.
+         *     The MVP ranking is managed through the Product Stats Admin API.
+         */
+        get: operations["getPopularProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/catalog/products/{productId}": {
         parameters: {
             query?: never;
@@ -2161,6 +2182,31 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Product list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductResponse"][];
+                };
+            };
+            400: components["responses"]["BadRequestError"];
+            500: components["responses"]["InternalServerError"];
+        };
+    };
+    getPopularProducts: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of popular products to return. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Popular product list */
             200: {
                 headers: {
                     [name: string]: unknown;
