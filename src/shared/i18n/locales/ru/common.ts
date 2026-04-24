@@ -162,7 +162,7 @@ export const ruMessages = {
     browseMenu: "Посмотреть все",
     checkout: "Перейти к checkout",
     eyebrow: "White label платформа заказа еды",
-    featured: "Популярные позиции",
+    featured: "Популярное",
     subtitle:
       "Один frontend shell, tenant-specific branding, typed API boundaries и без backend-бизнес-логики на клиенте.",
   },

@@ -161,7 +161,7 @@ export const enMessages = {
     browseMenu: "Browse full menu",
     checkout: "Go to checkout",
     eyebrow: "White label food ordering platform",
-    featured: "Featured dishes",
+    featured: "Popular",
     subtitle:
       "One frontend shell, tenant-specific branding, typed API boundaries, and zero backend business rules on the client.",
   },

@@ -9,3 +9,10 @@ export type CatalogCategoriesQuery = NonNullable<
 
 export type CatalogProductDto =
   paths["/api/v1/catalog/products"]["get"]["responses"][200]["content"]["application/json"][number];
+
+export type CatalogPopularProductDto =
+  paths["/api/v1/catalog/products/popular"]["get"]["responses"][200]["content"]["application/json"][number];
+
+export type CatalogPopularProductsQuery = NonNullable<
+  paths["/api/v1/catalog/products/popular"]["get"]["parameters"]["query"]
+>;

@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 
 import { CurrentOrderCard, getCurrentOrder } from "@/features/order-tracking";
-import { getMenuCatalog } from "@/features/menu-catalog";
+import {
+  getMenuCatalog,
+  getPopularCatalogProducts,
+} from "@/features/menu-catalog";
 import { bootstrapLocale } from "@/processes/bootstrap-locale/lib/resolve-locale";
 import { resolveTenant } from "@/processes/bootstrap-tenant/lib/resolve-tenant";
 import { buildServerRequestContext } from "@/shared/api/server-auth";
@@ -21,6 +24,7 @@ import { getHeroBanners } from "@/widgets/home/api/get-hero-banners";
 import { FashionHeroBanners } from "@/widgets/home/ui/fashion-hero-banners";
 import { HomeBannerPager } from "@/widgets/home/ui/home-banner-pager";
 import { HomeCategoryGrid } from "@/widgets/home/ui/home-category-grid";
+import { HomePopularProductsGrid } from "@/widgets/home/ui/home-popular-products-grid";
 
 type HomePageProps = {
   params: RouteParams<{
@@ -61,11 +65,13 @@ export default async function HomePage({ params }: HomePageProps) {
 
   const requestContext = await buildServerRequestContext();
   const requestHostname = getRequestHostnameFromHeaders(await headers());
-  const [menuCatalog, currentOrder, heroBanners] = await Promise.all([
-    getMenuCatalog(tenant, { categoryLimit: HOME_CATEGORY_LIMIT }),
-    getCurrentOrder(tenant, requestContext).catch(() => null),
-    getHeroBanners(tenant, localeContext.locale).catch(() => []),
-  ]);
+  const [menuCatalog, currentOrder, heroBanners, popularProducts] =
+    await Promise.all([
+      getMenuCatalog(tenant, { categoryLimit: HOME_CATEGORY_LIMIT }),
+      getCurrentOrder(tenant, requestContext).catch(() => null),
+      getHeroBanners(tenant, localeContext.locale).catch(() => []),
+      getPopularCatalogProducts(tenant).catch(() => []),
+    ]);
   const menuHref = buildStorefrontPath({
     hostname: requestHostname,
     locale: localeContext.locale,
@@ -92,6 +98,21 @@ export default async function HomePage({ params }: HomePageProps) {
         actionLabel={localeContext.dictionary.home.browseMenu}
         categories={getHomeCategoryCards(menuCatalog.categories)}
         categoryCardVariant={tenantConfig.catalog.categoryCard}
+      />
+
+      <HomePopularProductsGrid
+        getProductHref={(product) =>
+          buildStorefrontPath({
+            hostname: requestHostname,
+            locale: localeContext.locale,
+            pathname: `/menu/${product.slug}`,
+            tenantSlug: tenantConfig.slug,
+          })
+        }
+        locale={localeContext.locale}
+        productCardVariant={tenantConfig.catalog.productCard}
+        products={popularProducts}
+        title={localeContext.dictionary.home.featured}
       />
     </div>
   );
