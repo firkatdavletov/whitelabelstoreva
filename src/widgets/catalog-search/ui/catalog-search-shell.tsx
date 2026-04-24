@@ -24,6 +24,8 @@ import { Card } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { MenuGrid } from "@/widgets/menu-grid";
 
+import styles from "./catalog-search-shell.module.css";
+
 type SearchMessages = {
   empty: string;
   errorDescription: string;
@@ -206,7 +208,10 @@ export function CatalogSearchShell({
             <Search className="text-muted-foreground size-4 shrink-0" />
             <Input
               autoComplete="off"
-              className="h-auto border-0 bg-transparent px-0 py-0 text-base shadow-none focus-visible:ring-0"
+              className={cn(
+                "h-auto border-0 bg-transparent px-0 py-0 text-base shadow-none focus-visible:ring-0",
+                styles.searchInput,
+              )}
               id={inputId}
               onChange={(event) => {
                 setQuery(event.target.value);
