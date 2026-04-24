@@ -89,4 +89,35 @@ describe("HomeBannerPager", () => {
       screen.getByRole("heading", { name: "Первый слайд" }),
     ).toBeInTheDocument();
   });
+
+  it("places copy using the banner text alignment", () => {
+    const rightAlignedBanner: HeroBanner = {
+      ...banners[0]!,
+      id: "right-aligned-banner",
+      textAlignment: "RIGHT",
+      title: "Слайд справа",
+    };
+
+    render(
+      React.createElement(HomeBannerPager, {
+        banners: [rightAlignedBanner],
+        nextLabel: "Следующий баннер",
+        previousLabel: "Предыдущий баннер",
+      }),
+    );
+
+    const copy = screen
+      .getByRole("heading", { name: "Слайд справа" })
+      .closest("[data-banner-alignment]");
+
+    if (!copy) {
+      throw new Error("Banner copy container was not rendered");
+    }
+
+    expect(copy).toHaveAttribute("data-banner-alignment", "right");
+    expect(copy).toHaveClass("items-end", "text-right");
+    expect(screen.getByRole("img", { name: "Слайд справа" })).toHaveClass(
+      "object-cover",
+    );
+  });
 });

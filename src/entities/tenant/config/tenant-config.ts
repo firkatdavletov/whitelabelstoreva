@@ -67,7 +67,7 @@ export const tenantConfigMap = {
       currentOrderCard: "current-order-classic",
       heroBanners: "hero-classic",
     },
-    logoText: "STOREVA",
+    logoText: "Демо приложения для доставки еды",
     logoUrl: "/tenants/storeva-premium/logo.svg",
     restaurantId: "rest-storeva-premium",
     slug: "storeva-premium",
@@ -98,7 +98,7 @@ export const tenantConfigMap = {
       secondary: "#EAD9CA",
       secondaryForeground: "#4D3427",
     },
-    title: "Storeva Demo",
+    title: "Demo",
   },
 
   "storeva-street": {

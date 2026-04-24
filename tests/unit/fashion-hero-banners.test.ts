@@ -107,4 +107,35 @@ describe("FashionHeroBanners", () => {
       screen.getByRole("heading", { name: "Первый fashion слайд" }),
     ).toBeInTheDocument();
   });
+
+  it("places copy using the banner text alignment", () => {
+    const centeredBanner: HeroBanner = {
+      ...banners[0]!,
+      id: "centered-fashion-banner",
+      textAlignment: "CENTER",
+      title: "Fashion слайд по центру",
+    };
+
+    render(
+      React.createElement(FashionHeroBanners, {
+        banners: [centeredBanner],
+        nextLabel: "Следующий баннер",
+        previousLabel: "Предыдущий баннер",
+      }),
+    );
+
+    const copy = screen
+      .getByRole("heading", { name: "Fashion слайд по центру" })
+      .closest("[data-banner-alignment]");
+
+    if (!copy) {
+      throw new Error("Banner copy container was not rendered");
+    }
+
+    expect(copy).toHaveAttribute("data-banner-alignment", "center");
+    expect(copy).toHaveClass("items-center", "text-center");
+    expect(
+      screen.getByRole("img", { name: "Fashion слайд по центру" }),
+    ).toHaveClass("object-cover");
+  });
 });

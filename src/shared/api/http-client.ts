@@ -4,7 +4,7 @@ import {
   getClientInstallId,
   INSTALL_ID_COOKIE_NAME,
 } from "@/shared/api/install-id";
-import { safeJson } from "@/shared/lib/safe-json";
+import { InvalidJsonResponseError, safeJson } from "@/shared/lib/safe-json";
 import type { ApiMethod, ApiQueryParams } from "@/shared/types/api";
 
 type ApiRequestOptions<TBody> = Omit<
@@ -177,9 +177,34 @@ export async function apiRequest<TResponse, TBody = undefined>(
     throw new ApiError(message, 0);
   }
 
-  const payload = await safeJson<
-    TResponse | { error?: string; message?: string }
-  >(response);
+  let payload: TResponse | { error?: string; message?: string } | null;
+
+  try {
+    payload = await safeJson<TResponse | { error?: string; message?: string }>(
+      response,
+    );
+  } catch (error) {
+    const message =
+      error instanceof InvalidJsonResponseError
+        ? error.message
+        : "Invalid JSON response from API.";
+
+    logApiFailure({
+      hasAccessToken,
+      hasCookie,
+      hasInstallId,
+      message,
+      method,
+      statusCode: response.status,
+      url: requestUrl,
+    });
+
+    throw new ApiError(message, response.status, {
+      error: "INVALID_JSON_RESPONSE",
+      message,
+      statusCode: response.status,
+    });
+  }
 
   if (!response.ok) {
     const message =

@@ -6,17 +6,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { cn } from "@/shared/lib/styles";
 import {
   FashionActionButton,
   FashionIconButton,
   FashionKicker,
-  FashionMediaFrame,
   FashionPagerDots,
   FashionSurface,
   FashionText,
   FashionTitle,
 } from "@/shared/ui/fashion-storefront";
 import type { HeroBanner } from "@/widgets/home/api/get-hero-banners";
+import {
+  getHeroBannerAlignmentClassNames,
+  getHeroBannerScrimClassName,
+  getHeroBannerToneClassNames,
+} from "@/widgets/home/ui/hero-banner-layout";
 
 type FashionHeroBannersProps = {
   banners: HeroBanner[];
@@ -56,6 +61,12 @@ export function FashionHeroBanners({
 
   const currentBanner = banners[activeIndex] ?? banners[0];
   const hasMultipleBanners = banners.length > 1;
+  const alignmentClassNames = getHeroBannerAlignmentClassNames(
+    currentBanner.textAlignment,
+  );
+  const toneClassNames = getHeroBannerToneClassNames(
+    currentBanner.themeVariant,
+  );
 
   function showSlide(nextIndex: number) {
     setActiveIndex((nextIndex + banners.length) % banners.length);
@@ -141,41 +152,59 @@ export function FashionHeroBanners({
         onPointerUp={handlePointerUp}
         style={{ touchAction: "pan-y" }}
       >
-        <div className="relative grid min-h-[36rem] grid-cols-1 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1fr)]">
-          <FashionMediaFrame
-            className="border-border/60 order-1 border-b lg:order-2 lg:border-b-0 lg:border-l"
-            overlay="editorial"
-            ratio="hero"
+        <Image
+          alt={
+            currentBanner.desktopImageAlt ||
+            currentBanner.mobileImageAlt ||
+            currentBanner.title
+          }
+          className="object-cover"
+          fill
+          sizes="(max-width: 1280px) 100vw, 1280px"
+          src={currentBanner.desktopImageUrl}
+          unoptimized
+        />
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0",
+            getHeroBannerScrimClassName(
+              currentBanner.textAlignment,
+              currentBanner.themeVariant,
+            ),
+          )}
+        />
+
+        <div className="relative z-10 flex min-h-[36rem] flex-col px-6 py-8 pb-20 sm:px-8 sm:py-10 sm:pb-24 lg:px-10 lg:py-12 lg:pb-16">
+          <div
+            className={cn(
+              "flex flex-1 items-center",
+              alignmentClassNames.frame,
+            )}
           >
-            <Image
-              alt={
-                currentBanner.desktopImageAlt ||
-                currentBanner.mobileImageAlt ||
-                currentBanner.title
-              }
-              className="object-cover"
-              fill
-              sizes="(max-width: 1024px) 100vw, 56vw"
-              src={currentBanner.desktopImageUrl}
-              unoptimized
-            />
-          </FashionMediaFrame>
-
-          <div className="relative order-2 flex min-h-0 items-center lg:order-1">
-            <div className="from-background via-background/94 to-background/72 absolute inset-0 bg-gradient-to-r lg:to-transparent" />
-
-            <div className="relative z-10 flex w-full flex-col gap-7 px-6 py-8 pb-20 sm:px-8 sm:py-10 sm:pb-24 lg:px-10 lg:py-12 lg:pb-16">
+            <div
+              className={cn(
+                "flex w-full max-w-xl flex-col gap-7",
+                alignmentClassNames.copy,
+              )}
+              data-banner-alignment={currentBanner.textAlignment.toLowerCase()}
+            >
               <div className="space-y-4">
                 {currentBanner.subtitle ? (
-                  <FashionKicker>{currentBanner.subtitle}</FashionKicker>
+                  <FashionKicker className={toneClassNames.kicker}>
+                    {currentBanner.subtitle}
+                  </FashionKicker>
                 ) : null}
 
-                <FashionTitle as="h1" size="hero">
+                <FashionTitle
+                  as="h1"
+                  className={cn("tracking-normal", toneClassNames.title)}
+                  size="hero"
+                >
                   {currentBanner.title}
                 </FashionTitle>
 
                 {currentBanner.description ? (
-                  <FashionText className="max-w-md">
+                  <FashionText className={cn("max-w-md", toneClassNames.text)}>
                     {currentBanner.description}
                   </FashionText>
                 ) : null}
@@ -185,10 +214,18 @@ export function FashionHeroBanners({
                 currentBanner.primaryActionUrl) ||
               (currentBanner.secondaryActionLabel &&
                 currentBanner.secondaryActionUrl) ? (
-                <div className="flex flex-wrap gap-3">
+                <div
+                  className={cn(
+                    "flex flex-wrap gap-3",
+                    alignmentClassNames.actions,
+                  )}
+                >
                   {currentBanner.primaryActionLabel &&
                   currentBanner.primaryActionUrl ? (
-                    <FashionActionButton asChild>
+                    <FashionActionButton
+                      asChild
+                      className={toneClassNames.primaryButton}
+                    >
                       <Link href={currentBanner.primaryActionUrl}>
                         {currentBanner.primaryActionLabel}
                       </Link>
@@ -197,7 +234,11 @@ export function FashionHeroBanners({
 
                   {currentBanner.secondaryActionLabel &&
                   currentBanner.secondaryActionUrl ? (
-                    <FashionActionButton asChild variant="outline">
+                    <FashionActionButton
+                      asChild
+                      className={toneClassNames.secondaryButton}
+                      variant="outline"
+                    >
                       <Link href={currentBanner.secondaryActionUrl}>
                         {currentBanner.secondaryActionLabel}
                       </Link>
@@ -223,14 +264,14 @@ export function FashionHeroBanners({
             <div className="pointer-events-none absolute inset-y-0 right-0 left-0 z-10 flex items-center justify-between px-3 sm:px-4 lg:px-5">
               <FashionIconButton
                 aria-label={previousLabel}
-                className="border-primary/26 text-primary hover:border-primary hover:bg-primary hover:text-primary-foreground pointer-events-auto backdrop-blur-sm"
+                className={cn("pointer-events-auto", toneClassNames.navButton)}
                 onClick={() => showSlide(activeIndex - 1)}
               >
                 <ChevronLeft className="h-4 w-4" />
               </FashionIconButton>
               <FashionIconButton
                 aria-label={nextLabel}
-                className="border-primary/26 text-primary hover:border-primary hover:bg-primary hover:text-primary-foreground pointer-events-auto backdrop-blur-sm"
+                className={cn("pointer-events-auto", toneClassNames.navButton)}
                 onClick={() => showSlide(activeIndex + 1)}
               >
                 <ChevronRight className="h-4 w-4" />
