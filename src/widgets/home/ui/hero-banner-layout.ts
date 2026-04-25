@@ -20,6 +20,9 @@ type HeroBannerToneClassNames = {
   title: string;
 };
 
+const primaryCtaButtonClassName =
+  "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground";
+
 const heroBannerAlignmentClassNames = {
   CENTER: {
     actions: "justify-center",
@@ -70,8 +73,7 @@ const heroBannerToneClassNames = {
       "border-primary-foreground/30 bg-primary/35 text-primary-foreground/80 backdrop-blur-sm",
     navButton:
       "border-primary-foreground/40 bg-primary/25 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground backdrop-blur-sm",
-    primaryButton:
-      "bg-primary-foreground text-primary hover:bg-primary-foreground/90",
+    primaryButton: primaryCtaButtonClassName,
     secondaryButton:
       "border-primary-foreground/45 bg-primary/20 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground backdrop-blur-sm",
     text: "text-primary-foreground/84",
@@ -83,7 +85,7 @@ const heroBannerToneClassNames = {
     kicker: "border-white/25 bg-black/28 text-white/78 backdrop-blur-sm",
     navButton:
       "border-white/35 bg-black/24 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm",
-    primaryButton: "bg-white text-foreground hover:bg-white/90",
+    primaryButton: primaryCtaButtonClassName,
     secondaryButton:
       "border-white/45 bg-black/20 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm",
     text: "text-white/84",
@@ -96,7 +98,7 @@ const heroBannerToneClassNames = {
       "border-border/60 bg-background/76 text-muted-foreground backdrop-blur-sm",
     navButton:
       "border-border/60 bg-background/84 text-foreground hover:bg-secondary hover:text-secondary-foreground backdrop-blur-sm",
-    primaryButton: "",
+    primaryButton: primaryCtaButtonClassName,
     secondaryButton: "bg-background/76 backdrop-blur-sm",
     text: "text-muted-foreground",
     title: "text-foreground",
