@@ -142,6 +142,7 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
       intercom: "",
       paymentMethodCode: "",
       phone: "",
+      promoCode: "",
     },
     resolver: zodResolver(
       createCheckoutFormSchema({
@@ -654,6 +655,20 @@ export function CheckoutForm({ isAuthorized }: CheckoutFormProps) {
                         </div>
                       )}
                     </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="promoCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("checkout.promoCode")}</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

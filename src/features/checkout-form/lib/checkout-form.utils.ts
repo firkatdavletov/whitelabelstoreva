@@ -120,6 +120,7 @@ export function buildCheckoutRequest(
   const customerName = normalizeCheckoutField(values.fullName);
   const customerPhone = normalizeCheckoutField(values.phone);
   const comment = normalizeCheckoutField(values.comment);
+  const promoCode = normalizeCheckoutField(values.promoCode);
   const deliveryAddress = options?.deliveryAddress;
   const includeAddressMetaFields = options?.includeAddressMetaFields ?? true;
   const address = deliveryAddress
@@ -157,6 +158,7 @@ export function buildCheckoutRequest(
     customerPhone,
     paymentMethodCode:
       values.paymentMethodCode as CheckoutRequestDto["paymentMethodCode"],
+    ...(promoCode ? { promoCode } : {}),
   };
 }
 

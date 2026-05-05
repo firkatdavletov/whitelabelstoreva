@@ -46,6 +46,7 @@ export const enMessages = {
     paymentMethodsError: "Failed to load payment methods.",
     phone: "Phone number",
     privateHouse: "Private house",
+    promoCode: "Promo code",
     pickupLocation: "Pick up from",
     legalAgreementLabel: "I confirm that I have read the documents",
     legalAgreementRequired:

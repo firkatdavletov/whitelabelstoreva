@@ -138,6 +138,7 @@ describe("checkout form utils", () => {
         intercom: "",
         paymentMethodCode: "CARD_ON_DELIVERY",
         phone: "  +7 (999) 123-45-67  ",
+        promoCode: "",
       }),
     ).toEqual({
       address: null,
@@ -158,6 +159,7 @@ describe("checkout form utils", () => {
         intercom: "",
         paymentMethodCode: "CASH",
         phone: "",
+        promoCode: "",
       }),
     ).toEqual({
       address: null,
@@ -181,6 +183,7 @@ describe("checkout form utils", () => {
           intercom: "45",
           paymentMethodCode: "CARD_ON_DELIVERY",
           phone: "",
+          promoCode: "",
         },
         {
           deliveryAddress: {
@@ -232,6 +235,7 @@ describe("checkout form utils", () => {
           intercom: "45",
           paymentMethodCode: "CARD_ON_DELIVERY",
           phone: "",
+          promoCode: "",
         },
         {
           deliveryAddress: {
@@ -283,6 +287,7 @@ describe("checkout form utils", () => {
           intercom: "45",
           paymentMethodCode: "CARD_ON_DELIVERY",
           phone: "",
+          promoCode: "",
         },
         {
           deliveryAddress: {
@@ -356,6 +361,7 @@ describe("checkout form utils", () => {
         intercom: "",
         paymentMethodCode: "CARD_ON_DELIVERY",
         phone: "",
+        promoCode: "",
       }).success,
     ).toBe(false);
 
@@ -370,6 +376,7 @@ describe("checkout form utils", () => {
         intercom: "",
         paymentMethodCode: "CARD_ON_DELIVERY",
         phone: "",
+        promoCode: "",
       }).success,
     ).toBe(true);
   });
@@ -391,7 +398,32 @@ describe("checkout form utils", () => {
         intercom: "",
         paymentMethodCode: "CARD_ON_DELIVERY",
         phone: "",
+        promoCode: "",
       }).success,
     ).toBe(true);
+  });
+
+  it("passes promo code to checkout payload when provided", () => {
+    expect(
+      buildCheckoutRequest({
+        apartment: "",
+        comment: "",
+        entrance: "",
+        floor: "",
+        fullName: "",
+        isPrivateHouse: false,
+        intercom: "",
+        paymentMethodCode: "CARD_ON_DELIVERY",
+        phone: "",
+        promoCode: "  MAY-2026  ",
+      }),
+    ).toEqual({
+      address: null,
+      comment: null,
+      customerName: null,
+      customerPhone: null,
+      paymentMethodCode: "CARD_ON_DELIVERY",
+      promoCode: "MAY-2026",
+    });
   });
 });

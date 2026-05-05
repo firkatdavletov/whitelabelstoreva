@@ -48,6 +48,7 @@ export const ruMessages = {
     paymentMethodsError: "Не удалось загрузить способы оплаты.",
     phone: "Телефон",
     privateHouse: "Частный дом",
+    promoCode: "Промокод",
     pickupLocation: "Откуда забрать",
     legalAgreementLabel: "Подтверждаю, что ознакомлен(а) с документами",
     legalAgreementRequired:

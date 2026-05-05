@@ -60,6 +60,8 @@ vi.mock("react-i18next", () => ({
           return "При получении";
         case "checkout.privateHouse":
           return "Частный дом";
+        case "checkout.promoCode":
+          return "Промокод";
         case "checkout.comment":
           return "Комментарий к заказу";
         case "checkout.legalAgreementLabel":
@@ -303,6 +305,9 @@ describe("CheckoutForm", () => {
     expect(screen.getByLabelText("Подъезд")).not.toHaveAttribute("placeholder");
     expect(screen.getByLabelText("Домофон")).not.toHaveAttribute("placeholder");
     expect(screen.getByLabelText("Этаж")).not.toHaveAttribute("placeholder");
+    expect(screen.getByLabelText("Промокод")).not.toHaveAttribute(
+      "placeholder",
+    );
     expect(screen.getByLabelText("Комментарий к заказу")).not.toHaveAttribute(
       "placeholder",
     );

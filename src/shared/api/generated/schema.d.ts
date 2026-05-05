@@ -767,7 +767,7 @@ export interface components {
     schemas: {
         ApiError: {
             /** @enum {string} */
-            code: "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INTERNAL_ERROR";
+            code: "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "CONFLICT" | "NOT_FOUND" | "INTERNAL_ERROR";
             message: string;
             /** @description Request trace id (`X-Trace-Id`) when available. */
             traceId?: string | null;
@@ -1205,6 +1205,8 @@ export interface components {
             customerEmail?: string | null;
             address?: components["schemas"]["DeliveryAddressRequest"] | null;
             comment?: string | null;
+            promoCode?: string | null;
+            giftCertificateCode?: string | null;
         };
         CancelOrderRequest: {
             comment?: string | null;
@@ -1221,6 +1223,8 @@ export interface components {
             pickupPointId?: string | null;
             pickupPointExternalId?: string | null;
             comment?: string | null;
+            promoCode?: string | null;
+            giftCertificateCode?: string | null;
         };
         GuestCheckoutItemRequest: {
             /** Format: uuid */
@@ -1267,6 +1271,12 @@ export interface components {
             subtotalMinor: number;
             /** Format: int64 */
             deliveryFeeMinor: number;
+            promoCode?: string | null;
+            /** Format: int64 */
+            promoDiscountMinor: number;
+            giftCertificateCodeLast4?: string | null;
+            /** Format: int64 */
+            giftCertificateAmountMinor: number;
             /** Format: int64 */
             totalMinor: number;
             /** Format: date-time */

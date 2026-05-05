@@ -201,6 +201,8 @@ function createMockCheckoutOrderResponse(
     statusChangedAt: createdAt,
     statusName: "Awaiting confirmation",
     subtotalMinor: 0,
+    promoDiscountMinor: 0,
+    giftCertificateAmountMinor: 0,
     totalMinor: 0,
     updatedAt: createdAt,
     userId: null,

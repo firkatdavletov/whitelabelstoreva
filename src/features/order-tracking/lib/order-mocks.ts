@@ -216,6 +216,8 @@ export function createMockOrderDto({
     statusChangedAt,
     statusName: currentStatus.name,
     subtotalMinor: 1700,
+    promoDiscountMinor: 0,
+    giftCertificateAmountMinor: 0,
     totalMinor: 1850,
     updatedAt: now.toISOString(),
     userId: null,

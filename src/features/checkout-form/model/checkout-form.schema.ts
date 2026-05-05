@@ -10,6 +10,7 @@ export type CheckoutFormValues = {
   intercom: string;
   paymentMethodCode: string;
   phone: string;
+  promoCode: string;
 };
 
 const phonePattern = /^[\d+\-()\s]+$/;
@@ -77,6 +78,10 @@ export function createCheckoutFormSchema({
               "Phone number can contain digits, spaces, and + - ( ).",
             )
         : createOptionalPhoneSchema(),
+      promoCode: z
+        .string()
+        .trim()
+        .max(64, "Keep the promo code under 64 characters."),
     })
     .superRefine((values, context) => {
       if (requiresApartment && !values.isPrivateHouse && !values.apartment) {
